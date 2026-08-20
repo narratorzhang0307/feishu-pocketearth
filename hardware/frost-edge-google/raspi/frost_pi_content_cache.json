@@ -1,0 +1,275 @@
+{
+  "schema": "pocket-earth-edge-content-cache/v1",
+  "privacy": "public source candidates, Google AI review receipts and user-approved persona tags only",
+  "buffer": [
+    {
+      "date": "2026-07-15",
+      "state": "cached",
+      "label": "PUBLIC SIGNAL CACHE",
+      "topics": 8,
+      "signalCount": 37,
+      "provenance": "source-preserving candidate snapshot"
+    },
+    {
+      "date": "2026-07-16",
+      "state": "miss",
+      "label": "CACHE MISS",
+      "topics": 0,
+      "signalCount": 0,
+      "provenance": "no dated public object was available; the device does not invent one"
+    },
+    {
+      "date": "2026-07-19",
+      "state": "reviewed",
+      "label": "GOOGLE AI EDITION",
+      "topics": 2,
+      "signalCount": 2,
+      "provenance": "Gemini dual-role review plus deterministic score and human review gate"
+    }
+  ],
+  "persona": {
+    "name": "爵士夜行者",
+    "tags": [
+      "音乐策展",
+      "日落电台",
+      "代理社交",
+      "本地优先"
+    ]
+  },
+  "knowledgeBrief": {
+    "date": "2026-07-19",
+    "reviewedCount": 2,
+    "records": [
+      {
+        "topic": "ai",
+        "title": "欧盟前沿 AI 网络安全行动计划",
+        "claim": "欧盟委员会与 ENISA 从政策和技术风险两侧提供相互独立的来源材料。",
+        "why": "Gemini 双角色核验后仍等待人工发布。",
+        "truthScore": 82,
+        "sourceCount": 2,
+        "sourceLabel": "European Commission × ENISA",
+        "verdict": "review_required"
+      },
+      {
+        "topic": "culture",
+        "title": "敖德萨博物馆数字化保护",
+        "claim": "现有两条材料来自同一机构域名，不能构成交叉来源。",
+        "why": "系统强制停在证据不足，等待补充独立来源。",
+        "truthScore": 48,
+        "sourceCount": 1,
+        "sourceLabel": "UNESCO",
+        "verdict": "insufficient"
+      }
+    ]
+  },
+  "signals": {
+    "date": "2026-07-15",
+    "state": "candidate-not-yet-verified",
+    "requestReceipts": false,
+    "sourceSignalCount": 37,
+    "displayedSignalCount": 16,
+    "topics": {
+      "ai": {
+        "label": "人工智能",
+        "agent": "AI Frontier Scout · AI 前沿侦察员",
+        "brief": "主要芯片里程碑、中美监管动向及企业 AI 硬件转型占据重要信号。",
+        "requestId": "devshard-28456-580",
+        "signals": [
+          {
+            "importance": 92,
+            "headline": "中国发布首款 4 纳米智驾芯片",
+            "claim": "中国在 2026 年 7 月 15 日或之前发布了其首款 4 纳米自动驾驶芯片。",
+            "why": "若属实，将标志汽车 AI 硬件制程的重要突破，并影响供应链竞争。",
+            "publisher": "财联社"
+          },
+          {
+            "importance": 88,
+            "headline": "美国暗示新的芯片与 AI 监管行动",
+            "claim": "美国商务部在 7 月 14 日当周暗示将对芯片和人工智能采取新的监管行动。",
+            "why": "出口管制与补贴信号会影响半导体供应链、晶圆厂计划和模型部署成本。",
+            "publisher": "Crypto Briefing"
+          }
+        ]
+      },
+      "technology": {
+        "label": "科技",
+        "agent": "Technology Scout · 科技侦察员",
+        "brief": "跨行业资本流动与区域深科技中心是本期值得继续核验的技术信号。",
+        "requestId": "devshard-28546-614",
+        "signals": [
+          {
+            "importance": 85,
+            "headline": "广汽资本战略投资星河动力",
+            "claim": "广汽资本对商业航天公司星河动力进行了战略投资。",
+            "why": "车企资本进入商业发射领域，显示跨行业技术与资本流动。",
+            "publisher": "core.dpangzi.com"
+          },
+          {
+            "importance": 78,
+            "headline": "印度城市成为深科技创新中心",
+            "claim": "印度多个城市正在成为深科技创新的中心。",
+            "why": "若属实，深科技研发与风险投资正在从传统中心向外转移。",
+            "publisher": "Analytics Insight"
+          }
+        ]
+      },
+      "finance": {
+        "label": "金融",
+        "agent": "Markets Scout · 金融侦察员",
+        "brief": "央行政策、机构代币化试点与市场数字化构成本期金融信号。",
+        "requestId": "devshard-28546-635",
+        "signals": [
+          {
+            "importance": 92,
+            "headline": "央行释放资本市场稳定工具信号",
+            "claim": "中国人民银行行长表示将会同证监会实施支持资本市场的结构性货币政策工具。",
+            "why": "主要监管者描述市场稳定机制，会影响资本流动和投资者预期。",
+            "publisher": "每日经济新闻"
+          },
+          {
+            "importance": 86,
+            "headline": "机构计划试点代币化回购交易",
+            "claim": "多家大型机构宣布计划于 2027 年联合开展代币化回购试点。",
+            "why": "若正式测试，可能影响短期融资基础设施与代币化证券发展。",
+            "publisher": "The Global Treasurer"
+          }
+        ]
+      },
+      "climate": {
+        "label": "气候与能源",
+        "agent": "Climate Scout · 气候侦察员",
+        "brief": "电气化政策、太阳能部署与极端高温构成本期气候信号。",
+        "requestId": "devshard-28564-609",
+        "signals": [
+          {
+            "importance": 92,
+            "headline": "欧盟电气化计划草案提前泄露",
+            "claim": "2026 年 7 月，一份欧盟电气化计划草案在正式发布前被泄露。",
+            "why": "政策草案可能影响能源市场、电网投资时间表与国际气候谈判。",
+            "publisher": "Carbon Brief"
+          },
+          {
+            "importance": 85,
+            "headline": "孟加拉国启用 68 兆瓦太阳能公园",
+            "claim": "孟加拉国于 2026 年 7 月启用一座 68 兆瓦太阳能公园。",
+            "why": "大型可再生能源部署反映新兴经济体的能源转型与电网扩张。",
+            "publisher": "The Climate Watch"
+          }
+        ]
+      },
+      "science": {
+        "label": "科学",
+        "agent": "Science Scout · 科学侦察员",
+        "brief": "太空医学、基础物理模拟与人工智能药物发现是本期科学线索。",
+        "requestId": "devshard-28546-639",
+        "signals": [
+          {
+            "importance": 88,
+            "headline": "平民乘组在太空拍摄诊断用 X 光片",
+            "claim": "一支平民乘组在太空中获取了首批诊断用 X 光片。",
+            "why": "若属实，可能影响未来轨道与月球任务的远程医疗能力。",
+            "publisher": "Chosunbiz"
+          },
+          {
+            "importance": 85,
+            "headline": "模拟系统报告时间涌现现象",
+            "claim": "物理学家报告创建了无需外部时钟即可涌现出时间的物理系统。",
+            "why": "该说法触及时间本质，若研究经得起检验会推动更多理论与实验工作。",
+            "publisher": "ScienceDaily"
+          }
+        ]
+      },
+      "health": {
+        "label": "健康与生命",
+        "agent": "Life Science Scout · 生命科学侦察员",
+        "brief": "国家健康规划与公共卫生项目资金是本期健康领域重点。",
+        "requestId": "devshard-28456-675",
+        "signals": [
+          {
+            "importance": 92,
+            "headline": "国务院印发国民健康十五五规划",
+            "claim": "中国国务院于 2026 年 7 月 13 日前后印发国民健康十五五规划。",
+            "why": "国家级规划会影响医疗基础设施、资金优先级和公共卫生目标。",
+            "publisher": "大河财立方"
+          },
+          {
+            "importance": 85,
+            "headline": "美国反烟草项目经费削减受审视",
+            "claim": "一篇新文章审视了美国联邦反烟草项目经费的削减情况。",
+            "why": "控烟资金水平会直接影响预防行动与公共卫生结果。",
+            "publisher": "Petrie-Flom Center"
+          }
+        ]
+      },
+      "culture": {
+        "label": "城市与文化",
+        "agent": "Culture Cartographer · 文化地图师",
+        "brief": "濒危遗产、世界遗产保护与城市文化更新构成本期线索。",
+        "requestId": "devshard-28456-679",
+        "signals": [
+          {
+            "importance": 86,
+            "headline": "达卡历史遗产在城市发展中消失",
+            "claim": "随着城市发展，达卡的历史建筑正在消失或被拆除。",
+            "why": "快速城市化会影响文化遗产、居民记忆与城市规划。",
+            "publisher": "The Financial Express"
+          },
+          {
+            "importance": 82,
+            "headline": "西夏陵启动文化遗产保护活动",
+            "claim": "西夏陵世界文化遗产保护与价值阐释系列活动已经启幕。",
+            "why": "活动体现重要历史遗迹的保护与公共价值阐释方式。",
+            "publisher": "手机网易网"
+          }
+        ]
+      },
+      "policy": {
+        "label": "政策与社会",
+        "agent": "Public Interest Scout · 公共利益侦察员",
+        "brief": "反制裁工具、体育监管裁决与网络安全规则构成本期政策信号。",
+        "requestId": "devshard-28456-681",
+        "signals": [
+          {
+            "importance": 88,
+            "headline": "中国扩大反制裁工具",
+            "claim": "中国以扩大反制裁法律工具的方式，提高了在华外国企业的合规风险。",
+            "why": "反制裁法律变化会影响跨国公司、供应链和国际贸易执法。",
+            "publisher": "Al Jazeera"
+          },
+          {
+            "importance": 84,
+            "headline": "欧盟最高法院裁定足球经纪人规则",
+            "claim": "欧洲联盟法院裁定德国足协有关足球经纪人的规定符合欧盟法律。",
+            "why": "裁决可能为体育管理机构监管费用与劳动力市场提供先例。",
+            "publisher": "Reuters"
+          }
+        ]
+      }
+    }
+  },
+  "verification": {
+    "stages": [
+      "主张受理",
+      "证据侦察",
+      "Gemini 调查方",
+      "Gemini 质疑方",
+      "确定性裁决",
+      "人工发布闸门"
+    ],
+    "policy": "candidate signals are never relabeled as verified; only source-bound, dual-reviewed records enter a local Merkle edition"
+  },
+  "hardwareBridge": {
+    "eventKinds": [
+      "music_now_playing",
+      "public_knowledge_brief",
+      "pocket_podcast"
+    ],
+    "deviceOutputs": [
+      "Whisplay 240×280",
+      "RGB LED",
+      "user-triggered local TTS",
+      "phone mirror"
+    ]
+  },
+  "generatedAt": "2026-07-19T05:56:23.073Z"
+}

@@ -1,0 +1,40 @@
+{
+  "protocol": "pocket-data/v1",
+  "identity": {
+    "id": "earth.pocket.demo.music",
+    "name": "Pocket Earth 世界音乐库",
+    "version": "1.0.0",
+    "author": "Pocket Earth",
+    "description": "与音乐 Skill 解耦的城市电台、曲目、播客和播放引用数据包"
+  },
+  "schema": {
+    "name": "pocket.music/v1",
+    "version": "1.0.0",
+    "record_count": 96
+  },
+  "compatibility": {
+    "skills": [
+      "pocket.music"
+    ],
+    "runtime_min": "1.0.0"
+  },
+  "privacy": "public",
+  "provenance": {
+    "source": "User-authorized Pocket Earth city radio library normalized into pocket.music/v1; audio remains remotely hosted and is referenced, not embedded",
+    "license": "competition-demonstration-only",
+    "generated_at": "2026-08-10T00:00:00.000Z"
+  },
+  "distribution": {
+    "mode": "chunked"
+  },
+  "files": [
+    {
+      "role": "records",
+      "path": "chunks/records-00001.json",
+      "media_type": "application/json",
+      "bytes": 2615373,
+      "sha256": "80edcdc72e1ed0d12185d1f9914f83a5e8155fa341111fdf532826a1f3aaaed9",
+      "records": 96
+    }
+  ]
+}

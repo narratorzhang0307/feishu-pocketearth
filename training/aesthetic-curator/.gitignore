@@ -1,0 +1,31 @@
+# Downloaded upstream repositories and raw datasets
+sources/
+raw/
+normalized/
+contact-sheets/
+staging/
+bundles/
+pai/artifacts/
+.tools/
+.model-cache/
+
+# Model and run artifacts
+runs/**/checkpoints/
+runs/**/*.safetensors
+runs/**/*.bin
+runs/**/*.pt
+runs/**/*.onnx
+runs/**/*.mnn
+
+# Private evaluation images never enter Git
+eval/private/
+
+# Keep auditable metadata and placeholders
+!sources/.gitkeep
+!raw/.gitkeep
+!normalized/.gitkeep
+!contact-sheets/.gitkeep
+!staging/.gitkeep
+!bundles/.gitkeep
+!pai/artifacts/.gitkeep
+!eval/private/.gitkeep

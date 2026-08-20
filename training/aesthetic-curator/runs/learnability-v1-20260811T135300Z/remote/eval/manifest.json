@@ -1,0 +1,424 @@
+{
+  "canonicalPairs": 16,
+  "rows": 32,
+  "pairsPerSource": 8,
+  "positionSwap": true,
+  "samples": [
+    {
+      "index": 0,
+      "pairId": "aadb-clip-dc0c901843f2f3f42e7b",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "color_harmony",
+      "images": [
+        "images/aadb/farm1_278_20098134739_c460a51180_b.jpg",
+        "images/aadb/farm1_343_20097577290_fd6e3d5746_b.jpg"
+      ]
+    },
+    {
+      "index": 1,
+      "pairId": "aadb-clip-dc0c901843f2f3f42e7b",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "color_harmony",
+      "images": [
+        "images/aadb/farm1_343_20097577290_fd6e3d5746_b.jpg",
+        "images/aadb/farm1_278_20098134739_c460a51180_b.jpg"
+      ]
+    },
+    {
+      "index": 2,
+      "pairId": "tad66k-semantic-c0fa10e320b2773abbf4",
+      "dataset": "TAD66K",
+      "theme": "night",
+      "orientation": "original",
+      "expectedChoice": "A",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/cissalarsson16930668185.jpg",
+        "images/tad66k/cissalarsson15095090117.jpg"
+      ]
+    },
+    {
+      "index": 3,
+      "pairId": "tad66k-semantic-c0fa10e320b2773abbf4",
+      "dataset": "TAD66K",
+      "theme": "night",
+      "orientation": "swapped",
+      "expectedChoice": "B",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/cissalarsson15095090117.jpg",
+        "images/tad66k/cissalarsson16930668185.jpg"
+      ]
+    },
+    {
+      "index": 4,
+      "pairId": "tad66k-semantic-52e11a446684397ce67f",
+      "dataset": "TAD66K",
+      "theme": "sunset",
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/46019178@N0530909582197.jpg",
+        "images/tad66k/46019178@N0530874419463.jpg"
+      ]
+    },
+    {
+      "index": 5,
+      "pairId": "tad66k-semantic-52e11a446684397ce67f",
+      "dataset": "TAD66K",
+      "theme": "sunset",
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/46019178@N0530874419463.jpg",
+        "images/tad66k/46019178@N0530909582197.jpg"
+      ]
+    },
+    {
+      "index": 6,
+      "pairId": "aadb-clip-c7f585c0dd6c1ceb2883",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "content",
+      "images": [
+        "images/aadb/farm1_258_19487151804_ac9bab5f79_b.jpg",
+        "images/aadb/farm1_337_20115434031_5c4f4ccb16_b.jpg"
+      ]
+    },
+    {
+      "index": 7,
+      "pairId": "aadb-clip-c7f585c0dd6c1ceb2883",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "content",
+      "images": [
+        "images/aadb/farm1_337_20115434031_5c4f4ccb16_b.jpg",
+        "images/aadb/farm1_258_19487151804_ac9bab5f79_b.jpg"
+      ]
+    },
+    {
+      "index": 8,
+      "pairId": "aadb-clip-fa655cb586906c6f4de3",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "balancing_elements",
+      "images": [
+        "images/aadb/farm1_302_19521402224_a52429e46f_b.jpg",
+        "images/aadb/farm1_261_19557414733_a18ec63963_b.jpg"
+      ]
+    },
+    {
+      "index": 9,
+      "pairId": "aadb-clip-fa655cb586906c6f4de3",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "balancing_elements",
+      "images": [
+        "images/aadb/farm1_261_19557414733_a18ec63963_b.jpg",
+        "images/aadb/farm1_302_19521402224_a52429e46f_b.jpg"
+      ]
+    },
+    {
+      "index": 10,
+      "pairId": "tad66k-semantic-03be3cde4163f0fae6ae",
+      "dataset": "TAD66K",
+      "theme": "beach",
+      "orientation": "original",
+      "expectedChoice": "A",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/massimo-buccolieri25262507233.jpg",
+        "images/tad66k/massimo-buccolieri25226518484.jpg"
+      ]
+    },
+    {
+      "index": 11,
+      "pairId": "tad66k-semantic-03be3cde4163f0fae6ae",
+      "dataset": "TAD66K",
+      "theme": "beach",
+      "orientation": "swapped",
+      "expectedChoice": "B",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/massimo-buccolieri25226518484.jpg",
+        "images/tad66k/massimo-buccolieri25262507233.jpg"
+      ]
+    },
+    {
+      "index": 12,
+      "pairId": "aadb-clip-7d961483fa9076ad865e",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "original",
+      "expectedChoice": "A",
+      "expectedReasonCode": "motion_blur",
+      "images": [
+        "images/aadb/farm1_350_20092551635_c167080e29_b.jpg",
+        "images/aadb/farm1_277_19534334554_dd05e42bd7_b.jpg"
+      ]
+    },
+    {
+      "index": 13,
+      "pairId": "aadb-clip-7d961483fa9076ad865e",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "swapped",
+      "expectedChoice": "B",
+      "expectedReasonCode": "motion_blur",
+      "images": [
+        "images/aadb/farm1_277_19534334554_dd05e42bd7_b.jpg",
+        "images/aadb/farm1_350_20092551635_c167080e29_b.jpg"
+      ]
+    },
+    {
+      "index": 14,
+      "pairId": "aadb-clip-b711aea857644118e442",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "original",
+      "expectedChoice": "A",
+      "expectedReasonCode": "light",
+      "images": [
+        "images/aadb/farm1_380_20134760372_e36ea66c92_b.jpg",
+        "images/aadb/farm1_325_19568160534_11d3a07134_b.jpg"
+      ]
+    },
+    {
+      "index": 15,
+      "pairId": "aadb-clip-b711aea857644118e442",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "swapped",
+      "expectedChoice": "B",
+      "expectedReasonCode": "light",
+      "images": [
+        "images/aadb/farm1_325_19568160534_11d3a07134_b.jpg",
+        "images/aadb/farm1_380_20134760372_e36ea66c92_b.jpg"
+      ]
+    },
+    {
+      "index": 16,
+      "pairId": "aadb-clip-5e49a237131d3901c070",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "original",
+      "expectedChoice": "A",
+      "expectedReasonCode": "rule_of_thirds",
+      "images": [
+        "images/aadb/farm4_3786_20178385965_4253a74b07_b.jpg",
+        "images/aadb/farm1_419_20144001775_76803f176d_b.jpg"
+      ]
+    },
+    {
+      "index": 17,
+      "pairId": "aadb-clip-5e49a237131d3901c070",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "swapped",
+      "expectedChoice": "B",
+      "expectedReasonCode": "rule_of_thirds",
+      "images": [
+        "images/aadb/farm1_419_20144001775_76803f176d_b.jpg",
+        "images/aadb/farm4_3786_20178385965_4253a74b07_b.jpg"
+      ]
+    },
+    {
+      "index": 18,
+      "pairId": "tad66k-semantic-f3cb28c137838abbb463",
+      "dataset": "TAD66K",
+      "theme": "car",
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/dpsager31034651490.jpg",
+        "images/tad66k/dpsager31259485922.jpg"
+      ]
+    },
+    {
+      "index": 19,
+      "pairId": "tad66k-semantic-f3cb28c137838abbb463",
+      "dataset": "TAD66K",
+      "theme": "car",
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/dpsager31259485922.jpg",
+        "images/tad66k/dpsager31034651490.jpg"
+      ]
+    },
+    {
+      "index": 20,
+      "pairId": "aadb-clip-56eb96ee37bae6ad7bd9",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "depth_of_field",
+      "images": [
+        "images/aadb/farm1_314_20198719652_4e2905f614_b.jpg",
+        "images/aadb/farm1_442_20125316122_0338612275_b.jpg"
+      ]
+    },
+    {
+      "index": 21,
+      "pairId": "aadb-clip-56eb96ee37bae6ad7bd9",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "depth_of_field",
+      "images": [
+        "images/aadb/farm1_442_20125316122_0338612275_b.jpg",
+        "images/aadb/farm1_314_20198719652_4e2905f614_b.jpg"
+      ]
+    },
+    {
+      "index": 22,
+      "pairId": "tad66k-semantic-1d7e4c51b52249d32e7a",
+      "dataset": "TAD66K",
+      "theme": "sun",
+      "orientation": "original",
+      "expectedChoice": "A",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/132833165@N0721801811455.jpg",
+        "images/tad66k/132833165@N0731171649340.jpg"
+      ]
+    },
+    {
+      "index": 23,
+      "pairId": "tad66k-semantic-1d7e4c51b52249d32e7a",
+      "dataset": "TAD66K",
+      "theme": "sun",
+      "orientation": "swapped",
+      "expectedChoice": "B",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/132833165@N0731171649340.jpg",
+        "images/tad66k/132833165@N0721801811455.jpg"
+      ]
+    },
+    {
+      "index": 24,
+      "pairId": "aadb-clip-28372050f0b49039b32d",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "repetition",
+      "images": [
+        "images/aadb/farm1_337_20011200138_b296dca3d8_b.jpg",
+        "images/aadb/farm1_336_20007827069_b40f2c7a8f_b.jpg"
+      ]
+    },
+    {
+      "index": 25,
+      "pairId": "aadb-clip-28372050f0b49039b32d",
+      "dataset": "AADB",
+      "theme": null,
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "repetition",
+      "images": [
+        "images/aadb/farm1_336_20007827069_b40f2c7a8f_b.jpg",
+        "images/aadb/farm1_337_20011200138_b296dca3d8_b.jpg"
+      ]
+    },
+    {
+      "index": 26,
+      "pairId": "tad66k-semantic-808a1d4b126e2927518f",
+      "dataset": "TAD66K",
+      "theme": "bridge",
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/rober1000x5421304405.jpg",
+        "images/tad66k/rober1000x13126366303.jpg"
+      ]
+    },
+    {
+      "index": 27,
+      "pairId": "tad66k-semantic-808a1d4b126e2927518f",
+      "dataset": "TAD66K",
+      "theme": "bridge",
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/rober1000x13126366303.jpg",
+        "images/tad66k/rober1000x5421304405.jpg"
+      ]
+    },
+    {
+      "index": 28,
+      "pairId": "tad66k-semantic-0ffc7a7fad8ab23e5f59",
+      "dataset": "TAD66K",
+      "theme": "moon",
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/yasmine-hens32105224576.jpg",
+        "images/tad66k/yasmine-hens26120960247.jpg"
+      ]
+    },
+    {
+      "index": 29,
+      "pairId": "tad66k-semantic-0ffc7a7fad8ab23e5f59",
+      "dataset": "TAD66K",
+      "theme": "moon",
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/yasmine-hens26120960247.jpg",
+        "images/tad66k/yasmine-hens32105224576.jpg"
+      ]
+    },
+    {
+      "index": 30,
+      "pairId": "tad66k-semantic-3320bba9236394a03c6d",
+      "dataset": "TAD66K",
+      "theme": "portrait",
+      "orientation": "original",
+      "expectedChoice": "B",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/the-maksimov20052591180.jpg",
+        "images/tad66k/the-maksimov20052597060.jpg"
+      ]
+    },
+    {
+      "index": 31,
+      "pairId": "tad66k-semantic-3320bba9236394a03c6d",
+      "dataset": "TAD66K",
+      "theme": "portrait",
+      "orientation": "swapped",
+      "expectedChoice": "A",
+      "expectedReasonCode": "overall_aesthetic",
+      "images": [
+        "images/tad66k/the-maksimov20052597060.jpg",
+        "images/tad66k/the-maksimov20052591180.jpg"
+      ]
+    }
+  ]
+}

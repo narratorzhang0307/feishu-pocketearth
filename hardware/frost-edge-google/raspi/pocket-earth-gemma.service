@@ -1,0 +1,25 @@
+[Unit]
+Description=Pocket Earth local Google Gemma 4 E4B service
+After=local-fs.target
+ConditionPathExists=/opt/pocket-earth-gemma/bin/llama-server
+ConditionPathExists=/var/lib/pocket-earth-gemma/gemma-4-E4B_q4_0-it.gguf
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/var/lib/pocket-earth-gemma
+Environment=LD_LIBRARY_PATH=/opt/pocket-earth-gemma/lib
+ExecStart=/opt/pocket-earth-gemma/bin/llama-server --model /var/lib/pocket-earth-gemma/gemma-4-E4B_q4_0-it.gguf --alias gemma-4-e4b-it --host 127.0.0.1 --port 8787 --ctx-size 2048 --threads 4 --threads-batch 4 --parallel 1 --no-webui
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=240
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/var/lib/pocket-earth-gemma
+
+[Install]
+WantedBy=multi-user.target

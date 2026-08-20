@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T12:53:35.457844+00:00",
+  "modelId": "Xenova/clip-vit-base-patch32",
+  "version": "clip-vit-b32-q8-int8-v1",
+  "topK": 40,
+  "minimumSimilarity": 0.65,
+  "uniqueEdges": 170811,
+  "splits": {
+    "train": {
+      "images": 7959,
+      "directedNeighborHits": 229397,
+      "similarityP05": 0.6576943874359131,
+      "similarityP50": 0.7211336493492126,
+      "similarityP95": 0.8403278708457945,
+      "uniqueUndirectedEdges": 156848
+    },
+    "validation": {
+      "images": 1022,
+      "directedNeighborHits": 12777,
+      "similarityP05": 0.65345299243927,
+      "similarityP50": 0.688274085521698,
+      "similarityP95": 0.784577488899231,
+      "uniqueUndirectedEdges": 7361
+    },
+    "test": {
+      "images": 977,
+      "directedNeighborHits": 11509,
+      "similarityP05": 0.6533758044242859,
+      "similarityP50": 0.689678430557251,
+      "similarityP95": 0.785601818561554,
+      "uniqueUndirectedEdges": 6602
+    }
+  },
+  "rule": "Only semantic-neighbor edges may become AADB training pairs; pHash duplicate groups are excluded."
+}

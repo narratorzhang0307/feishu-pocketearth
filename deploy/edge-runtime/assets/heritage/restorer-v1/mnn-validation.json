@@ -1,0 +1,6 @@
+{
+  "schema": "pocketearth.heritage-restorer-mnn-validation/v1",
+  "pytorch_mnn_max_abs_error": 0.0010900124907493591,
+  "unmasked_max_abs_error": 0.0,
+  "passed": true
+}

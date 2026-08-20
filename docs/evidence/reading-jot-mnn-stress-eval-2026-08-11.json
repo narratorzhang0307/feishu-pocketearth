@@ -1,0 +1,161 @@
+{
+  "schema": "pocket-earth.reading-jot-stress-eval.v1",
+  "createdAt": "2026-08-11T13:06:25.518Z",
+  "syntheticFixture": true,
+  "fixtureLicense": "Pocket Earth original deterministic stress fixtures",
+  "endpoint": "http://127.0.0.1:8000",
+  "runtime": "MNN 3.6.1 / Qwen3-VL-2B-Instruct",
+  "results": [
+    {
+      "caseId": "blur",
+      "label": "模糊 / 降采样",
+      "mode": "underline",
+      "expectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+      "base": {
+        "raw": "{\n  \"text\": \"真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 6159,
+        "backend": "mnn",
+        "text": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "lora": {
+        "raw": "{\n  \"text\": \"真正值得留下的，不是世界替你做出的选择，\\n而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 6532,
+        "backend": "mnn",
+        "text": "真正值得留下的，不是世界替你做出的选择，\n而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "decision": {
+        "selected": "base",
+        "route": "base",
+        "qualityGate": "base-kept",
+        "needsReview": false,
+        "reason": "LoRA 提升 0.00，未达到 0.08 门槛；保留 Base，避免干净书页退化。",
+        "selectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。"
+      }
+    },
+    {
+      "caseId": "glare",
+      "label": "局部反光",
+      "mode": "underline",
+      "expectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+      "base": {
+        "raw": "{\n  \"text\": \"真正值得留下的，不是世界替你做出的选择，\\n而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 6355,
+        "backend": "mnn",
+        "text": "真正值得留下的，不是世界替你做出的选择，\n而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "lora": {
+        "raw": "{\n  \"text\": \"真正值得留下的，不是世界替你做出的选择，\\n而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 6755,
+        "backend": "mnn",
+        "text": "真正值得留下的，不是世界替你做出的选择，\n而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "decision": {
+        "selected": "base",
+        "route": "base",
+        "qualityGate": "base-kept",
+        "needsReview": false,
+        "reason": "LoRA 提升 0.00，未达到 0.08 门槛；保留 Base，避免干净书页退化。",
+        "selectedText": "真正值得留下的，不是世界替你做出的选择，\n而是你愿意再次回看的那一刻。"
+      }
+    },
+    {
+      "caseId": "skew",
+      "label": "斜拍 / 旋转",
+      "mode": "underline",
+      "expectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+      "base": {
+        "raw": "{\n  \"text\": \"真正值得留下的不是世界替你做出的选择，而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 6170,
+        "backend": "mnn",
+        "text": "真正值得留下的不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "lora": {
+        "raw": "{\n  \"text\": \"真正值得留下的不是世界替你做出的选择，而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 10600,
+        "backend": "mnn",
+        "text": "真正值得留下的不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "decision": {
+        "selected": "base",
+        "route": "base",
+        "qualityGate": "base-kept",
+        "needsReview": false,
+        "reason": "LoRA 提升 0.00，未达到 0.08 门槛；保留 Base，避免干净书页退化。",
+        "selectedText": "真正值得留下的不是世界替你做出的选择，而是你愿意再次回看的那一刻。"
+      }
+    },
+    {
+      "caseId": "small-text",
+      "label": "远距离小字",
+      "mode": "underline",
+      "expectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+      "base": {
+        "raw": "{\n  \"text\": \"真正的你了么？不是让你好好地吃这盘，\\n只有懂得事前为后而动的一分。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 9290,
+        "backend": "mnn",
+        "text": "真正的你了么？不是让你好好地吃这盘，\n只有懂得事前为后而动的一分。",
+        "confidence": 0.95,
+        "cer": 0.8064516129032258
+      },
+      "lora": {
+        "raw": "{\n  \"text\": \"...\",\n  \"confidence\": 0.85\n}",
+        "elapsedMs": 8151,
+        "backend": "mnn",
+        "text": "...",
+        "confidence": 0.85,
+        "cer": 1
+      },
+      "decision": {
+        "selected": "base",
+        "route": "base",
+        "qualityGate": "manual-review",
+        "needsReview": true,
+        "reason": "Base 与 LoRA 差异较大且没有明显胜者，请对照选区确认。",
+        "selectedText": "真正的你了么？不是让你好好地吃这盘，\n只有懂得事前为后而动的一分。"
+      }
+    },
+    {
+      "caseId": "low-contrast",
+      "label": "低对比度",
+      "mode": "underline",
+      "expectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+      "base": {
+        "raw": "{\n  \"text\": \"真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 9246,
+        "backend": "mnn",
+        "text": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "lora": {
+        "raw": "{\n  \"text\": \"真正值得留下的，不是世界替你做出的选择，\\n而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 10235,
+        "backend": "mnn",
+        "text": "真正值得留下的，不是世界替你做出的选择，\n而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "decision": {
+        "selected": "base",
+        "route": "base",
+        "qualityGate": "base-kept",
+        "needsReview": false,
+        "reason": "LoRA 提升 0.00，未达到 0.08 门槛；保留 Base，避免干净书页退化。",
+        "selectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。"
+      }
+    }
+  ],
+  "rejudgedAt": "2026-08-11T13:19:27.780Z"
+}

@@ -1,0 +1,46 @@
+{
+  "schema": "shangjiequ.mnn-language-lora/v1",
+  "skill_id": "travel-planner",
+  "training_artifact": {
+    "base_model": "Qwen/Qwen3-VL-2B-Instruct",
+    "base_revision": "ae9985b208c074c10cfbe3a61b5cb7268cdc9c53",
+    "adapter_model_sha256": "64b093e5fc367ef5677b55588e02d39ed1bec20fb2b3039edaf6d097e946635b",
+    "adapter_config_sha256": "8d497678f5462dc467127ebd5319e13b3b63a7d3f0935884e40a21b842e68fe0",
+    "rank": 16,
+    "alpha": 32,
+    "deployment_scale_factor": 0.25,
+    "scope": "language-only"
+  },
+  "deployment_artifact": {
+    "file": "lora.mnn",
+    "sha256": "791a4659ecd86dba2336ca4fdc3a4ee93640bed5b7f92370bfdc3c702450dc13",
+    "size": 72633256,
+    "mapping": {
+      "adapterModules": 196,
+      "matchedModules": 196,
+      "matchedConvolutions": 196,
+      "replacedConsumers": 196,
+      "addedOperations": 588
+    }
+  },
+  "compatibility": {
+    "base_language_sha256": "c2286f60cbd56a82f26bfeac92f6a96e9690889b1939346abfe9e1fae996a8f3",
+    "shared_language_weight_sha256": "1554f9ce71743b56c2d7fba4cb0c2a31c7cddf4f21e1a2ff5a2e85b9a316a29f",
+    "runtime": "MNN",
+    "runtime_version": "3.6.1",
+    "runtime_commit": "d407447ed56c4121a11ccbd266dc184ca1ead0c2",
+    "target": "android-arm64",
+    "acceleration_target": [
+      "arm82",
+      "sme2"
+    ]
+  },
+  "runtime_contract": {
+    "shared_weight_alias": {
+      "source": "llm.mnn.weight",
+      "target": "lora.mnn.weight"
+    },
+    "selection": "create_lora(lora.mnn) on the request-local shared Qwen decoder instance when exposed by the binding",
+    "binding_fallback": "request-local config selects lora.mnn while reusing the identical shared llm.mnn.weight; fail closed on graph/weight hash mismatch"
+  }
+}

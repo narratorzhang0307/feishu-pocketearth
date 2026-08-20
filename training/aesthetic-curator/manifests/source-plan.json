@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-08-11T19:55:38+08:00",
+  "availableDiskGiBAtPlanning": 41.5,
+  "requiredFreeDiskGiB": 15,
+  "learnabilityTargetPairs": {
+    "minimum": 1000,
+    "maximum": 2000
+  },
+  "sources": [
+    {
+      "dataset": "TAD66K",
+      "priority": 1,
+      "upstreamUrl": "https://github.com/woshidandan/TANet-image-aesthetics-and-quality-assessment.git",
+      "plannedUse": "Theme-matched universal aesthetic pairs; 60-70% of Learnability pairs",
+      "downloadPolicy": "Clone official repository and labels first; fetch images only after size check",
+      "revision": "da7aebdb38ea8e2489ecd67e4f2f8a77cc3d23e0",
+      "status": "official_repository_cloned"
+    },
+    {
+      "dataset": "AADB",
+      "priority": 2,
+      "upstreamUrl": "https://github.com/aimerykong/deepImageAestheticsAnalysis.git",
+      "plannedUse": "Aggregate-score and attribute-aware hard pairs; 25-35% of Learnability pairs",
+      "downloadPolicy": "Clone official repository; prefer the small 256x256 image package for Learnability",
+      "revision": "a962a1d8c313cdbec97e51381187ffbaac469b28",
+      "status": "downloaded_hashed_decoded_and_phash_grouped"
+    },
+    {
+      "dataset": "SPAQ",
+      "priority": 3,
+      "upstreamUrl": "https://github.com/h4nwei/SPAQ.git",
+      "plannedUse": "Technical-quality traps and structured quality attributes; 5-10%, never universal-aesthetic gold",
+      "downloadPolicy": "Clone official repository and metadata first; do not fetch full images before size check",
+      "revision": "03e2b1c752b593079afffc2adb6ffff4c76e376e",
+      "status": "official_repository_cloned_annotations_downloaded_and_audited"
+    },
+    {
+      "dataset": "AVA",
+      "priority": 4,
+      "upstreamUrl": "https://github.com/imfing/ava_downloader.git",
+      "plannedUse": "Pilot-only same-challenge hard pairs after Learnability passes",
+      "downloadPolicy": "Do not download during Learnability; prefer OSS or external disk",
+      "revision": null,
+      "status": "deferred"
+    },
+    {
+      "dataset": "PARA",
+      "priority": 5,
+      "upstreamUrl": "https://yuzheyang.github.io/blog/Dataset/PARA.html",
+      "plannedUse": "Personalized-aesthetic methodology validation only",
+      "downloadPolicy": "Defer until personalized evaluation begins",
+      "revision": null,
+      "status": "deferred"
+    }
+  ]
+}

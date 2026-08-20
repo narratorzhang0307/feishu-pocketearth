@@ -1,0 +1,13 @@
+[Unit]
+Description=Pocket Earth verified daily podcast sync
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/home/pi/pocket-earth/frost_pi_podcast_sync.py
+
+[Service]
+Type=oneshot
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/pocket-earth
+EnvironmentFile=-/etc/pocket-earth-edge.env
+ExecStart=/usr/bin/python3 /home/pi/pocket-earth/frost_pi_podcast_sync.py --output /var/lib/pocket-earth-edge/pocket-podcast.json

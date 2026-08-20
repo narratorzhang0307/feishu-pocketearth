@@ -1,0 +1,38 @@
+{
+  "schema": "pocket-skill-restorer/v1",
+  "skillId": "org.pocketearth.heritage-restoration.zh",
+  "training": {
+    "generator": "U-Net",
+    "discriminator": "PatchGAN (training only)",
+    "checkpointSha256": "822f144ae30e619f3a33a2e24c3a86e20a50294f5d9b57fc0d60f4ea06177034"
+  },
+  "deployment": {
+    "file": "heritage-restorer.mnn",
+    "sha256": "c571f66050be527e7e531b9c116a417c4fece0ec4090cdaf5d2497a8c0eb5a87",
+    "size": 15581812,
+    "tileSize": 256,
+    "input": [
+      "damaged[1,3,256,256]",
+      "mask[1,1,256,256]"
+    ],
+    "output": "restored[1,3,256,256]"
+  },
+  "contract": {
+    "unmaskedPixelsImmutable": true,
+    "uncertainCharactersRequireUserConfirmation": true
+  },
+  "runtime": {
+    "name": "MNN",
+    "version": "3.6.1",
+    "target": "android-arm64",
+    "acceleration": [
+      "arm82",
+      "sme2"
+    ]
+  },
+  "provenance": {
+    "paiJobId": "dlc11qc36233nlo7",
+    "paiJobName": "heritage-restoration-mnn-export-v4-fixed-tile",
+    "validation": "mnn-validation.json"
+  }
+}

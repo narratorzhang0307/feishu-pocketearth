@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T12:55:08.179124+00:00",
+  "minimumClipSimilarity": 0.75,
+  "maximumOtherAttributeMAE": 0.35,
+  "minimumScoreGap": 0.1,
+  "minimumTargetAttributeGap": 0.4,
+  "candidateCounts": {
+    "train": {
+      "BalancingElements": 3686,
+      "ColorHarmony": 6875,
+      "Content": 11422,
+      "DoF": 4144,
+      "Light": 8750,
+      "MotionBlur": 489,
+      "Object": 10244,
+      "Repetition": 807,
+      "RuleOfThirds": 4882,
+      "Symmetry": 517,
+      "VividColor": 8520
+    },
+    "validation": {
+      "BalancingElements": 42,
+      "ColorHarmony": 126,
+      "Content": 187,
+      "DoF": 52,
+      "Light": 173,
+      "MotionBlur": 9,
+      "Object": 182,
+      "Repetition": 30,
+      "RuleOfThirds": 117,
+      "Symmetry": 13,
+      "VividColor": 180
+    },
+    "test": {
+      "BalancingElements": 64,
+      "ColorHarmony": 117,
+      "Content": 206,
+      "DoF": 62,
+      "Light": 156,
+      "MotionBlur": 16,
+      "Object": 193,
+      "Repetition": 18,
+      "RuleOfThirds": 85,
+      "Symmetry": 11,
+      "VividColor": 138
+    }
+  },
+  "canonicalPairs": {
+    "train": 400,
+    "validation": 80,
+    "test": 80
+  },
+  "reasonCounts": {
+    "train": {
+      "BalancingElements": 37,
+      "ColorHarmony": 37,
+      "Content": 37,
+      "DoF": 37,
+      "Light": 36,
+      "MotionBlur": 36,
+      "Object": 36,
+      "Repetition": 36,
+      "RuleOfThirds": 36,
+      "Symmetry": 36,
+      "VividColor": 36
+    },
+    "validation": {
+      "BalancingElements": 8,
+      "ColorHarmony": 8,
+      "Content": 8,
+      "DoF": 7,
+      "Light": 7,
+      "MotionBlur": 7,
+      "Object": 7,
+      "Repetition": 7,
+      "RuleOfThirds": 7,
+      "Symmetry": 7,
+      "VividColor": 7
+    },
+    "test": {
+      "BalancingElements": 8,
+      "ColorHarmony": 8,
+      "Content": 8,
+      "DoF": 7,
+      "Light": 7,
+      "MotionBlur": 7,
+      "Object": 7,
+      "Repetition": 7,
+      "RuleOfThirds": 7,
+      "Symmetry": 7,
+      "VividColor": 7
+    }
+  },
+  "preferredPositionCounts": {
+    "train": {
+      "A": 192,
+      "B": 208
+    },
+    "validation": {
+      "A": 45,
+      "B": 35
+    },
+    "test": {
+      "A": 36,
+      "B": 44
+    }
+  },
+  "clipSimilarity": {
+    "train": {
+      "min": 0.828171,
+      "median": 0.913535,
+      "max": 0.972283
+    },
+    "validation": {
+      "min": 0.757026,
+      "median": 0.8389765,
+      "max": 0.950945
+    },
+    "test": {
+      "min": 0.769137,
+      "median": 0.8272269999999999,
+      "max": 0.919254
+    }
+  },
+  "maxCanonicalImageUses": 2,
+  "trainingRowsAfterPositionSwap": 800,
+  "gates": {
+    "allPairsMeetSemanticThreshold": true,
+    "allPairsStayWithinSplit": true,
+    "allPairsCrossDuplicateGroups": true,
+    "allPairsHavePositionSwap": true
+  }
+}

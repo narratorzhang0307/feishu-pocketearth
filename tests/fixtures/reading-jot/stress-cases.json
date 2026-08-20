@@ -1,0 +1,12 @@
+{
+  "license": "Pocket Earth original deterministic stress fixtures",
+  "source": "underline-crop.png",
+  "expectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+  "cases": [
+    { "id": "blur", "label": "模糊 / 降采样", "file": "stress/blur.png" },
+    { "id": "glare", "label": "局部反光", "file": "stress/glare.png" },
+    { "id": "skew", "label": "斜拍 / 旋转", "file": "stress/skew.png" },
+    { "id": "small-text", "label": "远距离小字", "file": "stress/small-text.png" },
+    { "id": "low-contrast", "label": "低对比度", "file": "stress/low-contrast.png" }
+  ]
+}

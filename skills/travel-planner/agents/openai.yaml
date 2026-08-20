@@ -1,0 +1,4 @@
+interface:
+  display_name: "Travel Planner"
+  short_description: "把可替换城市数据、个人约束与端侧Qwen编成可验证并可落图的真实行程"
+  default_prompt: "Use $travel-planner to turn my destination, dates, constraints, and installed city Skills into a source-linked itinerary."

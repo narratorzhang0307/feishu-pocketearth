@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "runKind": "aesthetic-curator-learnability-v1",
+  "model": "Qwen/Qwen3-VL-2B-Instruct",
+  "modelRevision": "ae9985b208c074c10cfbe3a61b5cb7268cdc9c53",
+  "msSwiftRevision": "49efcbfe59e480d4fa9a8bdecdb76c743d0af37d",
+  "resource": "ecs.gn7i-c8g1.2xlarge",
+  "nodes": 1,
+  "jobMaxMinutes": 50,
+  "innerTimeoutMinutes": 48,
+  "pricePerMinuteCny": 0.175,
+  "estimatedMaximumCostCny": 8.75,
+  "absoluteCostCapCny": 50,
+  "training": {
+    "adapterScope": "visual-and-aligner-only",
+    "steps": 160,
+    "effectiveBatchSize": 8,
+    "learningRate": 0.00001,
+    "loraRank": 8,
+    "loraAlpha": 16,
+    "imageMaxTokenNum": 512,
+    "maxLength": 3072
+  },
+  "evaluation": {
+    "canonicalPairs": 16,
+    "rowsAfterPositionSwap": 32,
+    "variants": ["base", "md", "lora"],
+    "primaryMetric": "choiceAccuracy",
+    "positionBiasMetric": "pairSymmetricAccuracy"
+  }
+}

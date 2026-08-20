@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CORSConfiguration>
+  <CORSRule>
+    <AllowedOrigin>http://localhost:3000</AllowedOrigin>
+    <AllowedOrigin>http://localhost:3001</AllowedOrigin>
+    <AllowedOrigin>http://127.0.0.1:3000</AllowedOrigin>
+    <AllowedOrigin>http://localhost:5173</AllowedOrigin>
+    <AllowedOrigin>http://127.0.0.1:5173</AllowedOrigin>
+    <AllowedOrigin>http://43.98.248.74</AllowedOrigin>
+    <AllowedOrigin>http://43.98.248.74:3008</AllowedOrigin>
+    <AllowedOrigin>https://lastnightonearth.throughtheglass.art</AllowedOrigin>
+    <AllowedOrigin>http://lastnightonearth.throughtheglass.art</AllowedOrigin>
+    <AllowedOrigin>https://*.throughtheglass.art</AllowedOrigin>
+    <AllowedMethod>GET</AllowedMethod>
+    <AllowedMethod>POST</AllowedMethod>
+    <AllowedMethod>PUT</AllowedMethod>
+    <AllowedMethod>DELETE</AllowedMethod>
+    <AllowedMethod>HEAD</AllowedMethod>
+    <AllowedHeader>*</AllowedHeader>
+    <ExposeHeader>ETag</ExposeHeader>
+    <ExposeHeader>x-oss-request-id</ExposeHeader>
+    <ExposeHeader>x-oss-version-id</ExposeHeader>
+    <MaxAgeSeconds>600</MaxAgeSeconds>
+  </CORSRule>
+  <ResponseVary>false</ResponseVary>
+</CORSConfiguration>

@@ -1,0 +1,162 @@
+{
+  "schema": "pocket-earth-daily-podcast/v1",
+  "podcastId": "podcast_b4961367aa652503b304",
+  "date": "2026-07-19",
+  "generatedAt": "2026-07-19T05:56:23.073Z",
+  "state": "ready",
+  "modes": [
+    "podcast",
+    "text"
+  ],
+  "title": "2026-07-19 · 口袋播客",
+  "intro": "早上好，这里是 2026-07-19 的口袋播客。今天从 2 个领域各选出一条经过交叉核验的公共知识。",
+  "outro": "以上是 2026-07-19 的口袋播客。完整来源、核验记录与可用的 Merkle 证明保留在文字模式中。",
+  "script": "早上好，这里是 2026-07-19 的口袋播客。今天从 2 个领域各选出一条经过交叉核验的公共知识。\n\n今天的第一站AI。Google 官方提供 Gemini API 的 OpenAI 兼容端点，并在不需要兼容层时推荐直接调用 Gemini API。 Google 官方文档说明了 Gemini 的 OpenAI 兼容 REST 端点、API Key 获取方式和模型调用路径。 这条内容由Google AI for Developers等2个来源共同支持。\n\n接着把视线移到科技。Gemma 3n E2B 面向手机、笔记本和平板等日常设备的高效多模态推理，并可通过选择性参数机制降低有效运行负载。 Google 官方模型概览与运行指南共同说明了 Gemma 3n 的端侧定位、E2B 有效参数机制和 LiteRT-LM 部署路径。 这条内容由Google AI for Developers等2个来源共同支持。\n\n以上是 2026-07-19 的口袋播客。完整来源、核验记录与可用的 Merkle 证明保留在文字模式中。",
+  "segments": [
+    {
+      "id": "pk_ai_20260719",
+      "topic": "ai",
+      "label": "AI",
+      "role": "模型、研究、监管与芯片",
+      "title": "Google 官方提供 Gemini API 的 OpenAI 兼容端点，并在不需要兼容层时推荐直接调用 Gemini API。",
+      "claim": "Google 官方提供 Gemini API 的 OpenAI 兼容端点，并在不需要兼容层时推荐直接调用 Gemini API。",
+      "summary": "Google 官方文档说明了 Gemini 的 OpenAI 兼容 REST 端点、API Key 获取方式和模型调用路径。",
+      "verdict": "supported",
+      "truthScore": 86,
+      "confidence": 82,
+      "recordHash": "0xdcdc96c69934e7d46326b211839fe334d74a2ebd31de5eb968e46456938c8e0c",
+      "sources": [
+        {
+          "title": "OpenAI compatibility — Gemini API",
+          "publisher": "Google AI for Developers",
+          "publishedAt": "2026-06-01",
+          "url": "https://ai.google.dev/gemini-api/docs/openai"
+        },
+        {
+          "title": "API versions explained — Gemini API",
+          "publisher": "Google AI for Developers",
+          "publishedAt": "2026-06-22",
+          "url": "https://ai.google.dev/gemini-api/docs/api-versions"
+        }
+      ],
+      "narration": "今天的第一站AI。Google 官方提供 Gemini API 的 OpenAI 兼容端点，并在不需要兼容层时推荐直接调用 Gemini API。 Google 官方文档说明了 Gemini 的 OpenAI 兼容 REST 端点、API Key 获取方式和模型调用路径。 这条内容由Google AI for Developers等2个来源共同支持。"
+    },
+    {
+      "id": "pk_technology_20260719",
+      "topic": "technology",
+      "label": "科技",
+      "role": "半导体、机器人、网络安全与航天",
+      "title": "Gemma 3n E2B 面向手机、笔记本和平板等日常设备的高效多模态推理，并可通过选择性参数机制降低有效运行负载。",
+      "claim": "Gemma 3n E2B 面向手机、笔记本和平板等日常设备的高效多模态推理，并可通过选择性参数机制降低有效运行负载。",
+      "summary": "Google 官方模型概览与运行指南共同说明了 Gemma 3n 的端侧定位、E2B 有效参数机制和 LiteRT-LM 部署路径。",
+      "verdict": "supported",
+      "truthScore": 86,
+      "confidence": 82,
+      "recordHash": "0xa01fb7905f2e854f75305038ec348f85ce2106afdc8fa821021275a7f578f491",
+      "sources": [
+        {
+          "title": "Gemma 3n model overview",
+          "publisher": "Google AI for Developers",
+          "publishedAt": "2025-11-01",
+          "url": "https://ai.google.dev/gemma/docs/gemma-3n"
+        },
+        {
+          "title": "Run Gemma content generation and inferences",
+          "publisher": "Google AI for Developers",
+          "publishedAt": "2026-07-01",
+          "url": "https://ai.google.dev/gemma/docs/run"
+        }
+      ],
+      "narration": "接着把视线移到科技。Gemma 3n E2B 面向手机、笔记本和平板等日常设备的高效多模态推理，并可通过选择性参数机制降低有效运行负载。 Google 官方模型概览与运行指南共同说明了 Gemma 3n 的端侧定位、E2B 有效参数机制和 LiteRT-LM 部署路径。 这条内容由Google AI for Developers等2个来源共同支持。"
+    }
+  ],
+  "memory": {
+    "hotWindowDays": 7,
+    "readTiers": [
+      "L2-short-term-cache"
+    ],
+    "editionRoots": [
+      "0x921c10870a7441325e5f282fe0eb3f3417028405d5914faeff96757e4b88ef8a"
+    ],
+    "contentRoots": [
+      "0x921c10870a7441325e5f282fe0eb3f3417028405d5914faeff96757e4b88ef8a"
+    ],
+    "policy": "完整新闻草稿保留七天；通过人工复核的记录与本地内容根才进入长期精选层。"
+  },
+  "run": {
+    "schema": "pocket-earth-podcast-agent-run/v1",
+    "agentId": "pocket-podcast.orchestrator.v1",
+    "state": "complete",
+    "events": [
+      {
+        "sequence": 1,
+        "stage": "plan",
+        "status": "complete",
+        "detail": {
+          "requestedTopics": 8,
+          "outputModes": [
+            "podcast",
+            "text"
+          ]
+        }
+      },
+      {
+        "sequence": 2,
+        "stage": "memory-retrieval",
+        "status": "complete",
+        "detail": {
+          "bundles": 8,
+          "memoryTiers": [
+            "L2-short-term-cache"
+          ]
+        }
+      },
+      {
+        "sequence": 3,
+        "stage": "attention-focus",
+        "status": "complete",
+        "detail": {
+          "retained": 2,
+          "rule": "one highest-scoring cross-verified record per topic"
+        }
+      },
+      {
+        "sequence": 4,
+        "stage": "compose",
+        "status": "complete",
+        "detail": {
+          "segments": 2,
+          "claimsAddedByComposer": 0
+        }
+      },
+      {
+        "sequence": 5,
+        "stage": "critic",
+        "status": "complete",
+        "detail": {
+          "rejected": 0,
+          "checks": [
+            "source-count",
+            "truth-score",
+            "claim-preservation"
+          ]
+        }
+      },
+      {
+        "sequence": 6,
+        "stage": "receipt",
+        "status": "complete",
+        "detail": {
+          "podcastId": "podcast_b4961367aa652503b304",
+          "editionRoots": [
+            "0x921c10870a7441325e5f282fe0eb3f3417028405d5914faeff96757e4b88ef8a"
+          ],
+          "contentRoots": [
+            "0x921c10870a7441325e5f282fe0eb3f3417028405d5914faeff96757e4b88ef8a"
+          ],
+          "automaticPublication": false
+        }
+      }
+    ]
+  }
+}

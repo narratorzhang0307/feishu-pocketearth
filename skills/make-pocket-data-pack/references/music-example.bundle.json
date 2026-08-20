@@ -1,0 +1,54 @@
+{
+  "protocol": "pocket-data/v1",
+  "identity": {
+    "id": "earth.pocket.example.music-small",
+    "name": "一城示例音乐库",
+    "version": "1.0.0",
+    "author": "Pocket Earth",
+    "description": "用于验证第三方音乐 Data Pack 导入的最小示例"
+  },
+  "schema": {
+    "name": "pocket.music/v1",
+    "version": "1.0.0",
+    "record_count": 1
+  },
+  "compatibility": {
+    "skills": ["pocket.music"],
+    "runtime_min": "1.0.0"
+  },
+  "privacy": "public",
+  "provenance": {
+    "source": "Pocket Earth protocol example",
+    "license": "CC0-1.0",
+    "generated_at": "2026-08-10T00:00:00.000Z"
+  },
+  "distribution": { "mode": "inline" },
+  "records": [
+    {
+      "id": "music-city:example",
+      "slug": "example",
+      "cityName": "Example City",
+      "cityNameZh": "示例城市",
+      "ianaTz": null,
+      "tzOffset": 8,
+      "station": { "freq": 88.8, "name": "FROST FM" },
+      "cover": "",
+      "lat": null,
+      "lng": null,
+      "description": "",
+      "tracks": [
+        {
+          "id": "music-track:example:001",
+          "title": "示例曲目",
+          "artist": "示例作者",
+          "genre": "其他",
+          "durationSec": null,
+          "playback": { "provider": "youtube", "url": "", "sourceId": "M7lc1UVf-VE", "sourceUrl": "https://www.youtube.com/watch?v=M7lc1UVf-VE" },
+          "introText": "",
+          "introPlayback": { "provider": "none", "url": "" }
+        }
+      ],
+      "podcast": []
+    }
+  ]
+}

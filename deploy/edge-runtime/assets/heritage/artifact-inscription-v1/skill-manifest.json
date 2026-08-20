@@ -1,0 +1,58 @@
+{
+  "schema": "pocketearth.skill/v1",
+  "skillId": "org.pocketearth.artifact-inscription.zh",
+  "version": "1.0.1-transfer-gated",
+  "name": "器物铭文识读",
+  "kind": "qwen-visual-lora-composite",
+  "base": {
+    "repo": "taobao-mnn/Qwen3-VL-2B-Instruct-MNN",
+    "revision": "9e49ec71ded22500a997ed0f9961e1e92b85bbc9",
+    "quantization": "INT4",
+    "shared": true
+  },
+  "adapter": {
+    "mode": "reuse",
+    "runtimeAlias": "rubbing-vision",
+    "skillId": "org.pocketearth.rubbing-vision.zh",
+    "relativeAsset": "../rubbing-v2/visual-lora.mnn",
+    "sha256": "1427fbb08d32607db54796c935d4afde634281990f5dac1be808652e4518858e",
+    "visualOnly": true,
+    "duplicateWeight": false
+  },
+  "runtime": {
+    "engine": "MNN",
+    "version": "3.6.1",
+    "commit": "d407447ed56c4121a11ccbd266dc184ca1ead0c2",
+    "visualLoraPatch": "pocketearth/mnn-3.6.1-multimodal-lora-v2",
+    "target": "android-arm64",
+    "preferredAcceleration": ["arm82", "sme2"]
+  },
+  "inputContract": {
+    "captureRole": "separate_detail_photo",
+    "tightCropRequired": true,
+    "overviewReconstructionFramesAllowed": false,
+    "accepted": ["bronze inscription", "mirror inscription", "pottery mark", "vessel inscription"]
+  },
+  "pipeline": [
+    "detail-photo",
+    "qwen-base-visual-candidate",
+    "rubbing-lora-visual-candidate",
+    "output-only-quality-gate",
+    "human-confirm-on-disagreement",
+    "shared-qwen-language-punctuation-and-explanation",
+    "attach-to-2.5d-hotspot"
+  ],
+  "safety": {
+    "unknownGlyph": "□",
+    "semanticPassMayOverwriteRawTranscription": false,
+    "autoExplainWhenCandidatesConflict": false,
+    "fallback": "base-or-manual"
+  },
+  "evidence": {
+    "benchmark": "../../../../deliverables/heritage-evidence/artifact-inscription/benchmark.json",
+    "rawTransfer": "../../../../deliverables/heritage-evidence/artifact-inscription/results/transfer-eval.json",
+    "historicalTransferAdapterSha256": "db06eb1d7520d64c5bb1e23617e6de8593662ff1966dde2b60cb9bfb1d5a1ab6",
+    "currentRuntimeAdapterSha256": "1427fbb08d32607db54796c935d4afde634281990f5dac1be808652e4518858e",
+    "decision": "current adapter requires a fresh transfer benchmark; Base and LoRA dual candidates plus human confirmation remain mandatory"
+  }
+}

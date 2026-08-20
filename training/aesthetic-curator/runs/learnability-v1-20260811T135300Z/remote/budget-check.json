@@ -1,0 +1,10 @@
+{
+  "allowed": true,
+  "pricePerMinuteCny": 0.175,
+  "jobMaxMinutes": 50,
+  "innerTimeoutMinutes": 48,
+  "nodes": 1,
+  "estimatedMaximumCostCny": 8.75,
+  "absoluteCostCapCny": 50.0,
+  "breakEvenPricePerMinuteCny": 1.0
+}

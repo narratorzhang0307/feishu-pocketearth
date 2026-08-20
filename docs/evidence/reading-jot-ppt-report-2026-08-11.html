@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1440" />
+  <title>Reading Jot · MNN / LoRA Evidence</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #d7d7d7; color: #111; font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    body { width: 1440px; }
+    .slide { position: relative; width: 1440px; height: 810px; overflow: hidden; padding: 54px 64px; background: #f3f2ed; border-bottom: 8px solid #111; }
+    .kicker { color: #168a57; font: 700 18px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 14px 0 8px; font-size: 54px; line-height: 1.05; letter-spacing: -.04em; }
+    h2 { margin: 0; font-size: 38px; line-height: 1.08; }
+    .subtitle { color: #5f5f5f; font-size: 21px; }
+    .rule { height: 4px; margin: 26px 0; background: #111; }
+    .grid { display: grid; gap: 22px; }
+    .two { grid-template-columns: 1.08fr .92fr; }
+    .card { border: 3px solid #111; background: #fff; padding: 22px; box-shadow: 8px 8px 0 #111; }
+    .card.green { background: #e7fff0; }
+    .card.cream { background: #fff9e8; }
+    .card.pink { background: #ffe8ef; }
+    .pill { display: inline-block; padding: 7px 12px; border: 2px solid #111; background: #00ee88; font: 800 14px ui-monospace, monospace; }
+    .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; }
+    .metric { border: 2px solid #111; background: #fff; padding: 15px 12px; text-align: center; }
+    .metric b { display: block; font: 900 29px ui-monospace, monospace; }
+    .metric span { color: #666; font-size: 13px; }
+    .flow { display: grid; grid-template-columns: repeat(5, 1fr); align-items: stretch; gap: 12px; margin-top: 20px; }
+    .flow > div { position: relative; border: 3px solid #111; background: #fff; padding: 18px 14px; min-height: 110px; }
+    .flow > div:not(:last-child)::after { content: "→"; position: absolute; right: -19px; top: 36px; z-index: 2; font-size: 27px; font-weight: 900; }
+    .flow strong { display: block; margin-bottom: 8px; font-size: 17px; }
+    .flow small { color: #666; font-size: 13px; line-height: 1.45; }
+    .fixture { display: block; width: 100%; height: 410px; object-fit: contain; border: 3px solid #111; background: #dedbd1; }
+    .case-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 22px; }
+    .case { border: 3px solid #111; background: #fff; min-height: 480px; overflow: hidden; }
+    .case img { width: 100%; height: 135px; object-fit: contain; background: #e8e6df; border-bottom: 3px solid #111; }
+    .case-body { padding: 14px; }
+    .case h3 { margin: 0 0 10px; font-size: 18px; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .compare > div { border: 2px solid #111; padding: 10px 7px; text-align: center; }
+    .compare b { display: block; font: 800 22px ui-monospace, monospace; }
+    .compare small { color: #666; }
+    .gate { margin-top: 10px; border: 2px solid #111; padding: 8px; font: 800 12px ui-monospace, monospace; text-align: center; }
+    .base { background: #e7fff0; }
+    .lora { background: #ffe5ef; }
+    .review { background: #fff0c9; }
+    .doc-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 23px; }
+    .doc-card { display: grid; grid-template-columns: 305px 1fr; gap: 19px; border: 3px solid #111; background: #fff; padding: 18px; }
+    .doc-card img { width: 305px; height: 390px; object-fit: contain; border: 2px solid #111; background: #e8e6df; }
+    .result-box { border: 2px solid #111; padding: 12px; margin-top: 10px; }
+    .result-box h4 { margin: 0 0 7px; font-size: 16px; }
+    .result-box p { margin: 0; color: #555; font-size: 13px; line-height: 1.45; }
+    .route-note { position: absolute; left: 64px; right: 64px; bottom: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .route-note > div { border: 3px solid #111; padding: 12px 16px; font-size: 17px; font-weight: 800; }
+    .footer { position: absolute; right: 64px; top: 60px; font: 700 15px ui-monospace, monospace; color: #777; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <section class="slide" id="slide-1">
+    <div class="kicker">Pocket Earth · Real MNN Evidence</div>
+    <h1>READING JOT 真链复测</h1>
+    <div class="subtitle">Qwen3-VL-2B · MNN 3.6.1 · general-ocr-vision LoRA · 原文最终由用户确认</div>
+    <div class="footer">2026-08-11 / PPT EVIDENCE 01</div>
+    <div class="rule"></div>
+    <div class="grid two">
+      <div>
+        <div class="card green">
+          <span class="pill">RUNTIME READY</span>
+          <h2 style="margin-top:15px">干净摘录：Base 足够，跳过 LoRA</h2>
+          <div class="metric-row">
+            <div class="metric"><b id="clean-base-ms">—</b><span>Base / ms</span></div>
+            <div class="metric"><b id="clean-lora-ms">—</b><span>LoRA / ms</span></div>
+            <div class="metric"><b id="clean-base-cer">—</b><span>Base CER</span></div>
+            <div class="metric"><b id="clean-lora-cer">—</b><span>LoRA CER</span></div>
+          </div>
+          <p style="font-size:18px;line-height:1.55;margin-bottom:0">两者逐字正确，没有准确率提升空间。质量门保留 Base，正式产品不为干净页多付一次模型推理。</p>
+        </div>
+        <div class="flow">
+          <div><strong>01 画线</strong><small>红线摘一句<br/>双竖线摘一段</small></div>
+          <div><strong>02 本地裁剪</strong><small>原书页不落库<br/>只送选区</small></div>
+          <div><strong>03 Qwen Base</strong><small>默认首路由<br/>先给候选</small></div>
+          <div><strong>04 条件 LoRA</strong><small>仅压力/退化时<br/>进入双候选</small></div>
+          <div><strong>05 用户编辑</strong><small>文字可修改<br/>IndexedDB 保存</small></div>
+        </div>
+      </div>
+      <div>
+        <img class="fixture" src="/tests/fixtures/reading-jot/reading-jot-page.png" alt="Reading Jot fixed fixture" />
+        <div class="card cream" style="margin-top:16px;box-shadow:none;padding:14px 18px">
+          <b>固定真值：</b>原创中文书页、精确选区、可重复 CER；每次更换基座或 LoRA 都能重新验收。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide-2">
+    <div class="kicker">Controlled Stress Matrix</div>
+    <h1>五类压力样本：不强行宣称 LoRA 胜出</h1>
+    <div class="subtitle">同一句真值，只改变模糊、反光、斜拍、小字和低对比；CER 来自实际 MNN 输出</div>
+    <div class="footer">2026-08-11 / PPT EVIDENCE 02</div>
+    <div class="case-grid" id="stress-cases"></div>
+  </section>
+
+  <section class="slide" id="slide-3">
+    <div class="kicker">Matched Protocol · Frozen Transfer Pair</div>
+    <h1>同一中文停车单：清晰走 Base，压力页才比较 LoRA</h1>
+    <div class="subtitle">相同图片内容、相同 OCR v2 协议、相同 256 token 预算；唯一变量是 Adapter</div>
+    <div class="footer">2026-08-11 / PPT EVIDENCE 03</div>
+    <div class="doc-compare" id="transfer-cases"></div>
+    <div class="route-note">
+      <div class="base">CLEAN → BASE ONLY<br/><small>LoRA 未提升且出现长 □ 尾，质量门保留 Base。</small></div>
+      <div class="lora">STRESS → BASE / LoRA GATE<br/><small>Base 触发 decode 重试并产生长 □ 尾；LoRA 更快、更完整，质量门采纳。</small></div>
+    </div>
+  </section>
+
+  <script>
+    const pct = value => `${(value * 100).toFixed(value ? 1 : 0)}%`;
+    const load = path => fetch(path).then(response => response.json());
+    Promise.all([
+      load('/docs/evidence/reading-jot-mnn-eval-2026-08-11-rerun.json'),
+      load('/docs/evidence/reading-jot-mnn-stress-eval-2026-08-11.json'),
+      load('/docs/evidence/reading-jot-mnn-transfer-matched-protocol-2026-08-11.json'),
+    ]).then(([clean, stress, transfer]) => {
+      const underline = clean.results.find(item => item.mode === 'underline');
+      document.querySelector('#clean-base-ms').textContent = underline.base.elapsedMs;
+      document.querySelector('#clean-lora-ms').textContent = underline.lora.elapsedMs;
+      document.querySelector('#clean-base-cer').textContent = pct(underline.base.cer);
+      document.querySelector('#clean-lora-cer').textContent = pct(underline.lora.cer);
+
+      const stressRoot = document.querySelector('#stress-cases');
+      for (const item of stress.results) {
+        const gateClass = item.decision.needsReview ? 'review' : item.decision.selected === 'lora' ? 'lora' : 'base';
+        stressRoot.insertAdjacentHTML('beforeend', `
+          <article class="case">
+            <img src="/tests/fixtures/reading-jot/stress/${item.caseId}.png" alt="${item.label}" />
+            <div class="case-body">
+              <h3>${item.label}</h3>
+              <div class="compare">
+                <div><small>BASE CER</small><b>${pct(item.base.cer)}</b><small>${item.base.elapsedMs} ms</small></div>
+                <div><small>LORA CER</small><b>${pct(item.lora.cer)}</b><small>${item.lora.elapsedMs} ms</small></div>
+              </div>
+              <div class="gate ${gateClass}">${item.decision.needsReview ? '人工校对' : item.decision.selected === 'lora' ? '采用 LoRA' : '保留 Base'}</div>
+              <p style="font-size:13px;color:#666;line-height:1.45">${item.caseId === 'small-text' ? '双方均失败且强分歧；新版门禁禁止自动采纳。' : '两路输出均正确；没有证据支持强制使用 LoRA。'}</p>
+            </div>
+          </article>`);
+      }
+
+      const transferRoot = document.querySelector('#transfer-cases');
+      for (const item of transfer.results) {
+        const cleanCase = item.caseId === 'parking-clean';
+        transferRoot.insertAdjacentHTML('beforeend', `
+          <article class="doc-card">
+            <img src="/tests/fixtures/reading-jot/transfer/${cleanCase ? 'parking-clean.png' : 'parking-stress.jpg'}" alt="${item.label}" />
+            <div>
+              <span class="pill">${cleanCase ? 'CLEAN' : 'STRESS'}</span>
+              <h2 style="font-size:28px;margin-top:12px">${item.label}</h2>
+              <div class="result-box base"><h4>Qwen Base</h4><p>CER ${pct(item.base.cer)} · ${item.base.elapsedMs} ms · budget ${item.base.decodeBudget}</p></div>
+              <div class="result-box lora"><h4>Base + OCR LoRA</h4><p>CER ${pct(item.lora.cer)} · ${item.lora.elapsedMs} ms · budget ${item.lora.decodeBudget}</p></div>
+              <div class="gate ${item.decision.selected === 'lora' ? 'lora' : 'base'}" style="font-size:15px">QUALITY GATE → ${item.decision.selected === 'lora' ? 'LORA ACCEPTED' : 'BASE KEPT'}</div>
+              <p style="font-size:13px;color:#555;line-height:1.4">${cleanCase ? 'LoRA 出现长未知字符尾，Base 更稳。' : 'Base 需 token 边界重试并出现长未知字符尾；LoRA 一次返回。'}</p>
+            </div>
+          </article>`);
+      }
+      document.body.dataset.ready = 'true';
+    });
+  </script>
+</body>
+</html>

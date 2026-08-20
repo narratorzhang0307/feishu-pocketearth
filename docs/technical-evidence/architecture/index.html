@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pocket Earth · Google AI 架构图</title>
+  <style>
+    :root { --ink:#111; --paper:#f7f5ef; --muted:#656565; --blue:#63d7ff; --green:#7ee39a; --violet:#c6a7ff; --yellow:#ffe36e; --red:#ff887d; }
+    * { box-sizing:border-box; }
+    html, body { margin:0; width:1024px; height:576px; overflow:hidden; }
+    body { font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif; color:var(--ink); background:var(--paper); }
+    .canvas { width:2048px; height:1152px; padding:56px 70px 42px; position:absolute; inset:0 auto auto 0; transform:scale(.5); transform-origin:top left; background-color:var(--paper); background-image:linear-gradient(#1111 1px,transparent 1px),linear-gradient(90deg,#1111 1px,transparent 1px); background-size:32px 32px; }
+    .canvas::before { content:""; position:absolute; inset:22px; border:3px solid #111; pointer-events:none; }
+    header { height:150px; display:flex; align-items:flex-start; justify-content:space-between; }
+    header > div:first-child { flex:1; min-width:0; }
+    h1 { margin:0 0 8px; font-size:68px; line-height:1; letter-spacing:-2px; }
+    .subtitle { margin:0; color:var(--muted); font-size:26px; font-weight:700; }
+    .plate { flex:0 0 220px; margin-left:30px; border:3px solid #111; box-shadow:8px 8px 0 #111; background:#fff; padding:15px 12px; font-size:29px; font-weight:900; text-align:center; white-space:nowrap; }
+    .content { height:842px; display:flex; flex-direction:column; gap:22px; }
+    .band { border:3px solid #111; box-shadow:8px 8px 0 #111; background:#fff; padding:22px 26px; position:relative; }
+    .band-title { display:inline-block; border:3px solid #111; padding:8px 14px; margin:-9px 0 16px; font-size:25px; line-height:1; font-weight:900; background:var(--blue); }
+    .grid { display:grid; gap:20px; }
+    .g2 { grid-template-columns:repeat(2,1fr); }
+    .g3 { grid-template-columns:repeat(3,1fr); }
+    .g4 { grid-template-columns:repeat(4,1fr); }
+    .g5 { grid-template-columns:repeat(5,1fr); }
+    .card { border:3px solid #111; background:#fff; min-height:98px; padding:17px 18px; position:relative; }
+    .card.shadow { box-shadow:6px 6px 0 #111; }
+    .card h2,.card h3 { margin:0 0 8px; line-height:1.1; }
+    .card h2 { font-size:31px; }
+    .card h3 { font-size:26px; }
+    .card p { margin:3px 0; font-size:20px; line-height:1.3; color:#333; font-weight:650; }
+    .card small { font-size:17px; color:#555; font-weight:700; }
+    .num { position:absolute; right:10px; top:8px; font-size:42px; font-weight:1000; color:#1112; }
+    .accent-blue { background:#eafbff; }
+    .accent-green { background:#edfff2; }
+    .accent-violet { background:#f5efff; }
+    .accent-yellow { background:#fffbea; }
+    .accent-red { background:#fff0ee; }
+    .arrow-row { display:flex; align-items:center; justify-content:center; height:18px; font-size:40px; font-weight:900; }
+    .arrow-row span { background:var(--yellow); border:3px solid #111; padding:0 26px 2px; line-height:.78; }
+    .chips { display:flex; flex-wrap:wrap; gap:9px; margin-top:10px; }
+    .chip { display:inline-block; border:2px solid #111; padding:6px 10px; background:#fff; font-size:17px; font-weight:900; }
+    .chip.google { background:var(--blue); }
+    .chip.edge { background:var(--green); }
+    .chip.human { background:var(--yellow); }
+    .chip.safe { background:var(--violet); }
+    .footer { margin-top:auto; height:54px; border:3px solid #111; background:#111; color:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:20px; font-weight:900; }
+    .footer strong { color:var(--yellow); }
+    .flow { display:grid; grid-template-columns:1fr 64px 1fr 64px 1fr 64px 1fr 64px 1fr; align-items:stretch; gap:0; }
+    .flow .card { min-height:225px; }
+    .arr { display:flex; align-items:center; justify-content:center; font-size:48px; font-weight:900; }
+    .split { display:grid; grid-template-columns:1fr 82px 1fr; gap:0; flex:1; }
+    .plane { border:3px solid #111; box-shadow:8px 8px 0 #111; padding:24px; background:#fff; }
+    .plane.edge { background:#eefff2; }
+    .plane.cloud { background:#edfaff; }
+    .plane h2 { font-size:38px; margin:0 0 9px; }
+    .plane > p { font-size:22px; font-weight:700; margin:0 0 15px; color:#444; }
+    .bridge { display:flex; flex-direction:column; justify-content:center; align-items:center; font-weight:900; font-size:22px; }
+    .bridge .line { width:82px; height:6px; background:#111; position:relative; }
+    .bridge .line::after { content:""; position:absolute; right:-2px; top:-9px; border-left:18px solid #111; border-top:12px solid transparent; border-bottom:12px solid transparent; }
+    .model { border:3px solid #111; background:#fff; padding:14px 16px; margin:10px 0; }
+    .model strong { display:block; font-size:24px; margin-bottom:4px; }
+    .model span { font-size:18px; color:#444; font-weight:700; }
+    .core-badge { display:inline-block; margin-left:10px; border:2px solid #111; background:var(--yellow); padding:4px 9px; font-size:15px; line-height:1; vertical-align:7px; }
+    .transport-note { margin-top:13px; border:2px dashed #888; background:#f8f8f8; color:#777; padding:9px 12px; font-size:15px; line-height:1.25; font-weight:700; }
+    .transport-note strong { color:#555; }
+    .proof { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .proof div { border:2px solid #111; background:#fff; padding:11px; font-size:18px; font-weight:800; }
+    .matrix { display:grid; grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(2,1fr); gap:22px; flex:1; }
+    .matrix .band { padding:22px; }
+    .matrix h2 { font-size:32px; margin:0 0 12px; }
+    .matrix p { font-size:20px; line-height:1.35; margin:6px 0; font-weight:650; }
+    #C .flow { flex:1; }
+    #C .flow .card { min-height:0; }
+    #D h1 { font-size:64px; }
+    .stamp { position:absolute; right:28px; bottom:22px; transform:rotate(-4deg); border:4px solid #111; background:var(--yellow); padding:9px 16px; font-size:22px; font-weight:1000; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <main id="A" class="canvas hidden">
+    <header><div><h1>frost-agent · Google-first 多智能体 Harness</h1><p class="subtitle">同一套编排骨架，把意图、推理、边界、记忆与可追踪执行连接起来</p></div><div class="plate">ARCH · A</div></header>
+    <section class="content">
+      <div class="band"><div class="band-title">01 · 用户触点</div><div class="grid g4"><div class="card"><h3>3D 私人地球</h3><p>地图 / 标记 / 文化层</p></div><div class="card"><h3>FrostPanel</h3><p>自然语言入口</p></div><div class="card"><h3>JOT / 相册</h3><p>文字、照片与轨迹</p></div><div class="card"><h3>Agent 工作台</h3><p>可见、可控、可复核</p></div></div></div>
+      <div class="arrow-row"><span>↓</span></div>
+      <div class="band accent-blue"><div class="band-title" style="background:var(--violet)">02 · frost-agent Harness</div><div class="grid g5"><div class="card shadow"><h3>Shell</h3><p>统一请求入口</p></div><div class="card shadow"><h3>Memory</h3><p>只读上下文</p></div><div class="card shadow"><h3>Router</h3><p>规则 → Gemma → Gemini</p></div><div class="card shadow"><h3>Brain</h3><p>结构化推理</p></div><div class="card shadow"><h3>Safety + Trace</h3><p>上传确认、写入校验、降级</p></div></div></div>
+      <div class="arrow-row"><span>↓</span></div>
+      <div class="band"><div class="band-title" style="background:var(--green)">03 · 领域智能体</div><div class="grid g4"><div class="card accent-yellow"><h3>看展搭子</h3><p>识器、双语、跨文化叙事</p></div><div class="card"><h3>足迹 / 相册</h3><p>聚类、回忆与地图</p></div><div class="card"><h3>音乐 / 电影 / 书</h3><p>个人文化内容层</p></div><div class="card"><h3>Council / Forge</h3><p>多视角协作与草拟</p></div></div></div>
+      <div class="footer"><span>所有写入动作：<strong>suggest → user confirm → private earth</strong></span><span>Google AI 是推理核心，不是聊天壳</span></div>
+    </section>
+  </main>
+
+  <main id="B" class="canvas hidden">
+    <header><div><h1>Pocket Earth · Google AI 推理主链</h1><p class="subtitle">Gemma + MediaPipe 本机隐私推理；Gemini 云端复杂理解与生成；Google 技术贯穿核心链路</p></div><div class="plate">GOOGLE · B</div></header>
+    <section class="content">
+      <div class="split">
+        <div class="plane edge"><h2>GOOGLE AI EDGE · 本机 <span class="core-badge">核心技术 01</span></h2><p>照片、文本与路由优先在浏览器本地处理，隐私数据无需离开设备。</p><div class="model"><strong>Gemma 3n E2B IT</strong><span>Google 开放模型 · 端侧多模态理解与选择</span></div><div class="model"><strong>MediaPipe LLM Inference Web</strong><span>Google 端侧运行时 · WASM + WebGPU · 本地模型文件</span></div><div class="grid g2"><div class="card"><h3>classify</h3><p>意图与任务路由</p></div><div class="card"><h3>vision</h3><p>本地看图与提示</p></div><div class="card"><h3>rank</h3><p>候选排序</p></div><div class="card"><h3>text</h3><p>离线生成</p></div></div><div class="chips"><span class="chip edge">无需云端 API 计费</span><span class="chip safe">无 /api/edge 回传</span><span class="chip human">用户主动加载</span></div></div>
+        <div class="bridge"><span style="font-size:46px;line-height:1">→</span><small style="text-align:center;line-height:1.2">复杂任务<br>升级</small></div>
+        <div class="plane cloud"><h2>GOOGLE GEMINI · 云端 <span class="core-badge">核心技术 02</span></h2><p>视觉理解、结构化补全、双语叙事与复杂合议均由 Google Gemini 完成。</p><div class="model"><strong>Gemini 3.1 Pro</strong><span>Council · 高复杂度多视角推理</span></div><div class="model"><strong>Gemini 3.5 Flash</strong><span>叙事 · 双语 · 视觉理解 · 默认任务</span></div><div class="model"><strong>Gemini 3.1 Flash-Lite</strong><span>低延迟意图路由</span></div><div class="chips"><span class="chip google">Gemini-only 白名单</span><span class="chip safe">服务端密钥</span><span class="chip human">二次确认才上传图片</span></div><div class="transport-note"><strong>默认执行路径：</strong>Google Gemini API 官方 OpenAI-compatible 端点。<br><strong>可选备用：</strong>GMI transport，仅在没有官方 key 时启用。</div></div>
+      </div>
+      <div class="band"><div class="proof"><div>✓ 官方 Gemini API 直连优先</div><div>✓ RunTrace 明示 Gemma / Gemini 贡献</div><div>✓ 隐私图片失败不会静默上传</div><div>✓ GMI 仅为显式备用传输</div></div></div>
+      <div class="footer"><span><strong>Google AI 主链：Gemma + MediaPipe → Gemini API</strong></span><span style="font-size:16px;color:#bbb">optional fallback: GMI transport（非核心）</span></div>
+    </section>
+  </main>
+
+  <main id="C" class="canvas hidden">
+    <header><div><h1>看展搭子 · 跨文化理解闭环</h1><p class="subtitle">把“识别一个器物”升级为尊重语境、可双语传播、可沉淀到私人地球的文化桥梁</p></div><div class="plate">ARCH · C</div></header>
+    <section class="content">
+      <div class="band accent-yellow"><div class="band-title">最小改动，最大价值</div><div class="chips"><span class="chip edge">端侧优先</span><span class="chip human">用户确认</span><span class="chip google">Gemini 一次调用生成四类内容</span><span class="chip safe">避免刻板印象与无依据断言</span></div></div>
+      <div class="flow">
+        <div class="card shadow accent-green"><span class="num">1</span><h2>拍摄 / 导入</h2><p>展签、器物、个人观察</p><p>Gemma 可先在本地理解</p><div class="chips"><span class="chip edge">private-first</span></div></div><div class="arr">→</div>
+        <div class="card shadow accent-blue"><span class="num">2</span><h2>视觉识别</h2><p>选择图片后再次确认</p><p>同意后才发送给 Gemini Flash</p><div class="chips"><span class="chip human">explicit consent</span></div></div><div class="arr">→</div>
+        <div class="card shadow accent-violet"><span class="num">3</span><h2>结构化文物卡</h2><p>年代、材质、文化、地点</p><p>受控字段 + 置信度贡献</p><div class="chips"><span class="chip safe">evidence-aware</span></div></div><div class="arr">→</div>
+        <div class="card shadow accent-yellow"><span class="num">4</span><h2>文化桥叙事</h2><p>中文策展手记 + English guide</p><p>时间线 + cultural bridge</p><div class="chips"><span class="chip google">one Gemini call</span></div></div><div class="arr">→</div>
+        <div class="card shadow accent-red"><span class="num">5</span><h2>私人地球</h2><p>用户确认后写入博物馆坐标</p><p>形成可回访的文化记忆层</p><div class="chips"><span class="chip human">human-in-loop</span></div></div>
+      </div>
+      <div class="band"><div class="grid g3"><div class="card"><h3>不是翻译，而是互相解释</h3><p>英文内容从不同文化背景的理解门槛出发，不直译中文展签。</p></div><div class="card"><h3>不是替代策展人</h3><p>不确定性可见；避免把文化、年代与族群简化成刻板标签。</p></div><div class="card"><h3>不是一次性回答</h3><p>结果沉淀为个人地图资产，让旅行、学习与记忆长期连接。</p></div></div></div>
+      <div class="footer"><span>比赛价值：<strong>Cross-cultural empathy × Tech for Good</strong></span><span>从模型输出到可持续个人文化资产</span></div>
+    </section>
+  </main>
+
+  <main id="D" class="canvas hidden">
+    <header><div><h1>可信执行 · 审核可验证证据</h1><p class="subtitle">每一个 Google AI 声明，都能回到实现、界面、轨迹或测试；没有“写在图里但代码不存在”的技术</p></div><div class="plate">ARCH · D</div></header>
+    <section class="content">
+      <div class="matrix">
+        <div class="band accent-blue"><h2>① 技术深度 · Google AI 25%</h2><p>Gemini Pro / Flash / Flash-Lite 按任务分工，而非单一聊天包装。</p><p>Gemma 3n + MediaPipe 在浏览器端形成第二条真实 Google 推理路径。</p><div class="chips"><span class="chip google">model allowlist</span><span class="chip edge">edge inference</span></div></div>
+        <div class="band accent-green"><h2>② 可靠性 · Harness</h2><p>规则路由 → Gemma → Gemini，按成本、隐私与能力逐层选择。</p><p>明显隐私输入不静默升级云端；RunTrace 标出显式降级。</p><div class="chips"><span class="chip safe">privacy cloud guard</span><span class="chip google">provider metadata</span></div></div>
+        <div class="band accent-yellow"><h2>③ 人类主导 · Safety</h2><p>云端图片上传前确认；所有地图写入均为建议，必须由用户确认。</p><p>本地模型由用户主动启用；API 密钥只留在服务端。</p><div class="chips"><span class="chip human">suggest → confirm</span><span class="chip safe">privacy boundary</span></div></div>
+        <div class="band accent-violet"><h2>④ 可交付 · Evidence</h2><p>全量测试覆盖官方 API 适配、路由隐私闸、Gemma 与跨文化输出。</p><p>生产构建、类型检查、界面证据与 provider 元数据形成闭环。</p><div class="chips"><span class="chip edge">typecheck</span><span class="chip google">build</span><span class="chip human">visual QA</span></div><span class="stamp">REVIEW READY</span></div>
+      </div>
+      <div class="band"><div class="band-title" style="background:var(--red)">迁移边界写清楚</div><div class="grid g3"><div class="card"><h3>当前</h3><p>MediaPipe Tasks GenAI Web 实现用户指定的端侧路线。</p></div><div class="card"><h3>现实</h3><p>官方已将该 Web API 标为 maintenance only。</p></div><div class="card"><h3>后续</h3><p>GemmaEdge 接口隔离，未来可换 LiteRT-LM JS 而不动业务层。</p></div></div></div>
+      <div class="footer"><span><strong>Truthful architecture is the demo.</strong></span><span>code → UI → trace → tests → review package</span></div>
+    </section>
+  </main>
+  <script>
+    const key = new URLSearchParams(location.search).get('id') || 'A';
+    const selected = document.getElementById(key.toUpperCase()) || document.getElementById('A');
+    selected.classList.remove('hidden');
+  </script>
+</body>
+</html>

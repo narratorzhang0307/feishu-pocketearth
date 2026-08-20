@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "jobId": "dlcjz4xl668a09b3",
+  "runId": "learnability-v1-20260811T135300Z",
+  "evaluation": {
+    "canonicalPairs": 16,
+    "rows": 32,
+    "positionSwap": true
+  },
+  "variants": {
+    "base": {
+      "choiceCorrect": 18,
+      "choiceAccuracy": 0.5625,
+      "pairSymmetricCorrect": 7,
+      "pairSymmetricAccuracy": 0.4375,
+      "validJson": 10,
+      "exactChoiceReasonKeys": 10,
+      "allowedReasonCode": 0,
+      "malformedJson": 22
+    },
+    "md": {
+      "choiceCorrect": 19,
+      "choiceAccuracy": 0.59375,
+      "pairSymmetricCorrect": 6,
+      "pairSymmetricAccuracy": 0.375,
+      "validJson": 9,
+      "exactChoiceReasonKeys": 7,
+      "allowedReasonCode": 0,
+      "malformedJson": 23
+    },
+    "lora": {
+      "choiceCorrect": 19,
+      "choiceAccuracy": 0.59375,
+      "pairSymmetricCorrect": 7,
+      "pairSymmetricAccuracy": 0.4375,
+      "validJson": 13,
+      "exactChoiceReasonKeys": 12,
+      "allowedReasonCode": 0,
+      "malformedJson": 19
+    }
+  },
+  "comparisons": {
+    "loraVsBaseRows": {
+      "bothCorrect": 18,
+      "loraOnly": 1,
+      "baseOnly": 0,
+      "bothWrong": 13
+    },
+    "loraVsMdRows": {
+      "bothCorrect": 18,
+      "loraOnly": 1,
+      "mdOnly": 1,
+      "bothWrong": 12
+    }
+  },
+  "promotionGatePassed": false,
+  "notes": [
+    "The remote evaluator's strictJson metric accepts any string reasonCode; this audit additionally requires membership in the frozen reason-code enumeration.",
+    "All three variants produced zero frozen-enumeration reason codes.",
+    "This engineering probe is too small for significance claims."
+  ]
+}

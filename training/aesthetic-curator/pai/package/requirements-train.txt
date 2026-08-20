@@ -1,0 +1,8 @@
+# Exact framework snapshot proven by successful workspace job dlc10fo3yi8efyx7.
+git+https://github.com/modelscope/ms-swift.git@49efcbfe59e480d4fa9a8bdecdb76c743d0af37d
+transformers==5.14.1
+qwen-vl-utils==0.0.14
+huggingface-hub==1.26.0
+alibabacloud-credentials==1.0.10
+oss2==2.19.1
+pyarrow==21.0.0

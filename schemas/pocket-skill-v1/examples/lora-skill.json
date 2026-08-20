@@ -1,0 +1,28 @@
+{
+  "protocol": "pocket-skill/v1",
+  "identity": {
+    "id": "example.rubbing-reader",
+    "name": "碑拓识读",
+    "version": "1.0.0",
+    "author": "Example Author",
+    "description": "在指定 Qwen/MNN 基座上加载碑拓视觉 LoRA。"
+  },
+  "kind": "lora",
+  "entry": { "target": "agent-forge", "adapter": "rubbing-vision-lora" },
+  "runtime": {
+    "execution": "mnn", "runtime_min": "1.0.0", "platforms": ["android-arm64"],
+    "base": { "id": "qwen3-vl-2b-mnn-int8", "revision": "example", "sha256": "0000000000000000000000000000000000000000000000000000000000000000" }
+  },
+  "permissions": { "scopes": ["photos"], "tools": ["vision"], "network_hosts": [] },
+  "data": { "schemas": [] },
+  "quality_gate": { "policy_id": "pocket.mnn-adapter-gate/v1", "checks": ["Base revision 与 Adapter SHA256 一致", "低置信度转人工确认"] },
+  "fallback": { "order": ["adapter", "base", "rules", "user-confirmation", "stop"] },
+  "evaluation": { "suite": "example-rubbing-reader-v1", "passed": true, "score": 0.92, "threshold": 0.9, "tested_at": "2026-08-11T00:00:00+08:00" },
+  "distribution": { "channel": "oss", "manifest_url": "https://oss.example.cn/skills/example.rubbing-reader/1.0.0/manifest.json", "uninstall_policy": "remove-skill-assets-keep-private-data" },
+  "assets": [{
+    "id": "rubbing-vision-lora", "role": "adapter", "media_type": "application/octet-stream", "bytes": 1024,
+    "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "url": "https://oss.example.cn/skills/example.rubbing-reader/1.0.0/assets/1111111111111111111111111111111111111111111111111111111111111111"
+  }],
+  "provenance": { "source": "example training run", "license": "private-use", "released_at": "2026-08-11T00:00:00+08:00" }
+}

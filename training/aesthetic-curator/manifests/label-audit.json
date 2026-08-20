@@ -1,0 +1,606 @@
+{
+  "aadb": {
+    "hasAttributeOrRaterLabels": false,
+    "path": "training/aesthetic-curator/sources/aadb/AADBinfo.mat",
+    "rule": "Use this file only for aggregate aesthetic pairs. Attribute-aware or rater-aware pairs remain blocked until their source labels are acquired and audited.",
+    "scoreMax": 1.0,
+    "scoreMin": 0.0,
+    "testRows": 1000,
+    "testUniqueNames": 1000,
+    "totalRows": 9458,
+    "trainRows": 8458,
+    "trainTestNameOverlap": 0,
+    "trainUniqueNames": 8458,
+    "variables": [
+      "testNameList",
+      "testScore",
+      "trainNameList",
+      "trainScore"
+    ]
+  },
+  "aadbExtracted": {
+    "attributes": [
+      "score",
+      "BalacingElements",
+      "ColorHarmony",
+      "Content",
+      "DoF",
+      "Light",
+      "MotionBlur",
+      "Object",
+      "Repetition",
+      "RuleOfThirds",
+      "Symmetry",
+      "VividColor"
+    ],
+    "hasAttributeLabels": true,
+    "hasRaterIdentifiers": false,
+    "imageCounts": {
+      "original": 9958,
+      "testNewOriginal": 1000,
+      "warp256": 9958
+    },
+    "missingImagesByPhase": {
+      "test": 0,
+      "testNew": 0,
+      "train": 0,
+      "validation": 0
+    },
+    "overlap": {
+      "oldTestTestNew": 873,
+      "trainTestNew": 0,
+      "trainValidation": 0,
+      "validationTestNew": 127
+    },
+    "phases": {
+      "test": {
+        "attributeCount": 12,
+        "rows": 1000,
+        "uniqueImages": 1000,
+        "valueMax": 1.0,
+        "valueMin": -1.0
+      },
+      "testNew": {
+        "attributeCount": 12,
+        "rows": 1000,
+        "uniqueImages": 1000,
+        "valueMax": 1.0,
+        "valueMin": -1.0
+      },
+      "train": {
+        "attributeCount": 12,
+        "rows": 8458,
+        "uniqueImages": 8458,
+        "valueMax": 1.0,
+        "valueMin": -1.0
+      },
+      "validation": {
+        "attributeCount": 12,
+        "rows": 500,
+        "uniqueImages": 500,
+        "valueMax": 1.0,
+        "valueMin": -1.0
+      }
+    },
+    "root": "training/aesthetic-curator/raw/aadb/extracted/AADB",
+    "rule": "Use train/validation/testNew as the audited split. The old test and testNew lists overlap, so they must never be treated as independent sets. Rater-aware pairs remain disabled."
+  },
+  "blockers": [
+    "TAD66K merged labels move 478 images across the upstream split",
+    "Image archives are not yet fully downloaded, hashed and decoded",
+    "The Pocket Earth blind evaluation set is not yet frozen",
+    "pHash near-duplicate groups have not yet been computed"
+  ],
+  "generatedAt": "2026-08-11T12:20:13.592356+00:00",
+  "schemaVersion": 1,
+  "tad66k": {
+    "root": "training/aesthetic-curator/raw/tad66k/labels/labels",
+    "splits": {
+      "test": {
+        "duplicateImageNames": 0,
+        "mergedRows": 14079,
+        "mergedScoreOrMembershipMismatches": 0,
+        "perTheme": {
+          "art": {
+            "rows": 289,
+            "scoreMax": 8.41,
+            "scoreMin": 1.9
+          },
+          "beach": {
+            "rows": 294,
+            "scoreMax": 8.93,
+            "scoreMin": 1.92
+          },
+          "bird": {
+            "rows": 296,
+            "scoreMax": 8.55,
+            "scoreMin": 2.09
+          },
+          "black": {
+            "rows": 296,
+            "scoreMax": 9.04,
+            "scoreMin": 2.46
+          },
+          "blue": {
+            "rows": 292,
+            "scoreMax": 8.94,
+            "scoreMin": 1.76
+          },
+          "bridge": {
+            "rows": 292,
+            "scoreMax": 9.28,
+            "scoreMin": 2.34
+          },
+          "car": {
+            "rows": 295,
+            "scoreMax": 8.55,
+            "scoreMin": 1.73
+          },
+          "cat": {
+            "rows": 291,
+            "scoreMax": 8.29,
+            "scoreMin": 1.84
+          },
+          "city": {
+            "rows": 294,
+            "scoreMax": 9.1,
+            "scoreMin": 2.25
+          },
+          "citysky": {
+            "rows": 250,
+            "scoreMax": 8.48,
+            "scoreMin": 1.75
+          },
+          "clouds": {
+            "rows": 292,
+            "scoreMax": 8.75,
+            "scoreMin": 2.04
+          },
+          "dog": {
+            "rows": 294,
+            "scoreMax": 8.86,
+            "scoreMin": 1.81
+          },
+          "family": {
+            "rows": 279,
+            "scoreMax": 8.93,
+            "scoreMin": 1.98
+          },
+          "flower": {
+            "rows": 294,
+            "scoreMax": 8.02,
+            "scoreMin": 2.17
+          },
+          "food": {
+            "rows": 291,
+            "scoreMax": 7.7,
+            "scoreMin": 1.87
+          },
+          "garden": {
+            "rows": 290,
+            "scoreMax": 8.0,
+            "scoreMin": 2.49
+          },
+          "green": {
+            "rows": 293,
+            "scoreMax": 8.62,
+            "scoreMin": 1.72
+          },
+          "grey": {
+            "rows": 295,
+            "scoreMax": 8.46,
+            "scoreMin": 1.73
+          },
+          "holiday": {
+            "rows": 285,
+            "scoreMax": 8.27,
+            "scoreMin": 1.7
+          },
+          "house": {
+            "rows": 295,
+            "scoreMax": 8.59,
+            "scoreMin": 2.25
+          },
+          "lake": {
+            "rows": 293,
+            "scoreMax": 9.18,
+            "scoreMin": 2.37
+          },
+          "light": {
+            "rows": 293,
+            "scoreMax": 8.56,
+            "scoreMin": 1.39
+          },
+          "macro": {
+            "rows": 292,
+            "scoreMax": 8.28,
+            "scoreMin": 2.08
+          },
+          "moon": {
+            "rows": 285,
+            "scoreMax": 8.23,
+            "scoreMin": 1.6
+          },
+          "music": {
+            "rows": 266,
+            "scoreMax": 8.47,
+            "scoreMin": 1.9
+          },
+          "nature": {
+            "rows": 295,
+            "scoreMax": 8.88,
+            "scoreMin": 2.0
+          },
+          "night": {
+            "rows": 291,
+            "scoreMax": 9.07,
+            "scoreMin": 2.31
+          },
+          "old": {
+            "rows": 290,
+            "scoreMax": 8.72,
+            "scoreMin": 2.41
+          },
+          "orange": {
+            "rows": 292,
+            "scoreMax": 9.04,
+            "scoreMin": 2.23
+          },
+          "park": {
+            "rows": 291,
+            "scoreMax": 8.5,
+            "scoreMin": 2.52
+          },
+          "people": {
+            "rows": 278,
+            "scoreMax": 8.77,
+            "scoreMin": 1.69
+          },
+          "pink": {
+            "rows": 290,
+            "scoreMax": 8.38,
+            "scoreMin": 1.71
+          },
+          "portrait": {
+            "rows": 275,
+            "scoreMax": 8.3,
+            "scoreMin": 2.16
+          },
+          "river": {
+            "rows": 295,
+            "scoreMax": 8.99,
+            "scoreMin": 1.9
+          },
+          "scene": {
+            "rows": 294,
+            "scoreMax": 8.79,
+            "scoreMin": 2.43
+          },
+          "sea": {
+            "rows": 292,
+            "scoreMax": 8.87,
+            "scoreMin": 2.38
+          },
+          "sky": {
+            "rows": 291,
+            "scoreMax": 8.83,
+            "scoreMin": 1.97
+          },
+          "snow": {
+            "rows": 291,
+            "scoreMax": 8.67,
+            "scoreMin": 1.93
+          },
+          "street": {
+            "rows": 292,
+            "scoreMax": 8.31,
+            "scoreMin": 2.52
+          },
+          "summer": {
+            "rows": 271,
+            "scoreMax": 8.47,
+            "scoreMin": 2.02
+          },
+          "sun": {
+            "rows": 293,
+            "scoreMax": 8.56,
+            "scoreMin": 1.79
+          },
+          "sunset": {
+            "rows": 291,
+            "scoreMax": 8.91,
+            "scoreMin": 2.52
+          },
+          "tree": {
+            "rows": 294,
+            "scoreMax": 8.96,
+            "scoreMin": 2.46
+          },
+          "water": {
+            "rows": 292,
+            "scoreMax": 9.0,
+            "scoreMin": 2.48
+          },
+          "white": {
+            "rows": 293,
+            "scoreMax": 8.53,
+            "scoreMin": 1.97
+          },
+          "winter": {
+            "rows": 291,
+            "scoreMax": 8.69,
+            "scoreMin": 1.7
+          },
+          "yellow": {
+            "rows": 293,
+            "scoreMax": 8.31,
+            "scoreMin": 2.05
+          }
+        },
+        "rows": 13601,
+        "scoreMax": 9.28,
+        "scoreMin": 1.39,
+        "themes": 47,
+        "uniqueImages": 13601
+      },
+      "train": {
+        "duplicateImageNames": 0,
+        "mergedRows": 52248,
+        "mergedScoreOrMembershipMismatches": 478,
+        "perTheme": {
+          "art": {
+            "rows": 1142,
+            "scoreMax": 9.46,
+            "scoreMin": 1.64
+          },
+          "beach": {
+            "rows": 1124,
+            "scoreMax": 9.14,
+            "scoreMin": 2.21
+          },
+          "bird": {
+            "rows": 1123,
+            "scoreMax": 8.6,
+            "scoreMin": 2.13
+          },
+          "black": {
+            "rows": 1186,
+            "scoreMax": 9.01,
+            "scoreMin": 2.06
+          },
+          "blue": {
+            "rows": 1121,
+            "scoreMax": 9.09,
+            "scoreMin": 1.48
+          },
+          "bridge": {
+            "rows": 1110,
+            "scoreMax": 8.89,
+            "scoreMin": 2.42
+          },
+          "car": {
+            "rows": 1187,
+            "scoreMax": 8.95,
+            "scoreMin": 1.93
+          },
+          "cat": {
+            "rows": 1108,
+            "scoreMax": 8.53,
+            "scoreMin": 1.76
+          },
+          "city": {
+            "rows": 1121,
+            "scoreMax": 8.75,
+            "scoreMin": 2.12
+          },
+          "citysky": {
+            "rows": 937,
+            "scoreMax": 8.85,
+            "scoreMin": 1.97
+          },
+          "clouds": {
+            "rows": 1135,
+            "scoreMax": 9.04,
+            "scoreMin": 1.79
+          },
+          "dog": {
+            "rows": 1124,
+            "scoreMax": 8.96,
+            "scoreMin": 1.73
+          },
+          "family": {
+            "rows": 1068,
+            "scoreMax": 8.92,
+            "scoreMin": 1.63
+          },
+          "flower": {
+            "rows": 1191,
+            "scoreMax": 8.5,
+            "scoreMin": 2.01
+          },
+          "food": {
+            "rows": 1076,
+            "scoreMax": 8.74,
+            "scoreMin": 1.71
+          },
+          "garden": {
+            "rows": 1109,
+            "scoreMax": 8.57,
+            "scoreMin": 2.12
+          },
+          "green": {
+            "rows": 1120,
+            "scoreMax": 9.28,
+            "scoreMin": 1.55
+          },
+          "grey": {
+            "rows": 1188,
+            "scoreMax": 9.1,
+            "scoreMin": 1.88
+          },
+          "holiday": {
+            "rows": 1095,
+            "scoreMax": 8.72,
+            "scoreMin": 1.65
+          },
+          "house": {
+            "rows": 1111,
+            "scoreMax": 8.73,
+            "scoreMin": 1.82
+          },
+          "lake": {
+            "rows": 1124,
+            "scoreMax": 9.05,
+            "scoreMin": 2.01
+          },
+          "light": {
+            "rows": 1145,
+            "scoreMax": 8.84,
+            "scoreMin": 1.61
+          },
+          "macro": {
+            "rows": 1124,
+            "scoreMax": 9.32,
+            "scoreMin": 2.09
+          },
+          "moon": {
+            "rows": 972,
+            "scoreMax": 8.29,
+            "scoreMin": 1.54
+          },
+          "music": {
+            "rows": 1074,
+            "scoreMax": 8.6,
+            "scoreMin": 1.13
+          },
+          "nature": {
+            "rows": 1140,
+            "scoreMax": 8.93,
+            "scoreMin": 2.0
+          },
+          "night": {
+            "rows": 1093,
+            "scoreMax": 9.37,
+            "scoreMin": 2.19
+          },
+          "old": {
+            "rows": 1138,
+            "scoreMax": 8.95,
+            "scoreMin": 1.88
+          },
+          "orange": {
+            "rows": 1171,
+            "scoreMax": 9.45,
+            "scoreMin": 1.92
+          },
+          "park": {
+            "rows": 1139,
+            "scoreMax": 9.04,
+            "scoreMin": 2.21
+          },
+          "people": {
+            "rows": 1076,
+            "scoreMax": 8.8,
+            "scoreMin": 2.01
+          },
+          "pink": {
+            "rows": 1162,
+            "scoreMax": 8.35,
+            "scoreMin": 1.47
+          },
+          "portrait": {
+            "rows": 1081,
+            "scoreMax": 8.69,
+            "scoreMin": 1.65
+          },
+          "river": {
+            "rows": 1137,
+            "scoreMax": 8.75,
+            "scoreMin": 2.5
+          },
+          "scene": {
+            "rows": 1155,
+            "scoreMax": 9.1,
+            "scoreMin": 1.88
+          },
+          "sea": {
+            "rows": 1134,
+            "scoreMax": 9.05,
+            "scoreMin": 1.58
+          },
+          "sky": {
+            "rows": 1128,
+            "scoreMax": 8.91,
+            "scoreMin": 1.71
+          },
+          "snow": {
+            "rows": 1120,
+            "scoreMax": 8.87,
+            "scoreMin": 2.0
+          },
+          "street": {
+            "rows": 1174,
+            "scoreMax": 8.89,
+            "scoreMin": 2.3
+          },
+          "summer": {
+            "rows": 1097,
+            "scoreMax": 9.04,
+            "scoreMin": 1.75
+          },
+          "sun": {
+            "rows": 1124,
+            "scoreMax": 9.11,
+            "scoreMin": 1.62
+          },
+          "sunset": {
+            "rows": 1084,
+            "scoreMax": 8.97,
+            "scoreMin": 1.74
+          },
+          "tree": {
+            "rows": 1196,
+            "scoreMax": 8.96,
+            "scoreMin": 2.0
+          },
+          "water": {
+            "rows": 1158,
+            "scoreMax": 9.3,
+            "scoreMin": 2.17
+          },
+          "white": {
+            "rows": 1133,
+            "scoreMax": 8.77,
+            "scoreMin": 2.11
+          },
+          "winter": {
+            "rows": 1161,
+            "scoreMax": 8.98,
+            "scoreMin": 1.97
+          },
+          "yellow": {
+            "rows": 1110,
+            "scoreMax": 8.53,
+            "scoreMin": 1.97
+          }
+        },
+        "rows": 52726,
+        "scoreMax": 9.46,
+        "scoreMin": 1.13,
+        "themes": 47,
+        "uniqueImages": 52726
+      }
+    },
+    "unmergedTrainTestOverlap": 0,
+    "upstreamMergeSplitDrift": {
+      "mergedTrainTestOverlap": 0,
+      "rule": "Never use labels/merge as the Pocket Earth split; use theme files and rebuild a grouped split.",
+      "unmergedTrainImagesMovedToMergedTest": 478
+    }
+  },
+  "trainingReady": false,
+  "warnings": [
+    "AADB rater identifiers are unavailable; do not generate rater-aware pairs",
+    "AADB old test and testNew overlap; only the audited train/validation/testNew split may be used"
+  ]
+}

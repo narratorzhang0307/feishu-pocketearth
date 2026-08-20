@@ -1,0 +1,131 @@
+{
+  "schema_version": "pocket-earth.exhibit-2_5d/1.1",
+  "id": "chsd-Ark_HM_217_HI-museum-mnn",
+  "title": "Cultural Heritage Synthetic Depth Dataset 多视图 2.5D · 博物馆抠图 MNN",
+  "representation": "observed-multiview-predicted-depth-cards",
+  "reconstruction_type": "multi_view_2_5d",
+  "source": {
+    "dataset": "Cultural Heritage Synthetic Depth Dataset",
+    "license": "CC-BY-NC-SA-4.0",
+    "object_id": "chsd-Ark_HM_217_HI",
+    "input": "RGB only"
+  },
+  "coverage": {
+    "yaw": [
+      1,
+      61,
+      121,
+      181,
+      241,
+      301
+    ],
+    "back_missing": false,
+    "observed_views": 6
+  },
+  "models": {
+    "matting": "exhibit-matting-v1-fp16",
+    "matting_runtime": "MNN 3.6.1 FP16",
+    "matting_model": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/deliverables/exhibit-matting-mnn-v1/mobile-export/exhibit-matting-fp16.mnn",
+    "matting_elapsed_ms_per_view": [
+      1095.247,
+      1104.741,
+      1076.114,
+      1074.44,
+      1073.368,
+      1078.717
+    ],
+    "depth": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/.runtime/models/huggingface/hub/models--depth-anything--Depth-Anything-V2-Small-hf/snapshots/5426e4f0f36572d16453bbda7a8389317b1bef99",
+    "qwen": "Qwen3-VL-2B-Instruct-MNN (routing/OCR)",
+    "qwen_lora": null
+  },
+  "builder": {
+    "method": "nearest-observed-view + depth-displaced mesh",
+    "glb": {
+      "path": "exhibit.glb",
+      "scope": "observed front depth-card preview",
+      "vertices": 5184,
+      "triangles": 1644
+    }
+  },
+  "quality_boundary": {
+    "unseen_surface_policy": "do_not_invent",
+    "depth_type": "relative",
+    "large_rotation": "switch_to_nearest_observed_view"
+  },
+  "viewer": {
+    "canvas": [
+      640,
+      640
+    ],
+    "parallax_strength": 0.035
+  },
+  "views": [
+    {
+      "id": "view-00-001",
+      "yaw_deg": 1,
+      "observed": true,
+      "color": "views/view-00-001.webp",
+      "alpha": "views/view-00-001-alpha.png",
+      "depth": "views/view-00-001-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/chsd/subset/rgb/Ark_HM_217_HI/0001_0_.png",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-01-061",
+      "yaw_deg": 61,
+      "observed": true,
+      "color": "views/view-01-061.webp",
+      "alpha": "views/view-01-061-alpha.png",
+      "depth": "views/view-01-061-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/chsd/subset/rgb/Ark_HM_217_HI/0061_0_.png",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-02-121",
+      "yaw_deg": 121,
+      "observed": true,
+      "color": "views/view-02-121.webp",
+      "alpha": "views/view-02-121-alpha.png",
+      "depth": "views/view-02-121-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/chsd/subset/rgb/Ark_HM_217_HI/0121_0_.png",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-03-181",
+      "yaw_deg": 181,
+      "observed": true,
+      "color": "views/view-03-181.webp",
+      "alpha": "views/view-03-181-alpha.png",
+      "depth": "views/view-03-181-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/chsd/subset/rgb/Ark_HM_217_HI/0181_0_.png",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-04-241",
+      "yaw_deg": 241,
+      "observed": true,
+      "color": "views/view-04-241.webp",
+      "alpha": "views/view-04-241-alpha.png",
+      "depth": "views/view-04-241-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/chsd/subset/rgb/Ark_HM_217_HI/0241_0_.png",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-05-301",
+      "yaw_deg": 301,
+      "observed": true,
+      "color": "views/view-05-301.webp",
+      "alpha": "views/view-05-301-alpha.png",
+      "depth": "views/view-05-301-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/chsd/subset/rgb/Ark_HM_217_HI/0301_0_.png",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    }
+  ],
+  "elapsed_seconds": 16.367
+}

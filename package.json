@@ -1,0 +1,69 @@
+{
+  "name": "pocket-earth",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run datapack:skill && vite",
+    "build": "npm run datapack:skill && vite build",
+    "build:release": "npm run build && node scripts/release/rewrite-static-asset-urls.mjs --base https://assets-pocketearth.throughtheglass.art/pocket-earth/releases/20260811-final-v3 && node scripts/release/prune-uploaded-static-assets.mjs && node scripts/release/prune-mobile-assets.mjs",
+    "build:mobile": "npm run build:release",
+    "mobile:sync": "npm run build:mobile && cap sync",
+    "mobile:android": "npm run build:mobile && cap sync android && cap open android",
+    "android:debug": "npm run build:mobile && cap sync android && node scripts/android/run-gradle.mjs assembleDebug",
+    "android:assemble-debug": "node scripts/android/run-gradle.mjs assembleDebug",
+    "android:verify-apk": "bash scripts/android/verify-mnn-apk.sh",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "datapack:build": "node scripts/data-packs/build-library.mjs",
+    "datapack:verify": "node scripts/data-packs/verify-library.mjs",
+    "datapack:validate": "node scripts/data-packs/validate-pack.mjs",
+    "datapack:skill": "node scripts/data-packs/build-authoring-skill.mjs",
+    "datapack:cors-check": "node scripts/data-packs/check-oss-cors.mjs",
+    "verify:first-paint": "node scripts/release/verify-first-paint.mjs",
+    "reading-jot:eval": "node scripts/evaluate-reading-jot.mjs",
+    "reading-jot:stress": "python3 scripts/generate-reading-jot-stress-fixtures.py && node scripts/evaluate-reading-jot.mjs --stress",
+    "reading-jot:transfer": "node scripts/evaluate-reading-jot.mjs --transfer"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capgo/capacitor-photo-library": "^8.0.21",
+    "@huggingface/transformers": "^3.8.1",
+    "@mkkellogg/gaussian-splats-3d": "^0.4.7",
+    "@mlc-ai/web-llm": "^0.2.84",
+    "clsx": "2.1.1",
+    "exifr": "^7.1.3",
+    "fflate": "^0.8.3",
+    "jszip": "^3.10.1",
+    "lucide-react": "0.487.0",
+    "mapbox-gl": "^3.24.0",
+    "motion": "12.23.24",
+    "pdfjs-dist": "^4.8.69",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tailwind-merge": "3.2.0",
+    "three": "^0.185.1",
+    "tw-animate-css": "1.3.8"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
+    "@tailwindcss/vite": "4.1.12",
+    "@types/node": "^22.20.0",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.7.0",
+    "sharp": "^0.34.5",
+    "tailwindcss": "4.1.12",
+    "typescript": "5.6.3",
+    "vite": "6.3.5",
+    "vitest": "^4.1.9"
+  },
+  "overrides": {
+    "tar": "7.5.22"
+  }
+}

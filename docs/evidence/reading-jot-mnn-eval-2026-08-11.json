@@ -1,0 +1,66 @@
+{
+  "schema": "pocket-earth.reading-jot-eval.v1",
+  "createdAt": "2026-08-11T12:47:46.322Z",
+  "syntheticFixture": true,
+  "fixtureLicense": "Pocket Earth original test fixture",
+  "endpoint": "http://127.0.0.1:8000",
+  "runtime": "MNN 3.6.1 / Qwen3-VL-2B-Instruct",
+  "results": [
+    {
+      "mode": "underline",
+      "expectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+      "base": {
+        "raw": "{\n  \"text\": \"真正值得留下的，不是世界替你做出的选择，\\n而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 7341,
+        "backend": "mnn",
+        "text": "真正值得留下的，不是世界替你做出的选择，\n而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "lora": {
+        "raw": "{\n  \"text\": \"真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 5933,
+        "backend": "mnn",
+        "text": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "decision": {
+        "selected": "base",
+        "route": "base",
+        "qualityGate": "base-kept",
+        "needsReview": false,
+        "reason": "LoRA 提升 0.00，未达到 0.08 门槛；保留 Base，避免干净书页退化。",
+        "selectedText": "真正值得留下的，不是世界替你做出的选择，\n而是你愿意再次回看的那一刻。"
+      }
+    },
+    {
+      "mode": "brackets",
+      "expectedText": "旅行的意义不在抵达更多地方，而在于让熟悉的生活重新显出纹理，也让人与地点之间重新发生关系。",
+      "base": {
+        "raw": "{\n  \"text\": \"旅行的意义不在抵达更多地方，\\n而在于让熟悉的生活重新显出纹理，\\n也让人与地点之间重新发生关系。\",\n  \"confidence\": 0.95\n}",
+        "elapsedMs": 6192,
+        "backend": "mnn",
+        "text": "旅行的意义不在抵达更多地方，\n而在于让熟悉的生活重新显出纹理，\n也让人与地点之间重新发生关系。",
+        "confidence": 0.95,
+        "cer": 0
+      },
+      "lora": {
+        "raw": "{\n  \"text\": \"旅行的意义不在抵达更多地方，\\n而在于让熟悉的生活重新显出纹理，\\n也让人与地点之间重新发生关系。\",\n  \"confidence\": 0.97\n}",
+        "elapsedMs": 7818,
+        "backend": "mnn",
+        "text": "旅行的意义不在抵达更多地方，\n而在于让熟悉的生活重新显出纹理，\n也让人与地点之间重新发生关系。",
+        "confidence": 0.97,
+        "cer": 0
+      },
+      "decision": {
+        "selected": "base",
+        "route": "base",
+        "qualityGate": "base-kept",
+        "needsReview": false,
+        "reason": "LoRA 提升 0.01，未达到 0.08 门槛；保留 Base，避免干净书页退化。",
+        "selectedText": "旅行的意义不在抵达更多地方，\n而在于让熟悉的生活重新显出纹理，\n也让人与地点之间重新发生关系。"
+      }
+    }
+  ]
+}

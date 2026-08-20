@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T13:15:42.083904+00:00",
+  "records": 76285,
+  "datasets": {
+    "AADB": 9958,
+    "TAD66K": 66327
+  },
+  "phashDistance": 3,
+  "crossDatasetNearDuplicateEdges": 14,
+  "crossDatasetNearDuplicateGroups": 3,
+  "crossDatasetNearDuplicateImages": 17,
+  "crossSplitGroups": 3,
+  "exactSha256Groups": 0,
+  "groups": [
+    {
+      "members": [
+        {
+          "dataset": "AADB",
+          "image": "farm1_357_20021250608_810d2a1714_b.jpg",
+          "split": "train",
+          "sha256": "2ccf397bc296d625becdc3098ba7b497ea757e48e00fe9a1df303d5839124fbd",
+          "phash": "926d6d926d6d9292"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "130155032@N0239037631244.jpg",
+          "split": "validation",
+          "sha256": "8590cd178533fee7472ebce9982863e9460eba1ae935410e9f9cc68edccb7984",
+          "phash": "92ed6d924d6d9292"
+        }
+      ],
+      "crossesSplit": true,
+      "containsExactSha256Match": false
+    },
+    {
+      "members": [
+        {
+          "dataset": "AADB",
+          "image": "farm1_351_19563283324_05336924ac_b.jpg",
+          "split": "validation",
+          "sha256": "a64f93c85911cf54a64983d2d781108a0e457ab5c849ff34a852ead598179b84",
+          "phash": "991d666699996666"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "21620485@N0815936089333.jpg",
+          "split": "train",
+          "sha256": "538c860d9b38b0d0665216c5f80818e264d8400358ea8069e3ad3992b707bf2a",
+          "phash": "9999666699996666"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "howardtj45501787562.jpg",
+          "split": "train",
+          "sha256": "f8b2f503fa6a64334f3a8efad69377fea2c36a446114c4062f72f56ff8bc9eab",
+          "phash": "9999666699996666"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "idafrosk2105399041.jpg",
+          "split": "train",
+          "sha256": "ad4c9d77f64c2d842beff1ed09cf930274a4f0c5f6152949f91839bdf20817df",
+          "phash": "9959666699996666"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "yes179120151159951.jpg",
+          "split": "train",
+          "sha256": "a9d12aa5fbfcfc201bfac9eddc9ba8f48704e6d2b2d0e698398028742aaae0bb",
+          "phash": "9999666699996666"
+        }
+      ],
+      "crossesSplit": true,
+      "containsExactSha256Match": false
+    },
+    {
+      "members": [
+        {
+          "dataset": "AADB",
+          "image": "farm1_290_19537544694_3028e3afbb_b.jpg",
+          "split": "train",
+          "sha256": "39ef40a31a1e615f32126fff7eb6ed449678fbdcd8f431191f89c84765ae73e6",
+          "phash": "996466d9996664d9"
+        },
+        {
+          "dataset": "AADB",
+          "image": "farm1_515_19993697275_0ba86ef327_b.jpg",
+          "split": "test",
+          "sha256": "1e364d66d895c153abeca213c07f122509ee77b598e53ca51ff9da3297d6f3f7",
+          "phash": "9966669999666699"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "76015333@N0621588345149.jpg",
+          "split": "train",
+          "sha256": "c9daf6704ff6d7ac80bf8a8ec9a8c96a38e701e1de24405dd96ccff85f8175a9",
+          "phash": "9967669999266699"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "asifali198518669194354.jpg",
+          "split": "train",
+          "sha256": "6e2eeafc8f2aa0ae5abf578797f405d30339596a0b0147e10b0182166d0eeb93",
+          "phash": "996666d999666499"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "astrofreak8141671196624.jpg",
+          "split": "train",
+          "sha256": "8ae056948c7891cc0c0f6078735aabe725587299caec87ccb299dcabe2301348",
+          "phash": "9966669999666699"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "milesyoutool238595630.jpg",
+          "split": "train",
+          "sha256": "393842c1cc0b4e78fb80808c3fd73b3037677ea49485601a08014016f1abe75e",
+          "phash": "9966669999666699"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "milo2233617312281.jpg",
+          "split": "train",
+          "sha256": "1dd5ce460d93b7e56c603a33ae4f81ef2708ccb5d8e8b86e76f17a4e8e9eae58",
+          "phash": "996666999964669b"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "nick_hancock15171407915.jpg",
+          "split": "train",
+          "sha256": "190fec47d1cd04229aad3fa134ba62da7f4f0f8584c9f84d10f60b49161fde8d",
+          "phash": "9966669999666699"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "roadsternumber65548011002.jpg",
+          "split": "train",
+          "sha256": "a1dd271bac1c1e1c2bef320bea7e736cb6409fb57b2e314f60017f9b3e195060",
+          "phash": "9966669999666699"
+        },
+        {
+          "dataset": "TAD66K",
+          "image": "shalva19487954066576.jpg",
+          "split": "train",
+          "sha256": "231dbe16af08cc9328e857d2c3a5adf7e4c4aa0cef8926ee5df2b1d41fcb83f0",
+          "phash": "99666699996626d9"
+        }
+      ],
+      "crossesSplit": true,
+      "containsExactSha256Match": false
+    }
+  ],
+  "gate": {
+    "noCrossDatasetNearDuplicates": false,
+    "safeToCombineWithoutAdditionalQuarantine": false
+  }
+}

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1280" viewBox="0 0 960 1280">
+  <defs>
+    <filter id="paper-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#000" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+  <rect width="960" height="1280" fill="#8b8174"/>
+  <rect x="84" y="52" width="792" height="1176" rx="5" fill="#fffdf5" filter="url(#paper-shadow)"/>
+  <g fill="#222" font-family="'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', sans-serif">
+    <text x="150" y="150" font-size="22" letter-spacing="5" fill="#777">POCKET EARTH · READING JOT</text>
+    <text x="150" y="215" font-size="42" font-weight="700">把真正想留下的话摘出来</text>
+    <line x1="150" y1="250" x2="810" y2="250" stroke="#c9c2b7" stroke-width="2"/>
+
+    <text x="150" y="315" font-size="27" fill="#777">红线测试句</text>
+    <text x="150" y="420" font-size="36">真正值得留下的，不是世界替你做出的选择，</text>
+    <text x="150" y="500" font-size="36">而是你愿意再次回看的那一刻。</text>
+
+    <text x="150" y="640" font-size="27" fill="#777">双竖线测试段</text>
+    <text x="180" y="735" font-size="34">旅行的意义不在抵达更多地方，</text>
+    <text x="180" y="815" font-size="34">而在于让熟悉的生活重新显出纹理，</text>
+    <text x="180" y="895" font-size="34">也让人与地点之间重新发生关系。</text>
+
+    <line x1="150" y1="990" x2="810" y2="990" stroke="#c9c2b7" stroke-width="2"/>
+    <text x="150" y="1050" font-size="25" fill="#777">这是原创固定样本，仅用于 Pocket Earth 端侧 OCR 验收。</text>
+    <text x="150" y="1100" font-size="22" fill="#999">原书页不落库 · 只处理用户画出的裁剪区域</text>
+    <text x="810" y="1170" font-size="22" text-anchor="end" fill="#999">P. 27</text>
+  </g>
+</svg>

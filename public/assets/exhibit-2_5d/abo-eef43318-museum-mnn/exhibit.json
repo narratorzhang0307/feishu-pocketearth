@@ -1,0 +1,122 @@
+{
+  "schema_version": "pocket-earth.exhibit-2_5d/1.1",
+  "id": "abo-eef43318-museum-matting",
+  "title": "Amazon Berkeley Objects 多视图 2.5D · 博物馆抠图 MNN",
+  "representation": "observed-multiview-predicted-depth-cards",
+  "reconstruction_type": "multi_view_2_5d",
+  "source": {
+    "dataset": "Amazon Berkeley Objects",
+    "license": "CC-BY-NC-4.0",
+    "object_id": "abo-eef43318",
+    "input": "RGB only"
+  },
+  "coverage": {
+    "yaw": [
+      0,
+      70,
+      140,
+      215,
+      285,
+      355
+    ],
+    "back_missing": false,
+    "observed_views": 6
+  },
+  "models": {
+    "matting": "museum-exhibit-matting-v1",
+    "matting_runtime": "MNN 3.6.1 FP16",
+    "depth": "depth-anything/Depth-Anything-V2-Small-hf",
+    "qwen": "Qwen3-VL-2B-Instruct-MNN (routing/OCR)",
+    "qwen_lora": null
+  },
+  "builder": {
+    "method": "nearest-observed-view + depth-displaced mesh",
+    "glb": {
+      "path": "exhibit.glb",
+      "scope": "observed front depth-card preview",
+      "vertices": 5184,
+      "triangles": 3538
+    }
+  },
+  "quality_boundary": {
+    "unseen_surface_policy": "do_not_invent",
+    "depth_type": "relative",
+    "large_rotation": "switch_to_nearest_observed_view"
+  },
+  "viewer": {
+    "canvas": [
+      640,
+      640
+    ],
+    "parallax_strength": 0.035
+  },
+  "views": [
+    {
+      "id": "view-00-000",
+      "yaw_deg": 0,
+      "observed": true,
+      "color": "views/view-00-000.webp",
+      "alpha": "views/view-00-000-alpha.png",
+      "depth": "views/view-00-000-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/abo/images/eef43318/eef43318_00.jpg",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-01-070",
+      "yaw_deg": 70,
+      "observed": true,
+      "color": "views/view-01-070.webp",
+      "alpha": "views/view-01-070-alpha.png",
+      "depth": "views/view-01-070-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/abo/images/eef43318/eef43318_14.jpg",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-02-140",
+      "yaw_deg": 140,
+      "observed": true,
+      "color": "views/view-02-140.webp",
+      "alpha": "views/view-02-140-alpha.png",
+      "depth": "views/view-02-140-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/abo/images/eef43318/eef43318_28.jpg",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-03-215",
+      "yaw_deg": 215,
+      "observed": true,
+      "color": "views/view-03-215.webp",
+      "alpha": "views/view-03-215-alpha.png",
+      "depth": "views/view-03-215-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/abo/images/eef43318/eef43318_43.jpg",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-04-285",
+      "yaw_deg": 285,
+      "observed": true,
+      "color": "views/view-04-285.webp",
+      "alpha": "views/view-04-285-alpha.png",
+      "depth": "views/view-04-285-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/abo/images/eef43318/eef43318_57.jpg",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-05-355",
+      "yaw_deg": 355,
+      "observed": true,
+      "color": "views/view-05-355.webp",
+      "alpha": "views/view-05-355-alpha.png",
+      "depth": "views/view-05-355-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/data/raw/abo/images/eef43318/eef43318_71.jpg",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    }
+  ],
+  "elapsed_seconds": 31.24
+}

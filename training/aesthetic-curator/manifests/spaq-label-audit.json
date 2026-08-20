@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T12:41:05.470288+00:00",
+  "images": 11125,
+  "uniqueImageNames": 11125,
+  "missingValues": 0,
+  "annotationArchive": {
+    "path": "training/aesthetic-curator/raw/spaq/Annotations.zip",
+    "bytes": 2102537,
+    "sha256": "77b8ff6682d89060090269f9db1478403a993fed29c45c18cf74b6fc90fcfeb4"
+  },
+  "qualityStatistics": {
+    "MOS": {
+      "min": 2.0,
+      "max": 96.0,
+      "mean": 50.31788853932584,
+      "p05": 17.71,
+      "p50": 50.2,
+      "p95": 81.67
+    },
+    "Brightness": {
+      "min": 0.2,
+      "max": 97.0,
+      "mean": 56.00461752808989,
+      "p05": 24.67,
+      "p50": 57.6,
+      "p95": 80.5
+    },
+    "Colorfulness": {
+      "min": 2.6,
+      "max": 96.0,
+      "mean": 60.454467415730335,
+      "p05": 32.646,
+      "p50": 61.86,
+      "p95": 82.79799999999999
+    },
+    "Contrast": {
+      "min": 0.6,
+      "max": 95.67,
+      "mean": 57.28444314606741,
+      "p05": 28.114,
+      "p50": 58.33,
+      "p95": 81.39599999999999
+    },
+    "Noisiness": {
+      "min": 1.6,
+      "max": 98.0,
+      "mean": 52.99970606741573,
+      "p05": 23.14,
+      "p50": 53.0,
+      "p95": 81.07199999999993
+    },
+    "Sharpness": {
+      "min": 0.67,
+      "max": 96.33,
+      "mean": 47.04701303370787,
+      "p05": 11.25,
+      "p50": 47.5,
+      "p95": 82.17
+    }
+  },
+  "sceneStatistics": {
+    "Animal": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.010067415460674158,
+      "p05": 0.0,
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "Cityscape": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.2095984986966292,
+      "p05": 0.0,
+      "p50": 0.0,
+      "p95": 1.0
+    },
+    "Human": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.09707415343820225,
+      "p05": 0.0,
+      "p50": 0.0,
+      "p95": 1.0
+    },
+    "Indoor scene": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.07181572638202247,
+      "p05": 0.0,
+      "p50": 0.0,
+      "p95": 0.5
+    },
+    "Landscape": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.1093033688988764,
+      "p05": 0.0,
+      "p50": 0.0,
+      "p95": 1.0
+    },
+    "Night scene": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.07252733950561797,
+      "p05": 0.0,
+      "p50": 0.0,
+      "p95": 1.0
+    },
+    "Plant": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.1222172248988764,
+      "p05": 0.0,
+      "p50": 0.0,
+      "p95": 1.0
+    },
+    "Still-life": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.2615880110561798,
+      "p05": 0.0,
+      "p50": 0.0,
+      "p95": 1.0
+    },
+    "Others": {
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.045808239101123596,
+      "p05": 0.0,
+      "p50": 0.0,
+      "p95": 0.5
+    }
+  },
+  "invalidSceneProbabilityRows": 0,
+  "sourceExposureTimeSentinelAtOneMillion": 1,
+  "rule": "SPAQ is technical-quality supervision only. Generate pairs within compatible scene strata; never reinterpret MOS as universal aesthetic or personal-memory value.",
+  "imagesReady": false,
+  "pairGenerationReady": false,
+  "blockers": [
+    "SPAQ image bytes have not yet been selected, hashed, decoded and pHash-grouped"
+  ]
+}

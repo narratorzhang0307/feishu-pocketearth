@@ -1,0 +1,116 @@
+{
+  "schema": "pocket-earth.oss-release/v1",
+  "release": "pocketearth-qwen3-vl-2b-dual-base-20260811",
+  "bucket": "last-night-on-earth",
+  "endpoint": "https://oss-cn-hangzhou.aliyuncs.com",
+  "publicBase": "https://last-night-on-earth.oss-cn-hangzhou.aliyuncs.com",
+  "status": "uploaded-and-verified",
+  "bundleBytes": 3748601738,
+  "objects": [
+    {
+      "local": "android/native/model-bundle.manifest.json",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/manifest.json",
+      "bytes": 2491,
+      "sha256": "1ec84bc53d6a58ce3685419dd0b2ad2bdb289cb18d876deec21634ff68c90313",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN/config.json",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/language/config.json",
+      "bytes": 560,
+      "sha256": "5a8565cfe516ecb58a200ec13e49a914fe7f1cbe54ae4cf87bedb30a79b8614c",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN/llm_config.json",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/language/llm_config.json",
+      "bytes": 6445,
+      "sha256": "5408721c81cc9a7ea8aa485a0652e5e1a47dd5ea5bbd5af2e1f16bc4f6358699",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN/tokenizer.txt",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/language/tokenizer.txt",
+      "bytes": 3193555,
+      "sha256": "7119de4966cc6a8ae87d7f083e65b315282d06c3122fdd41ce783fdd2d3c1ca2",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN/llm.mnn",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/language/llm.mnn",
+      "bytes": 462464,
+      "sha256": "c2286f60cbd56a82f26bfeac92f6a96e9690889b1939346abfe9e1fae996a8f3",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN/llm.mnn.weight",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/language/llm.mnn.weight",
+      "bytes": 1231860194,
+      "sha256": "1554f9ce71743b56c2d7fba4cb0c2a31c7cddf4f21e1a2ff5a2e85b9a316a29f",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN/visual.mnn",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/language/visual.mnn",
+      "bytes": 502512,
+      "sha256": "c489c1f65dc6aa5bcee42b3e291f7987df1111423c1fe570d0f3394e1207d2bb",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN/visual.mnn.weight",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/language/visual.mnn.weight",
+      "bytes": 238226780,
+      "sha256": "9feb04848cafad1117a510b43d6c2b58d6c31bef1040598156d266f9b42f581f",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN-v5-int8-paired/config.json",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/vision/config.json",
+      "bytes": 634,
+      "sha256": "b81ac7008ba5f894301b7b9265bba882889df52c6e25c86390514c1bd4afe0c4",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN-v5-int8-paired/llm_config.json",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/vision/llm_config.json",
+      "bytes": 6334,
+      "sha256": "89e9a46be9f380c21a3b90ac73baae54c541d89c9339b06f7c0cce6601b5543d",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN-v5-int8-paired/tokenizer.mtok",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/vision/tokenizer.mtok",
+      "bytes": 4112548,
+      "sha256": "8062c8ef0bf10c8f0434e93c71686c13c0ea8ca0640c78aeedf94266d9db7c0c",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN-v5-int8-paired/llm.mnn",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/vision/llm.mnn",
+      "bytes": 309080,
+      "sha256": "3675635b95562dbf497ad6a0862670f4ac21d6dd9948a89a637627cbc9ec7ea2",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN-v5-int8-paired/llm.mnn.weight",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/vision/llm.mnn.weight",
+      "bytes": 1828964770,
+      "sha256": "4e3b23870347083c9c5d4daba66d5f6b477b45a3431859cbce8dbdd088680326",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN-v5-int8-paired/visual.mnn",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/vision/visual.mnn",
+      "bytes": 501536,
+      "sha256": "087805fafbd06cfc21fd55a7e2f4120d865a8c920395bdda8f2bde34b102fa31",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "../../mnn-models/Qwen3-VL-2B-Instruct-MNN-v5-int8-paired/visual.mnn.weight",
+      "key": "pocket-earth/models/qwen3-vl-2b-dual/pocketearth-qwen3-vl-2b-dual-base-20260811/vision/visual.mnn.weight",
+      "bytes": 440454326,
+      "sha256": "dba2242b2deb4b9cc1dbd8365b6e50e81104c5f5a7d7c4fef1b572b2a4587b29",
+      "contentType": "application/octet-stream"
+    }
+  ]
+}

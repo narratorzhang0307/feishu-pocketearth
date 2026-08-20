@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocket.earth/schemas/pocket-data-v1/music-city-record.schema.json",
+  "title": "Pocket Music City Record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "slug", "cityName", "cityNameZh", "ianaTz", "tzOffset", "station", "cover", "lat", "lng", "description", "tracks", "podcast"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "slug": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "cityName": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "cityNameZh": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "ianaTz": { "type": ["string", "null"], "maxLength": 120 },
+    "tzOffset": { "type": "number", "minimum": -24, "maximum": 24 },
+    "station": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["freq", "name"],
+      "properties": {
+        "freq": { "type": "number", "minimum": 0, "maximum": 10000 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 }
+      }
+    },
+    "cover": { "type": "string", "maxLength": 2000, "pattern": "^(?:https://.*)?$" },
+    "lat": { "type": ["number", "null"], "minimum": -90, "maximum": 90 },
+    "lng": { "type": ["number", "null"], "minimum": -180, "maximum": 180 },
+    "description": { "type": "string", "maxLength": 1000 },
+    "tracks": {
+      "type": "array",
+      "maxItems": 500,
+      "items": { "$ref": "#/$defs/track" }
+    },
+    "podcast": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/podcast" }
+    }
+  },
+  "$defs": {
+    "playback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "url"],
+      "properties": {
+        "provider": { "enum": ["oss", "youtube", "external", "none"] },
+        "url": { "type": "string", "maxLength": 2000, "pattern": "^(?:https://.*)?$" },
+        "sourceUrl": { "type": "string", "maxLength": 2000, "pattern": "^(?:https://.*)?$" },
+        "sourceId": { "type": "string", "maxLength": 300 }
+      },
+      "oneOf": [
+        {
+          "required": ["provider", "url", "sourceId", "sourceUrl"],
+          "properties": {
+            "provider": { "const": "youtube" },
+            "url": { "const": "" },
+            "sourceId": { "pattern": "^[A-Za-z0-9_-]{11}$" },
+            "sourceUrl": { "pattern": "^(?:https://(?:www\\.|m\\.|music\\.)?youtube\\.com/(?:watch\\?(?:[^#]*&)?v=|shorts/|embed/|live/)[A-Za-z0-9_-]{11}(?:[?&#/].*)?|https://youtu\\.be/[A-Za-z0-9_-]{11}(?:[?&#/].*)?)$" }
+          }
+        },
+        {
+          "required": ["provider", "url"],
+          "properties": {
+            "provider": { "enum": ["oss", "external"] },
+            "url": { "minLength": 1, "pattern": "^https://.+$" }
+          },
+          "not": { "required": ["sourceId"] }
+        },
+        {
+          "required": ["provider", "url"],
+          "properties": { "provider": { "const": "none" }, "url": { "const": "" } },
+          "not": { "anyOf": [{ "required": ["sourceId"] }, { "required": ["sourceUrl"] }] }
+        }
+      ]
+    },
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "artist", "genre", "durationSec", "playback", "introText", "introPlayback"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "artist": { "type": "string", "maxLength": 300 },
+        "genre": { "type": "string", "maxLength": 120 },
+        "durationSec": { "type": ["integer", "null"], "minimum": 0, "maximum": 86400 },
+        "playback": { "$ref": "#/$defs/playback" },
+        "introText": { "type": "string", "maxLength": 10000 },
+        "introPlayback": { "$ref": "#/$defs/playback" }
+      }
+    },
+    "podcast": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "subtitle", "text", "playback"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "subtitle": { "type": "string", "maxLength": 300 },
+        "text": { "type": "string", "maxLength": 30000 },
+        "playback": { "$ref": "#/$defs/playback" }
+      }
+    }
+  }
+}

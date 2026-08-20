@@ -1,0 +1,57 @@
+{
+  "schema": "pocketearth.specialist_mnn/v1",
+  "id": "exhibit-matting-v1",
+  "name": "博物馆展品抠图模型",
+  "role": "specialist_matting",
+  "orchestrator": "Qwen3-VL-2B-Instruct-MNN",
+  "runtime": {
+    "engine": "MNN",
+    "version": "3.6.1",
+    "commit": "d407447ed56c4121a11ccbd266dc184ca1ead0c2",
+    "target": "android-arm64",
+    "acceleration": ["arm82", "sme2"],
+    "sme2_benchmark": "requires-compatible-real-device"
+  },
+  "model": {
+    "file": "exhibit-matting-fp16.mnn",
+    "sha256": "95f35d70763cd83f58e79d83ebba2c682853bee764906dce9b366d1d07ea4b10",
+    "bytes": 146105104,
+    "input": {"name": "image", "shape": [1, 3, 768, 768], "normalization": "ImageNet mean/std"},
+    "output": {"name": "alpha", "shape": [1, 1, 768, 768], "range": [0.0, 1.0]}
+  },
+  "training": {
+    "pai_job_id": "dlc1plsmq2xp4bj8",
+    "steps": 2000,
+    "train_images": 3960,
+    "validation_images": 150,
+    "frozen_blind_images": 198,
+    "frozen_blind_objects": 4,
+    "object_leakage": 0
+  },
+  "frozen_blind": {
+    "base": {"mae": 0.1826951389, "iou": 0.2937967000, "boundary_iou": 0.1223810167},
+    "tuned": {"mae": 0.0920369457, "iou": 0.7003366256, "boundary_iou": 0.2859277279},
+    "wins": {"mae": 158, "iou": 161, "boundary_iou": 157},
+    "samples": 198
+  },
+  "conversion_validation": {
+    "onnx_vs_pytorch": {"max_abs_error": 0.0000344813, "mean_abs_error": 0.0000010413},
+    "mnn_real_image_vs_pytorch": {"max_abs_error": 0.1611219049, "mean_abs_error": 0.0022866325},
+    "mnn_real_image_foreground_ratio": 0.6324123806,
+    "quality_gate_accepted": true
+  },
+  "host_smoke": {
+    "platform": "macOS arm64",
+    "input": [1, 3, 768, 768],
+    "output": "alpha",
+    "average_ms_three_runs": 1461.392944,
+    "session_memory_mb": 507.801819,
+    "detected": {"fp16": true, "i8sdot": true, "i8mm": true, "sve2": false, "sme2": false},
+    "claim_boundary": "已证明最终 MNN 图可在 ARM64 CPU 加载并输出 alpha；SME2 开关性能对比仍需兼容手机。"
+  },
+  "quality_gate": {
+    "reject_foreground_ratio_below": 0.05,
+    "reject_foreground_ratio_above": 0.85,
+    "reason": "拒绝目标过小或整间展厅被误当前景的输入"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "fixture": "reading-jot-page.png",
+  "license": "Pocket Earth original test fixture",
+  "pageSize": { "width": 960, "height": 1280 },
+  "underline": {
+    "crop": "underline-crop.png",
+    "stroke": [[0.15, 0.42], [0.52, 0.421], [0.90, 0.42]],
+    "expectedText": "真正值得留下的，不是世界替你做出的选择，而是你愿意再次回看的那一刻。"
+  },
+  "brackets": {
+    "crop": "brackets-crop.png",
+    "strokes": [
+      [[0.16, 0.54], [0.158, 0.71]],
+      [[0.85, 0.54], [0.852, 0.71]]
+    ],
+    "expectedText": "旅行的意义不在抵达更多地方，而在于让熟悉的生活重新显出纹理，也让人与地点之间重新发生关系。"
+  }
+}

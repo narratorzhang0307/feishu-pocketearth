@@ -1,0 +1,23 @@
+{
+  "fixture": "synthetic-receipt-clean.svg / synthetic-receipt-stress.svg",
+  "synthetic": true,
+  "merchant": "杭州西湖停车服务",
+  "amount": "20.00",
+  "date": "2026-08-11",
+  "text": "SYNTHETIC TEST RECEIPT\n杭州西湖停车服务\n仅用于 Pocket Earth 端侧 OCR 测试\n订单编号 PE20260811001\n车牌号码 浙A·P2026\n入场时间 2026-08-11 09:18\n离场时间 2026-08-11 11:42\n停车时长 2小时24分钟\n应收金额 20.00 元\n支付方式 移动支付\n商户号 HZ-PARK-086571\n客服电话 0571-88990011\n合计 ¥20.00\n谢谢惠顾 请妥善保管票据\nSYNTHETIC NOT A REAL TRANSACTION",
+  "identifiers": [
+    "PE20260811001",
+    "浙A·P2026",
+    "HZ-PARK-086571",
+    "0571-88990011"
+  ],
+  "mustContain": [
+    "杭州西湖停车服务",
+    "PE20260811001",
+    "2026-08-11 09:18",
+    "2026-08-11 11:42",
+    "2小时24分钟",
+    "20.00",
+    "HZ-PARK-086571"
+  ]
+}

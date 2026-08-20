@@ -1,0 +1,64 @@
+{
+  "schema": "pocket-skill-visual-module/v2",
+  "skillId": "general-document-ocr-v6-int8",
+  "trainingArtifact": {
+    "type": "peft-visual-lora",
+    "adapterModelSha256": "992250268bbab44bffc9b257a9faa8b09d5c5fcd8444333500896fefca6144de",
+    "adapterConfigSha256": "43a5d16ca2df1575f23266e63b45bfa64cdfbdb7b48af4e59c96f3c692cd7761",
+    "rank": 8,
+    "alpha": 16,
+    "scaleFactor": 1.0,
+    "targetModules": "^((?!(model.visual.merger|model.visual.deepstack_merger_list))model.visual.*\\.(attn.proj|linear_fc1|linear_fc2|qkv)|model.visual.merger.*\\.(linear_fc1|linear_fc2)|model.visual.deepstack_merger_list.*\\.(linear_fc1|linear_fc2))$"
+  },
+  "deploymentArtifact": {
+    "type": "mnn-visual-lora",
+    "adapter": {
+      "file": "visual-lora.mnn",
+      "sha256": "d09be9ee9a41c7ec87c45e2f721ad7861a493eeb11b04611ec06380d19fc9f5e",
+      "size": 17588592
+    },
+    "mapping": {
+      "adapterModules": 104,
+      "matchedModules": 104,
+      "matchedConvolutions": 152,
+      "replacedConsumers": 152,
+      "addedOperations": 456
+    }
+  },
+  "compatibility": {
+    "baseModel": "Qwen/Qwen3-VL-2B-Instruct",
+    "baseRevision": "9e49ec71ded22500a997ed0f9961e1e92b85bbc9",
+    "baseVisualSha256": "087805fafbd06cfc21fd55a7e2f4120d865a8c920395bdda8f2bde34b102fa31",
+    "sharedVisualWeightSha256": "dba2242b2deb4b9cc1dbd8365b6e50e81104c5f5a7d7c4fef1b572b2a4587b29",
+    "sharedDecoderQuantization": "int8",
+    "visualQuantization": "int8",
+    "runtime": "MNN",
+    "runtimeVersion": "3.6.1",
+    "runtimeCommit": "d407447ed56c4121a11ccbd266dc184ca1ead0c2",
+    "target": "android-arm64",
+    "acceleration": [
+      "arm82",
+      "sme2"
+    ]
+  },
+  "runtimeContract": {
+    "sharedFiles": [
+      "llm.mnn",
+      "llm.mnn.weight",
+      "tokenizer.mtok",
+      "visual.mnn",
+      "visual.mnn.weight"
+    ],
+    "skillFiles": [
+      "visual-lora.mnn",
+      "visual-lora-mapping.json"
+    ],
+    "sharedWeightAlias": {
+      "source": "visual.mnn.weight",
+      "targetPattern": "<visual-lora-model>.weight",
+      "install": "create a hard link in app-private storage; never duplicate the shared base weight"
+    },
+    "mnnPatch": "pocketearth/mnn-3.6.1-multimodal-lora-v2",
+    "selection": "use a skill config whose visual_lora_model points at this adapter"
+  }
+}

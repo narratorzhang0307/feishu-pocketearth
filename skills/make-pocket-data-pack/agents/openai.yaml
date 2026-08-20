@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pocket Data Pack 制作器"
+  short_description: "把书籍、电影和音乐资料制作成可校验的 Pocket Data Pack"
+  default_prompt: "Use $make-pocket-data-pack to convert my source data into a validated Pocket Earth Data Pack."

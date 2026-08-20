@@ -1,0 +1,37 @@
+[Unit]
+Description=Pocket Earth Frost Edge Node
+Wants=network-online.target whisplay-daemon.service pocket-earth-gemma.service
+After=network-online.target whisplay-daemon.service pocket-earth-gemma.service sunset-radio.service
+ConditionPathExists=/home/pi/pocket-earth/frost_pi_feed_client.py
+ConditionPathExists=/etc/pocket-earth-edge.env
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+SupplementaryGroups=audio video gpio input spi i2c
+WorkingDirectory=/home/pi/pocket-earth
+EnvironmentFile=/etc/pocket-earth-edge.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/home/pi/pocket-earth:/home/pi/Whisplay/runtime
+Environment=WHISPLAY_RUNTIME=/home/pi/Whisplay/runtime
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=FROST_MIRROR_PORT=8766
+Environment=FROST_MIRROR_PATH=/run/pocket-earth-edge/live.png
+Environment=FROST_TTS_CACHE_DIR=/var/cache/pocket-earth-edge/tts
+Environment=FROST_DISPLAY_HOLD_SECONDS=9
+Environment=FROST_TTS_VOLUME=42
+RuntimeDirectory=pocket-earth-edge
+RuntimeDirectoryMode=0755
+StateDirectory=pocket-earth-edge
+StateDirectoryMode=0750
+CacheDirectory=pocket-earth-edge
+CacheDirectoryMode=0750
+ExecStart=/usr/bin/python3 -u /home/pi/pocket-earth/frost_pi_feed_client.py --device --cursor-file /var/lib/pocket-earth-edge/frost-feed.cursor
+Restart=always
+RestartSec=4
+TimeoutStopSec=15
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "dataset": "TAD66K",
+  "officialRepository": "https://github.com/woshidandan/TANet-image-aesthetics-and-quality-assessment",
+  "officialRevision": "da7aebdb38ea8e2489ecd67e4f2f8a77cc3d23e0",
+  "officialImageSource": "https://drive.google.com/drive/folders/1b2D9LeeG5XZzhEa8ldnIZjGh0IHadHhU",
+  "mirror": {
+    "repository": "https://huggingface.co/datasets/Shuai1995/TAD66K_for_Image_Aesthetics_Assessment",
+    "reason": "Used for resumable programmatic acquisition; the official repository remains the provenance authority",
+    "files": [
+      {
+        "path": "raw/tad66k/labels.zip",
+        "bytes": 1893529,
+        "sha256": "2aac79655aab651b5cbc6acdf28862e391cfb3186ce7b405e3fd93679262ae0e"
+      },
+      {
+        "path": "raw/tad66k/TAD66K.zip",
+        "bytes": 10650676575,
+        "sha256": "fb1b3eb3304f80aec5a18313b05611c3cd6a0adb83ea4a6eceecb91646894895"
+      }
+    ]
+  },
+  "downloadedAt": "2026-08-11T19:58:00+08:00",
+  "audit": {
+    "archiveSha256Verified": true,
+    "zipIntegrityVerified": true,
+    "labeledImages": 66327,
+    "decodedLabeledImages": 66327,
+    "unlabeledArchiveImagesQuarantined": 798,
+    "themes": 47,
+    "exactDuplicateGroups": 14,
+    "nearDuplicateGroupsAtPHashDistance3": 60,
+    "nearDuplicateImages": 155,
+    "crossUpstreamPhaseNearDuplicateGroups": 23,
+    "crossThemeNearDuplicateGroups": 13,
+    "photographerKeyParsedImages": 65980,
+    "photographerKeys": 26637,
+    "splitPolicy": "ignore upstream phase; split connected components of filename-derived photographer and pHash duplicate group",
+    "rebuiltSplitImages": {
+      "train": 52743,
+      "validation": 6890,
+      "test": 6694
+    },
+    "semanticPairPolicy": "same split, theme and photographer; different pHash group; score gap >= 0.75; CLIP similarity >= 0.72",
+    "canonicalSemanticPairs": {
+      "train": 927,
+      "validation": 94,
+      "test": 94
+    }
+  },
+  "intendedUse": "Theme-matched universal-aesthetic pair construction",
+  "status": "downloaded_hashed_all_labeled_images_decoded_leakage_safe_splits_and_semantic_pairs_built"
+}

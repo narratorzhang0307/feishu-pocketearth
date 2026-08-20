@@ -1,0 +1,76 @@
+{
+  "schema_version": "pocket-earth.exhibit-2_5d/1.1",
+  "id": "harvard-315439-rong-mirror-museum-matting",
+  "title": "Harvard Art Museums IIIF · object 315439 多视图 2.5D · 博物馆抠图权重",
+  "representation": "observed-multiview-predicted-depth-cards",
+  "reconstruction_type": "multi_view_2_5d",
+  "source": {
+    "dataset": "Harvard Art Museums IIIF · object 315439",
+    "license": "personal noncommercial research per museum object record",
+    "object_id": "harvard-315439-rong-mirror",
+    "input": "RGB only"
+  },
+  "coverage": {
+    "yaw": [
+      0,
+      180
+    ],
+    "back_missing": false,
+    "observed_views": 2
+  },
+  "models": {
+    "matting": "museum-exhibit-matting-v1",
+    "matting_runtime": "PyTorch checkpoint",
+    "matting_model": null,
+    "matting_elapsed_ms_per_view": [],
+    "depth": "/Users/zhangcheng/.cache/huggingface/hub/models--depth-anything--Depth-Anything-V2-Small-hf/snapshots/5426e4f0f36572d16453bbda7a8389317b1bef99",
+    "qwen": "Qwen3-VL-2B-Instruct-MNN (routing/OCR)",
+    "qwen_lora": null
+  },
+  "builder": {
+    "method": "nearest-observed-view + depth-displaced mesh",
+    "glb": {
+      "path": "exhibit.glb",
+      "scope": "observed front depth-card preview",
+      "vertices": 5184,
+      "triangles": 6256
+    }
+  },
+  "quality_boundary": {
+    "unseen_surface_policy": "do_not_invent",
+    "depth_type": "relative",
+    "large_rotation": "switch_to_nearest_observed_view"
+  },
+  "viewer": {
+    "canvas": [
+      640,
+      640
+    ],
+    "parallax_strength": 0.035
+  },
+  "views": [
+    {
+      "id": "view-00-000",
+      "yaw_deg": 0,
+      "observed": true,
+      "color": "views/view-00-000.webp",
+      "alpha": "views/view-00-000-alpha.png",
+      "depth": "views/view-00-000-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/app/deliverables/heritage-evidence/artifact-inscription/inputs/harvard-315439-obverse.jpg",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    },
+    {
+      "id": "view-01-180",
+      "yaw_deg": 180,
+      "observed": true,
+      "color": "views/view-01-180.webp",
+      "alpha": "views/view-01-180-alpha.png",
+      "depth": "views/view-01-180-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/app/deliverables/heritage-evidence/artifact-inscription/inputs/harvard-315439-reverse.jpg",
+      "alpha_origin": "predicted",
+      "depth_origin": "predicted-relative"
+    }
+  ],
+  "elapsed_seconds": 5.319
+}

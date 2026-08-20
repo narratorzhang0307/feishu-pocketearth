@@ -1,0 +1,1 @@
+/tmp/aesthetic-curator-runtime/output/v0-20260811-215451/checkpoint-160

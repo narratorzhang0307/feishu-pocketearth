@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "dataset": "SPAQ",
+  "officialRepository": "https://github.com/h4nwei/SPAQ",
+  "officialRevision": "03e2b1c752b593079afffc2adb6ffff4c76e376e",
+  "officialImageSource": "https://drive.google.com/drive/folders/1wZ6HOHi5h43oxTe2yLYkFxwHPgJ9MwvT",
+  "annotationMirror": {
+    "repository": "https://huggingface.co/datasets/AaronCIH/IQA_dataset",
+    "path": "SPAQ/Annotations-20250710T143903Z-1-001.zip",
+    "bytes": 2102537,
+    "sha256": "77b8ff6682d89060090269f9db1478403a993fed29c45c18cf74b6fc90fcfeb4",
+    "reason": "Official Google Drive folder returned 404 to programmatic retrieval; mirror contains the released annotation workbooks byte-for-byte as one archive"
+  },
+  "verifiedLabels": {
+    "images": 11125,
+    "overallScore": "MOS",
+    "qualityAttributes": ["Brightness", "Colorfulness", "Contrast", "Noisiness", "Sharpness"],
+    "sceneCategories": ["Animal", "Cityscape", "Human", "Indoor scene", "Landscape", "Night scene", "Plant", "Still-life", "Others"],
+    "exifAvailable": true,
+    "missingRows": 0
+  },
+  "fullImageArchiveExpectedBytes": 34840226159,
+  "fullImageArchivePolicy": "Do not stage locally while free disk would fall below 15 GiB; select or stream only the Learnability subset after label stratification",
+  "intendedUse": "Technical-quality attributes and quality-versus-memory counterexamples; never universal-aesthetic gold",
+  "status": "annotations_downloaded_hashed_and_audited_images_deferred_by_disk_guard"
+}

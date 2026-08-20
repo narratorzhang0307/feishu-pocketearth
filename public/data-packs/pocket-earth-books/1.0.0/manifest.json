@@ -1,0 +1,72 @@
+{
+  "protocol": "pocket-data/v1",
+  "identity": {
+    "id": "earth.pocket.demo.books",
+    "name": "Pocket Earth 示例书库",
+    "version": "1.0.0",
+    "author": "Pocket Earth",
+    "description": "与读书 Skill 解耦的 Pocket Earth 决赛演示书籍数据包"
+  },
+  "schema": {
+    "name": "pocket.books/v1",
+    "version": "1.0.0",
+    "record_count": 1055
+  },
+  "compatibility": {
+    "skills": [
+      "pocket.books"
+    ],
+    "runtime_min": "1.0.0"
+  },
+  "privacy": "public",
+  "provenance": {
+    "source": "User-provided reading history export normalized for the Pocket Earth competition demo",
+    "license": "competition-demonstration-only",
+    "generated_at": "2026-08-10T00:00:00.000Z"
+  },
+  "distribution": {
+    "mode": "chunked"
+  },
+  "files": [
+    {
+      "role": "records",
+      "path": "chunks/records-00001.json",
+      "media_type": "application/json",
+      "bytes": 116963,
+      "sha256": "1a32c1fa6593d28e5d9babd45eb8c453bcaafd1e79115c8dd0aa970c8c6a732a",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00002.json",
+      "media_type": "application/json",
+      "bytes": 120325,
+      "sha256": "1a57ecb343427350a86160bc3720d6b102e38a4425f6ab5d6ac75d1fe5de8f6c",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00003.json",
+      "media_type": "application/json",
+      "bytes": 116505,
+      "sha256": "12f1429152a4a294915afc28a7298c673cee6e4a1555f7b9a2ddc4d4e40bbc21",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00004.json",
+      "media_type": "application/json",
+      "bytes": 120852,
+      "sha256": "41546130711fa36ed78cab1ad2b1a1c3ba1253e13891032e352a567cfb89bcf3",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00005.json",
+      "media_type": "application/json",
+      "bytes": 25849,
+      "sha256": "83ae311cd7c01b74975bf4db2b619ffaa6358d5702d8e00aff88605d5d1c7e82",
+      "records": 55
+    }
+  ]
+}

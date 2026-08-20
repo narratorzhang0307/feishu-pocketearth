@@ -1,0 +1,12 @@
+{
+  "name": "frost-edge-sunset-radio-device",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Device-facing Sunset Radio source snapshot for Pocket Earth Google Edition.",
+  "scripts": {
+    "smoke:avatar": "python3 raspi/avatar_smoke.py",
+    "smoke:privacy": "python3 raspi/ambient_privacy_smoke.py",
+    "edge:check": "python3 raspi/edge_smoke.py"
+  }
+}

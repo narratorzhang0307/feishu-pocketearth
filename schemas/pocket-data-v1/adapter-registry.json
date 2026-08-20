@@ -1,0 +1,40 @@
+{
+  "protocol": "pocket-data/v1",
+  "runtime": "Pocket Earth",
+  "runtime_version": "1.0.0",
+  "rule": "Core protocol validates the package envelope; an installed adapter validates records and connects them to a Skill.",
+  "adapters": [
+    {
+      "domain": "books",
+      "skill_id": "pocket.books",
+      "schema_name": "pocket.books/v1",
+      "schema_version": "1.0.0",
+      "record_schema": "books-record.schema.json",
+      "status": "installed"
+    },
+    {
+      "domain": "movies",
+      "skill_id": "pocket.movies",
+      "schema_name": "pocket.movies/v1",
+      "schema_version": "1.0.0",
+      "record_schema": "movies-record.schema.json",
+      "status": "installed"
+    },
+    {
+      "domain": "music",
+      "skill_id": "pocket.music",
+      "schema_name": "pocket.music/v1",
+      "schema_version": "1.0.0",
+      "record_schema": "music-city-record.schema.json",
+      "status": "installed"
+    },
+    {
+      "domain": "mapping",
+      "skill_id": "pocket.mapping",
+      "schema_name": "pocket.mapping/v1",
+      "schema_version": "1.0.0",
+      "record_schema": "mapping-record.schema.json",
+      "status": "installed"
+    }
+  ]
+}

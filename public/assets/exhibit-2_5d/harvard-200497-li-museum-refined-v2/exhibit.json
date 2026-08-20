@@ -1,0 +1,239 @@
+{
+  "schema_version": "pocket-earth.exhibit-2_5d/1.1",
+  "id": "harvard-200497-li-museum-refined",
+  "title": "Harvard Art Museums IIIF · object 200497 多视图 2.5D · 博物馆抠图 + 规则自检",
+  "representation": "observed-multiview-predicted-depth-cards",
+  "reconstruction_type": "multi_view_2_5d",
+  "source": {
+    "dataset": "Harvard Art Museums IIIF · object 200497",
+    "license": "personal noncommercial research per museum object record",
+    "object_id": "harvard-200497-li",
+    "input": "RGB only"
+  },
+  "coverage": {
+    "yaw": [
+      0,
+      60,
+      120,
+      180,
+      240,
+      300
+    ],
+    "back_missing": false,
+    "observed_views": 6
+  },
+  "models": {
+    "matting": "museum-exhibit-matting-v1 + general-structure + deterministic-refinement-v1",
+    "matting_runtime": "precomputed alpha + deterministic quality gate",
+    "matting_specialist": "museum-exhibit-matting-v1",
+    "structure_guard": "general-structure-matting",
+    "fusion_policy": "museum_structure_guard_fail_closed_v1",
+    "matting_model": "/Users/zhangcheng/Documents/上街去/exhibit-2_5d-skill/evidence/harvard-li-matting-v2/fused-alpha",
+    "matting_elapsed_ms_per_view": [],
+    "depth": "depth-anything/Depth-Anything-V2-Small-hf",
+    "qwen": "Qwen3-VL-2B-Instruct-MNN (routing/OCR)",
+    "qwen_lora": null
+  },
+  "builder": {
+    "method": "nearest-observed-view + depth-displaced mesh",
+    "glb": {
+      "path": "exhibit.glb",
+      "scope": "observed front depth-card preview",
+      "vertices": 5184,
+      "triangles": 3068
+    }
+  },
+  "quality_boundary": {
+    "unseen_surface_policy": "do_not_invent",
+    "depth_type": "relative",
+    "large_rotation": "switch_to_nearest_observed_view",
+    "alpha_policy": "museum_structure_guard_fail_closed_v1",
+    "alpha_policy_file": "quality-policy.json"
+  },
+  "quality_gate": {
+    "status": "pass",
+    "eligible_for_2_5d": true,
+    "accepted_views": 6,
+    "rejected_view_indexes": [],
+    "review_view_indexes": [],
+    "max_accepted_yaw_gap_deg": 60.0,
+    "median_foreground_ratio": 0.383738,
+    "median_bbox_fill_ratio": 0.677517,
+    "reasons": [],
+    "policy": "museum_structure_guard_fail_closed_v1",
+    "policy_file": "quality-policy.json",
+    "evidence_complete": true
+  },
+  "viewer": {
+    "canvas": [
+      640,
+      640
+    ],
+    "parallax_strength": 0.035
+  },
+  "views": [
+    {
+      "id": "view-00-000",
+      "yaw_deg": 0,
+      "observed": true,
+      "color": "views/view-00-000.webp",
+      "alpha": "views/view-00-000-alpha.png",
+      "depth": "views/view-00-000-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/app/deliverables/heritage-evidence/artifact-inscription/inputs/li-view-01.jpg",
+      "original": "originals/view-00-000.jpg",
+      "original_sha256": "bbcab4a5b67c1aee493986d63229e1b22d3f7e13106751ff34d1d9b9254efdb8",
+      "specialist_alpha": "specialist-alpha/view-00-000.png",
+      "specialist_cutout": "specialist-cutout/view-00-000.webp",
+      "comparison": "comparisons/view-00-000-original-vs-cutout.jpg",
+      "alpha_origin": "museum-specialist + structure-preserving deterministic refinement",
+      "depth_origin": "predicted-relative",
+      "alpha_quality": {
+        "foreground_ratio": 0.340054,
+        "visible_ratio": 0.355922,
+        "bbox_fill_ratio": 0.650428,
+        "halo_to_foreground_ratio": 0.041097,
+        "largest_component_ratio": 1.0,
+        "component_count": 1,
+        "status": "pass",
+        "accepted_for_2_5d": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "view-01-060",
+      "yaw_deg": 60,
+      "observed": true,
+      "color": "views/view-01-060.webp",
+      "alpha": "views/view-01-060-alpha.png",
+      "depth": "views/view-01-060-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/app/deliverables/heritage-evidence/artifact-inscription/inputs/li-view-02.jpg",
+      "original": "originals/view-01-060.jpg",
+      "original_sha256": "9e86d306b2177a8624cb62bd7c40302c337622fd50a840573100998f8cbf8d8c",
+      "specialist_alpha": "specialist-alpha/view-01-060.png",
+      "specialist_cutout": "specialist-cutout/view-01-060.webp",
+      "comparison": "comparisons/view-01-060-original-vs-cutout.jpg",
+      "alpha_origin": "museum-specialist + structure-preserving deterministic refinement",
+      "depth_origin": "predicted-relative",
+      "alpha_quality": {
+        "foreground_ratio": 0.412621,
+        "visible_ratio": 0.426849,
+        "bbox_fill_ratio": 0.691196,
+        "halo_to_foreground_ratio": 0.030155,
+        "largest_component_ratio": 1.0,
+        "component_count": 1,
+        "status": "pass",
+        "accepted_for_2_5d": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "view-02-120",
+      "yaw_deg": 120,
+      "observed": true,
+      "color": "views/view-02-120.webp",
+      "alpha": "views/view-02-120-alpha.png",
+      "depth": "views/view-02-120-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/app/deliverables/heritage-evidence/artifact-inscription/inputs/li-view-04.jpg",
+      "original": "originals/view-02-120.jpg",
+      "original_sha256": "400fff8f7353be73e70f6750ee277855198b783a4f888a51cb034e6c73fcfd7d",
+      "specialist_alpha": "specialist-alpha/view-02-120.png",
+      "specialist_cutout": "specialist-cutout/view-02-120.webp",
+      "comparison": "comparisons/view-02-120-original-vs-cutout.jpg",
+      "alpha_origin": "museum-specialist + structure-preserving deterministic refinement",
+      "depth_origin": "predicted-relative",
+      "alpha_quality": {
+        "foreground_ratio": 0.434454,
+        "visible_ratio": 0.446203,
+        "bbox_fill_ratio": 0.684838,
+        "halo_to_foreground_ratio": 0.023483,
+        "largest_component_ratio": 1.0,
+        "component_count": 1,
+        "status": "pass",
+        "accepted_for_2_5d": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "view-03-180",
+      "yaw_deg": 180,
+      "observed": true,
+      "color": "views/view-03-180.webp",
+      "alpha": "views/view-03-180-alpha.png",
+      "depth": "views/view-03-180-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/app/deliverables/heritage-evidence/artifact-inscription/inputs/li-view-05.jpg",
+      "original": "originals/view-03-180.jpg",
+      "original_sha256": "bf2de2663b4bafd05965fb6ae0b978fee7a70f1ffe5e1976b97d2c98cc91bd81",
+      "specialist_alpha": "specialist-alpha/view-03-180.png",
+      "specialist_cutout": "specialist-cutout/view-03-180.webp",
+      "comparison": "comparisons/view-03-180-original-vs-cutout.jpg",
+      "alpha_origin": "museum-specialist + structure-preserving deterministic refinement",
+      "depth_origin": "predicted-relative",
+      "alpha_quality": {
+        "foreground_ratio": 0.408519,
+        "visible_ratio": 0.420656,
+        "bbox_fill_ratio": 0.683359,
+        "halo_to_foreground_ratio": 0.025928,
+        "largest_component_ratio": 1.0,
+        "component_count": 1,
+        "status": "pass",
+        "accepted_for_2_5d": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "view-04-240",
+      "yaw_deg": 240,
+      "observed": true,
+      "color": "views/view-04-240.webp",
+      "alpha": "views/view-04-240-alpha.png",
+      "depth": "views/view-04-240-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/app/deliverables/heritage-evidence/artifact-inscription/inputs/li-view-06.jpg",
+      "original": "originals/view-04-240.jpg",
+      "original_sha256": "302e9bb203e3a792fdf3c05cf678a51be72f5064f468b789646f92a9f621003c",
+      "specialist_alpha": "specialist-alpha/view-04-240.png",
+      "specialist_cutout": "specialist-cutout/view-04-240.webp",
+      "comparison": "comparisons/view-04-240-original-vs-cutout.jpg",
+      "alpha_origin": "museum-specialist + structure-preserving deterministic refinement",
+      "depth_origin": "predicted-relative",
+      "alpha_quality": {
+        "foreground_ratio": 0.358956,
+        "visible_ratio": 0.377336,
+        "bbox_fill_ratio": 0.671674,
+        "halo_to_foreground_ratio": 0.044784,
+        "largest_component_ratio": 1.0,
+        "component_count": 1,
+        "status": "pass",
+        "accepted_for_2_5d": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "view-05-300",
+      "yaw_deg": 300,
+      "observed": true,
+      "color": "views/view-05-300.webp",
+      "alpha": "views/view-05-300-alpha.png",
+      "depth": "views/view-05-300-depth.png",
+      "source_rgb": "/Users/zhangcheng/Documents/上街去/app/deliverables/heritage-evidence/artifact-inscription/inputs/li-view-07.jpg",
+      "original": "originals/view-05-300.jpg",
+      "original_sha256": "40b29980b1a40dcf789328e269cdd34549d7519d24913d7584335311d4cb025c",
+      "specialist_alpha": "specialist-alpha/view-05-300.png",
+      "specialist_cutout": "specialist-cutout/view-05-300.webp",
+      "comparison": "comparisons/view-05-300-original-vs-cutout.jpg",
+      "alpha_origin": "museum-specialist + structure-preserving deterministic refinement",
+      "depth_origin": "predicted-relative",
+      "alpha_quality": {
+        "foreground_ratio": 0.256864,
+        "visible_ratio": 0.271431,
+        "bbox_fill_ratio": 0.648428,
+        "halo_to_foreground_ratio": 0.049482,
+        "largest_component_ratio": 1.0,
+        "component_count": 1,
+        "status": "pass",
+        "accepted_for_2_5d": true,
+        "reasons": []
+      }
+    }
+  ],
+  "elapsed_seconds": 17.134
+}

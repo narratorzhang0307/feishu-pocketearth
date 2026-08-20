@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pocket Earth</string>
+    <string name="title_activity_main">Pocket Earth</string>
+    <string name="package_name">art.throughtheglass.pocketearth</string>
+    <string name="custom_url_scheme">art.throughtheglass.pocketearth</string>
+</resources>

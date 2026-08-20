@@ -1,0 +1,11 @@
+{
+  "tensorCount": 208,
+  "components": {
+    "visual": 204,
+    "aligner": 4,
+    "language": 0,
+    "other": 0
+  },
+  "languageFrozen": true,
+  "visualOrAlignerPresent": true
+}

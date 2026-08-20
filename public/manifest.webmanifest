@@ -1,0 +1,22 @@
+{
+  "name": "Pocket Earth · 口袋地球",
+  "short_name": "口袋地球",
+  "description": "把你的书、电影、音乐、照片、行程、心情，钉回它们在地球上的那个地点。一颗会长大的地球。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
+  "orientation": "portrait",
+  "background_color": "#EAEAEA",
+  "theme_color": "#EAEAEA",
+  "categories": ["lifestyle", "travel", "productivity"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

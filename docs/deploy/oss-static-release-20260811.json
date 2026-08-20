@@ -1,0 +1,654 @@
+{
+  "schema": "pocket-earth.oss-release/v1",
+  "release": "20260811-final-v3",
+  "bucket": "last-night-on-earth",
+  "endpoint": "https://oss-cn-hangzhou.aliyuncs.com",
+  "publicBase": "https://last-night-on-earth.oss-cn-hangzhou.aliyuncs.com",
+  "status": "uploaded-and-verified",
+  "objects": [
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/exhibit.json",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/exhibit.json",
+      "bytes": 3879,
+      "sha256": "cd9ac86fef403efa78d5ebe8ad06dbf437c8fa09f5ff4102f386a50aec8273a0",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-00-000-alpha.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-00-000-alpha.png",
+      "bytes": 35329,
+      "sha256": "5e52311eae847935b4d1821bb29002d37f67f6b261c3637938418962d6dce91d",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-00-000-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-00-000-depth.png",
+      "bytes": 28396,
+      "sha256": "d6151dbfbd9d2fd74ca991b9c50824d39ca9f6012a9b2b62d1563af3ea20e91b",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-00-000.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-00-000.webp",
+      "bytes": 223458,
+      "sha256": "b85506ef2fcfb5c1e25c6a423f75f71f1ab9415222c5b65334f70ce34474d11b",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-01-070-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-01-070-depth.png",
+      "bytes": 27716,
+      "sha256": "a0379f73bb914833f1a92024daf782abece1a77e98e375d55ef2d25166359274",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-01-070.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-01-070.webp",
+      "bytes": 224344,
+      "sha256": "84b8c5262ef204a57d3bef21f80758e93ae6b27332941f20739e2272c8a2f7e0",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-02-140-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-02-140-depth.png",
+      "bytes": 29076,
+      "sha256": "fcf09cce2a4fc5042404d6efd315aa7915f45e504b445a934764f757f94320a2",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-02-140.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-02-140.webp",
+      "bytes": 226046,
+      "sha256": "db7128745ab534fb58a01a0425a650cd88b2fbe086d122a98d50993f6bb5629a",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-03-215-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-03-215-depth.png",
+      "bytes": 28782,
+      "sha256": "21dbf80d377a4f767bdd5882d329883e38982a22bd5d6c78f89ed8b5d7790aea",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-03-215.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-03-215.webp",
+      "bytes": 238494,
+      "sha256": "0950f08e950ab3ac3bebbb2426db6edb205fab65fede9622aa79b3256ca2b186",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-04-285-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-04-285-depth.png",
+      "bytes": 27555,
+      "sha256": "7986d5486cabf804409ba0543a21bd82d71e89f23d7fb7f71e1ffdb810f80527",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-04-285.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-04-285.webp",
+      "bytes": 226914,
+      "sha256": "4cbe0755e2fb3cf1258d0421a8d541558a8c712886801ed109af38a3702305f2",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-05-355-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-05-355-depth.png",
+      "bytes": 28711,
+      "sha256": "71065d01db1794a539f0f7ca895e96bb0a1be808b60814b5cb4290bcef09471c",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-05-355.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-05-355.webp",
+      "bytes": 226798,
+      "sha256": "39a3c558212853e23f3be3661d1362c38f10f67fe97d8b70f8eb572cfe44ff56",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/abo-eef43318-rgb-baseline/views/view-00-000.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/abo-eef43318-rgb-baseline/views/view-00-000.webp",
+      "bytes": 200302,
+      "sha256": "77bef083f5a0a421b561bf9eb92b7463ba7be690a9217499b5444613cd92070f",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/exhibit.json",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/exhibit.json",
+      "bytes": 4404,
+      "sha256": "225a9f46b070d01a7eb262e8c44b89a4ca3f4051115ffd733259241e31a4c654",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-00-001-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-00-001-depth.png",
+      "bytes": 19706,
+      "sha256": "d2e758a77e479542f906e221c7aa8a6780b05d21a111289ebe4be8b567b69fa2",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-00-001.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-00-001.webp",
+      "bytes": 81170,
+      "sha256": "ec54aa161f2ee0ff7899a83b2e975e80fde8f5fb5a66957b1aa3a1fee75d9627",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-01-061-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-01-061-depth.png",
+      "bytes": 17782,
+      "sha256": "16d870db3e61d18532b8bae0e63a7c9842c51bd62d29f05cc72a9e1b9caf248a",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-01-061.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-01-061.webp",
+      "bytes": 82092,
+      "sha256": "7a8ff7ef827ccf33e4cfd658b24edc32762ff3d88f21045bb0cc4ded6b022f08",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-02-121-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-02-121-depth.png",
+      "bytes": 20932,
+      "sha256": "7990cd77bebe3a1300b5ce7a0ad06ac960038ce1c0d239d17a9f4ae26b6f95af",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-02-121.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-02-121.webp",
+      "bytes": 100538,
+      "sha256": "4158ec9c99741a7793c9174f7d0c93000d50f6bdfd066f285a6e513fb9af3620",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-03-181-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-03-181-depth.png",
+      "bytes": 19368,
+      "sha256": "a3028c61f615ca42a8460a3e3e236b6ac3b308bb2a10a37b3faadc491c7072c3",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-03-181.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-03-181.webp",
+      "bytes": 94776,
+      "sha256": "58ad8e809c839ed25e219980cba0bf9bdc1c657b5c738bd079d6cb7b13e91817",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-04-241-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-04-241-depth.png",
+      "bytes": 18394,
+      "sha256": "f5bd21f763a37432ac8fa5ded0800091dcb3c6830ea975631e82044bb91fe571",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-04-241.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-04-241.webp",
+      "bytes": 76624,
+      "sha256": "96042741866221d202cd3ebe248926e7aea4754c89b6235938bb5085f6dafa45",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-05-301-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-05-301-depth.png",
+      "bytes": 19138,
+      "sha256": "0c5e7e9053046e3719ef09ebfa4a05c186b85039aff5d513e2236774366019fd",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-05-301.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_217_HI-museum-mnn/views/view-05-301.webp",
+      "bytes": 94506,
+      "sha256": "f8b7c79c57036e1c2bb5d722e863151cd1a457d20247b50a08d98e3c14df09ca",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/exhibit.json",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/exhibit.json",
+      "bytes": 4403,
+      "sha256": "98ab0d84065751311f2382031a6a78022486d4bfa54ba65de56e164a0ce138c6",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/foreground.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/foreground.webp",
+      "bytes": 218990,
+      "sha256": "a17e21b372b7d3b286ae4690b7e29a31284151fc1f7d044f3613ccef674733fa",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-00-001-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-00-001-depth.png",
+      "bytes": 37400,
+      "sha256": "3bef15346d9907cd084586baa86d33429fcb61b9add52e38644cd81425556892",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-00-001.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-00-001.webp",
+      "bytes": 218990,
+      "sha256": "a17e21b372b7d3b286ae4690b7e29a31284151fc1f7d044f3613ccef674733fa",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-01-061-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-01-061-depth.png",
+      "bytes": 36854,
+      "sha256": "d07cc24b866bcfb1930e38e13f0d152a3aa1c127aa43efc24a0c22a8ccaef32c",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-01-061.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-01-061.webp",
+      "bytes": 207532,
+      "sha256": "48c8726f1619b2be066846b21526f9349880e51eabba2b420690b86fe44effec",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-02-121-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-02-121-depth.png",
+      "bytes": 35779,
+      "sha256": "203595548107ed6aaf4765ffb9fc08e958dea00338220b7cb10244a273c526a4",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-02-121.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-02-121.webp",
+      "bytes": 206908,
+      "sha256": "0d7178d2b6ab4fe5f3ea818e6d6c89832dce15621ff57b8ba68cef3ab64291b1",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-03-181-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-03-181-depth.png",
+      "bytes": 35939,
+      "sha256": "626917e1dfad7282958bfc87cc6d1ea6f96da5dfeaebcb2d75874f5a0bdb3d32",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-03-181.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-03-181.webp",
+      "bytes": 215648,
+      "sha256": "1aa701e72df51d597682b941b02c27231c4c83d432152f93d3aaf07f12e55144",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-04-241-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-04-241-depth.png",
+      "bytes": 38220,
+      "sha256": "bbdcafcd1c9b1a91f819bdd09012b8b8d1499da8bf99e5e99d2dbc727bf2e2db",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-04-241.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-04-241.webp",
+      "bytes": 211528,
+      "sha256": "bbfcd2ff72e4d4d5fc580abdbe196e8c62938ddb91ac7136223f37b664e6cc49",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-05-301-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-05-301-depth.png",
+      "bytes": 37170,
+      "sha256": "a2c377f20b5c7aed9c6bd7ca6538810014b9c7bc05f64ced812117743c1539cd",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-05-301.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/chsd-Ark_HM_791_HI-museum-mnn/views/view-05-301.webp",
+      "bytes": 211908,
+      "sha256": "55d0b0122118100214614be99a1965a0d407f6dcaa1564f91dbec2ca53fa1746",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-matting/details/inscription.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-matting/details/inscription.jpg",
+      "bytes": 850366,
+      "sha256": "0f567725e26fcb3f97e84ec70f3d1acc15d18e120579296519cef90487764779",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/exhibit.json",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/exhibit.json",
+      "bytes": 9436,
+      "sha256": "486ffb4ae2ac8c7e85866674c84cad38e3321d7668b26cba45b2819630b6aaf8",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-00-000.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-00-000.jpg",
+      "bytes": 505898,
+      "sha256": "bbcab4a5b67c1aee493986d63229e1b22d3f7e13106751ff34d1d9b9254efdb8",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-01-060.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-01-060.jpg",
+      "bytes": 382617,
+      "sha256": "9e86d306b2177a8624cb62bd7c40302c337622fd50a840573100998f8cbf8d8c",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-02-120.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-02-120.jpg",
+      "bytes": 420972,
+      "sha256": "400fff8f7353be73e70f6750ee277855198b783a4f888a51cb034e6c73fcfd7d",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-03-180.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-03-180.jpg",
+      "bytes": 384990,
+      "sha256": "bf2de2663b4bafd05965fb6ae0b978fee7a70f1ffe5e1976b97d2c98cc91bd81",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-04-240.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-04-240.jpg",
+      "bytes": 315906,
+      "sha256": "302e9bb203e3a792fdf3c05cf678a51be72f5064f468b789646f92a9f621003c",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-05-300.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/originals/view-05-300.jpg",
+      "bytes": 207749,
+      "sha256": "40b29980b1a40dcf789328e269cdd34549d7519d24913d7584335311d4cb025c",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-00-000-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-00-000-depth.png",
+      "bytes": 34304,
+      "sha256": "e413f8279750d73a774a79aa52048cdb3320f57ca1f6f98f13611772a0256596",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-00-000.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-00-000.webp",
+      "bytes": 266754,
+      "sha256": "6856a1d89654984535c8ac0d91cd3ab4347d731ca544c147a3cf99c73ae38f07",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-01-060-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-01-060-depth.png",
+      "bytes": 34612,
+      "sha256": "d4f349dc5a8094132c6d8466c8557b8cb183d97051e3597f8a817ad49d12ef9b",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-01-060.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-01-060.webp",
+      "bytes": 259008,
+      "sha256": "8fb9a59dcdaa9df95ccf1ac328252e4c4a080f1e24f43b71a35e511d8c7876a6",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-02-120-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-02-120-depth.png",
+      "bytes": 33345,
+      "sha256": "775f2d5602c118fcdae39580373907d0bb4a432fc6e19c45c96fe08f9a807fd9",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-02-120.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-02-120.webp",
+      "bytes": 273484,
+      "sha256": "d6e6c8c21b0e3c56c74c3e35183ed45dba3ab2613d62a2578d59a0f244c4710b",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-03-180-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-03-180-depth.png",
+      "bytes": 32030,
+      "sha256": "81d428ae2d1b7603ddb8d26efec77f018aa2de39842063d3e9f8b9faf341d978",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-03-180.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-03-180.webp",
+      "bytes": 256940,
+      "sha256": "c677c4f92544fa2d051133b83f28b8e13f03f27ad3d5346f478614701e6b3045",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-04-240-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-04-240-depth.png",
+      "bytes": 34308,
+      "sha256": "895c0e5d9f84e6d6cbc7b63c90a33a8048a7daf7ea621cd01d361db387c2b5e1",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-04-240.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-04-240.webp",
+      "bytes": 213368,
+      "sha256": "eeeb33c16c6ceea3c9f8c360210db0566066c36f26f78a4298e571607f743b76",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-05-300-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-05-300-depth.png",
+      "bytes": 21380,
+      "sha256": "b115b28efc555254e374b5455ac5196a53acc5936a9717654cae0d9f629644ab",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-05-300.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-200497-li-museum-refined-v2/views/view-05-300.webp",
+      "bytes": 60176,
+      "sha256": "9341e867e6683fb83d7c0fd1765c031d4f24e9690510a123dc00f08dec0e8a02",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/details/inscription.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/details/inscription.jpg",
+      "bytes": 48402,
+      "sha256": "1634210cb8737353b09083bd0d3b2828285638be9644fccd131127be7bcadffa",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/exhibit.json",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/exhibit.json",
+      "bytes": 3351,
+      "sha256": "5358a55b196ff83ce48eca97296dc35506d7db95f6702f84297503fa2153053a",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-00-000-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-00-000-depth.png",
+      "bytes": 30033,
+      "sha256": "14aa40582c1f1256d200754f644c755c1a1cc6d1987990c3a04fa1736bc2a118",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-00-000.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-00-000.webp",
+      "bytes": 333706,
+      "sha256": "61075f49e565cd3b835ae07fe0213397977ad0dd697296034dc3c97c31f22b15",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-01-090-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-01-090-depth.png",
+      "bytes": 21595,
+      "sha256": "3078882c0946de99419d48b42f29dceb0fd5cb3879d257dd21b5e9162358c4cd",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-01-090.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-01-090.webp",
+      "bytes": 216368,
+      "sha256": "c0ca0776fdeaff189f81e35aa922f4ecd50975fbe9bd73603d077d27b3601410",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-02-180-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-02-180-depth.png",
+      "bytes": 32012,
+      "sha256": "00a658234676bc1b9304627f0d0038c49513784910ad285152c1a7fb92c82165",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-02-180.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-02-180.webp",
+      "bytes": 398796,
+      "sha256": "55298a76415845653e097d710e895d92ac6ec92eb00279c7c755ea9a44524cc4",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-03-270-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-03-270-depth.png",
+      "bytes": 14771,
+      "sha256": "26ef98d09cf38cc9a941527f7229d3e7402e1efc2833fac93dcf5adfbd928f58",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-03-270.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-204612-jade-bi-museum-matting/views/view-03-270.webp",
+      "bytes": 140590,
+      "sha256": "1fa193c4bb2bd7e9bc2504387945972ba90378f0e71c702cb43e9ff3213770ae",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/details/inscription.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/details/inscription.jpg",
+      "bytes": 150960,
+      "sha256": "0d37f7b2188554b6fbb3fed7f191a5d597599602b56973c3a845e855bd74cc68",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/exhibit.json",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/exhibit.json",
+      "bytes": 2482,
+      "sha256": "207f74fc2efca1365c10dcbe8de1486e1a2e00bb0918f6adba5060f28e7ecf3b",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/views/view-00-000-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/views/view-00-000-depth.png",
+      "bytes": 50485,
+      "sha256": "a60658c16b5ce98cc383ecf6d0a2e03114457509eb932c802f571f84f387e669",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/views/view-00-000.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/views/view-00-000.webp",
+      "bytes": 420040,
+      "sha256": "c203ab7744098a3e68830d3662e8497b9f27ec72923247a55ea9ac982a6da58f",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/views/view-01-180-depth.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/views/view-01-180-depth.png",
+      "bytes": 32553,
+      "sha256": "23f7dced6bec34f59c39e41ba98ef30f01ee692037030814e33bf4050b4a6ae5",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/views/view-01-180.webp",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/harvard-315439-rong-mirror-museum-matting/views/view-01-180.webp",
+      "bytes": 452198,
+      "sha256": "36d5a57fb0df45efb9c8a576ab8ffab5aac4250e4de03a5c76b5eb9b7aa516c7",
+      "contentType": "image/webp"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/model-proof/chsd-Ark_HM_217_HI-museum-mnn-2_5d-proof.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/model-proof/chsd-Ark_HM_217_HI-museum-mnn-2_5d-proof.jpg",
+      "bytes": 210769,
+      "sha256": "b15baaf7029ef5b6e0ec7bde7f76644235a01ba43f4eef709435cf1d1675fac7",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/model-proof/chsd-Ark_HM_791_HI-museum-mnn-2_5d-proof.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/model-proof/chsd-Ark_HM_791_HI-museum-mnn-2_5d-proof.jpg",
+      "bytes": 243204,
+      "sha256": "0464093d92584b7775c2cd643da1094800f45f25e0c53e3b5698e147df32371b",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/model-proof/frozen-blind-best-01.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/model-proof/frozen-blind-best-01.png",
+      "bytes": 282084,
+      "sha256": "04c9522f70604cf21cd9315708b8e0a5418bc1e2a2d3267e40d60f751b56c7b5",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-2_5d/model-proof/frozen-blind-regression-01.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-2_5d/model-proof/frozen-blind-regression-01.png",
+      "bytes": 293096,
+      "sha256": "dd9c075b06a8bce54cadf47123f8d97f6626e092cdb759c7fa86bdc3ae1141c8",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/exhibit-3dgs/abo-eef43318/evidence-manifest.json",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/exhibit-3dgs/abo-eef43318/evidence-manifest.json",
+      "bytes": 2682,
+      "sha256": "dd284d8f0536ff78fd197e370a7774228cbffdf2f4abc43be36c69604f364768",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "dist/assets/heritage-demo/restoration-damaged.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/heritage-demo/restoration-damaged.png",
+      "bytes": 141143,
+      "sha256": "3597770ef91b2205d1c0a59b7b185b6605594e67ad58d18ba9aec0077fa2dd7b",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/heritage-demo/restoration-mask.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/heritage-demo/restoration-mask.png",
+      "bytes": 3129,
+      "sha256": "10331ab25a8161e76dfade959fac68e8d9559ddd36350e3f9cbc428529ecb624",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/heritage-demo/restoration-reference.png",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/heritage-demo/restoration-reference.png",
+      "bytes": 131471,
+      "sha256": "de5f3c23e43e2b9048f7be907ce50d16872374126a2cf76d479a3686c0121f13",
+      "contentType": "image/png"
+    },
+    {
+      "local": "dist/assets/heritage-demo/stele-rubbing-blur.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/heritage-demo/stele-rubbing-blur.jpg",
+      "bytes": 441463,
+      "sha256": "2d5ae9ae67aa9c625c368ebafbe89635b04d6df6f0e30d77ebe0c566f55539e1",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/heritage-demo/stele-rubbing-readable.jpg",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/heritage-demo/stele-rubbing-readable.jpg",
+      "bytes": 134555,
+      "sha256": "d34612763cf6cef1f96debcda6b949144af104262b79a0ed32f36b1f808e0545",
+      "contentType": "image/jpeg"
+    },
+    {
+      "local": "dist/assets/ort-wasm-simd-threaded.jsep-B0T3yYHD.wasm",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/ort-wasm-simd-threaded.jsep-B0T3yYHD.wasm",
+      "bytes": 21596019,
+      "sha256": "c46655e8a94afc45338d4cb2b840475f88e5012d524509916e505079c00bfa39",
+      "contentType": "application/wasm"
+    },
+    {
+      "local": "dist/assets/skills/guji/place-gazetteer.compact.json",
+      "key": "pocket-earth/releases/20260811-final-v3/assets/skills/guji/place-gazetteer.compact.json",
+      "bytes": 970527,
+      "sha256": "faed5ec01e4434ec663f28634ab43e96d8f31076e163221883e8578e17a27219",
+      "contentType": "application/json; charset=utf-8"
+    },
+    {
+      "local": "dist/exhibits/preset-cube.glb",
+      "key": "pocket-earth/releases/20260811-final-v3/exhibits/preset-cube.glb",
+      "bytes": 1500,
+      "sha256": "598a2ab5022273329d74728734742809860a04972193eb167a8c4e6bd62bb4d2",
+      "contentType": "model/gltf-binary"
+    },
+    {
+      "local": "dist/exhibits/preset-nike.splat",
+      "key": "pocket-earth/releases/20260811-final-v3/exhibits/preset-nike.splat",
+      "bytes": 8655712,
+      "sha256": "35888459aeddcda0b75a2bd76bba5a94c6e32aec0a0d566e96cd10dfd6e18b3c",
+      "contentType": "application/octet-stream"
+    }
+  ]
+}

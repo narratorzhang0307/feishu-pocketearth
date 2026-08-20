@@ -1,0 +1,100 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*credentials*
+*secret*
+.DS_Store
+*.local
+
+# 当前 Google 版的本地 Gemma 权重（约 2.8 GiB）：部署时单独随项目上传，不进入 Git / dist。
+.local-models/*.litertlm
+!.local-models/README.md
+*.gguf
+
+# 决赛端侧模型与安装包：权重由阿里云 OSS / Release 分发，不进入源码仓库。
+*.mnn
+*.apk
+*.aab
+deliverables/
+
+# 用户放入供阅读的版权书籍 / 教程，不入库
+*.docx
+*.pdf
+
+# 介绍 / 演示用 PPT，保密不外泄
+*.pptx
+
+# 后端数据底座 / 私有资料库：二进制链接库、城市数据与坐标元数据不入库（私有）
+resource-library/audio.db
+resource-library/cities/
+resource-library/city-meta.json
+
+# 照片库（高清 full + 缩略 thumb，私有，不入库）
+resource-library/photos/
+resource-library/world-photos.json
+
+# Public Earth 每日 Agent 的运行快照（公开来源草稿 + 模型审计轨迹）；运行时生成，不进入源码。
+var/knowledge/
+var/data-packs/
+var/toolchains/
+.ossutil_checkpoint/
+
+# 本地生成 / 准备用的临时产物，不入库
+outputs/
+tmp/
+_local-backups/
+.codex_tmp/
+__pycache__/
+*.py[cod]
+
+# 第三方研究项目（各有上游来源，不进本仓库备份）
+hermes-agent-main/
+openhanako-main/
+Frost Buddy/
+docx_render_qa/
+langchain-master/
+research/upstream/
+*.zip
+
+# 原始照片源（已处理上 OSS + resource-library，原图不入库）
+照片替换/
+
+# 开发工具配置 / 优化日志：含服务器信息与开发过程记录，不进公开仓库
+.claude/
+OPTIMIZATION-LOG.md
+
+# 提交材料与本地测试图（保密，绝不入库；防自动化 git add 误提交）
+GMI提交材料/
+test-label.jpg
+
+# 本地活动材料包含联系方式、证书与邮寄信息，只保留在本机。
+GoogleAIVibeathon/
+
+# —— 本地资料 / 大文件，不进代码仓库（视频素材、导出稿件等）——
+*.mp3
+*.mp4
+*.mov
+视频最终版/
+video_processing_preview/
+最终*视频/
+Pocket Earth · 口袋地球/
+Pocket Earth_产品文档_Final.md
+
+# 旧版活动资料与本地参考，不属于 Google 版源码
+PocketEarthGlobal_AICoding*/
+谷歌技术*/
+阿里*图参考/
+当前提交材料_架构图核对/
+0720最终提交文件/
+
+# 硬件视觉本地参考与生成缓存；最终技术图保留在 docs/assets/hardware。
+树莓派硬件/.DS_Store
+树莓派硬件/__pycache__/
+树莓派硬件/参考图/
+树莓派硬件/04_硬件体验_Web数字孪生_直接运行版.html
+树莓派硬件/Google技术版_最终图/
+树莓派硬件/真实Whisplay界面/

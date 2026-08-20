@@ -1,0 +1,66 @@
+{
+  "schema": "pocketearth.exhibit-3dgs-evidence/v1",
+  "status": "awaiting-pai-optimization",
+  "object": {
+    "id": "abo-eef43318",
+    "label": "ABO 陶器真实多视图胜例",
+    "source": "Amazon Berkeley Objects",
+    "license": "CC-BY-NC-4.0",
+    "publicUse": "研究、评测与注明来源的非商业比赛证据"
+  },
+  "capture": {
+    "views": 72,
+    "yawRange": [0, 355],
+    "maximumYawGapDegrees": 5,
+    "status": "pass"
+  },
+  "alpha": {
+    "viewsPassed": 72,
+    "viewsTotal": 72,
+    "model": "museum-exhibit-matting-v1",
+    "runtime": "MNN 3.6.1 FP16",
+    "status": "pass"
+  },
+  "pose": {
+    "route": "known-turntable-orbit",
+    "source": "dataset-recorded-turntable-yaw",
+    "notColmap": true,
+    "status": "pass"
+  },
+  "quick2_5d": {
+    "status": "ready",
+    "manifest": "/assets/exhibit-2_5d/abo-eef43318-museum-mnn/exhibit.json",
+    "baselineView": "/assets/exhibit-2_5d/abo-eef43318-rgb-baseline/views/view-00-000.webp",
+    "specialistView": "/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-00-000.webp",
+    "specialistAlpha": "/assets/exhibit-2_5d/abo-eef43318-museum-mnn/views/view-00-000-alpha.png"
+  },
+  "modelProof": {
+    "blindBest": "/assets/exhibit-2_5d/model-proof/frozen-blind-best-01.png",
+    "blindRegression": "/assets/exhibit-2_5d/model-proof/frozen-blind-regression-01.png"
+  },
+  "full3d": {
+    "status": "pending",
+    "asset": null,
+    "format": null,
+    "sha256": null,
+    "novelViewEvidence": [],
+    "orbitVideo": null
+  },
+  "assetRetention": {
+    "root": "/assets/exhibit-3dgs/abo-eef43318/",
+    "persistentMaterialExample": true,
+    "temporarySignedUrlAllowed": false,
+    "plannedFiles": ["model.ply", "model.spz", "novel-views/", "orbit.mp4"]
+  },
+  "immutableJobArchive": {
+    "name": "exhibit-3dgs-abo-eef43318-v3.tar.gz",
+    "sha256": "147b72681874da878fc3906786f028c6500effeb3beafacea6310a3e9d3ebf63",
+    "bytes": 36101956
+  },
+  "mobileBoundary": {
+    "status": "pass",
+    "checkedFiles": 4739,
+    "cloudDependenciesInApp": 0,
+    "viewer": "@mkkellogg/gaussian-splats-3d"
+  }
+}

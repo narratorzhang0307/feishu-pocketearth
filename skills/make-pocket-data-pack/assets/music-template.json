@@ -1,0 +1,31 @@
+{
+  "protocol": "pocket-data/v1",
+  "identity": {
+    "id": "com.example.my-music",
+    "name": "我的音乐数据包",
+    "version": "1.0.0",
+    "author": "请填写数据包作者",
+    "description": "由 make-pocket-data-pack Skill 整理的音乐数据"
+  },
+  "schema": {
+    "name": "pocket.music/v1",
+    "version": "1.0.0",
+    "record_count": 0
+  },
+  "compatibility": {
+    "skills": [
+      "pocket.music"
+    ],
+    "runtime_min": "1.0.0"
+  },
+  "privacy": "private",
+  "provenance": {
+    "source": "请填写原始文件、清单、URL 或数据库来源",
+    "license": "private-use",
+    "generated_at": "请替换为 ISO 8601 UTC 时间"
+  },
+  "distribution": {
+    "mode": "inline"
+  },
+  "records": []
+}

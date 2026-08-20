@@ -1,0 +1,20 @@
+{
+  "license": "CC0-1.0; copied from the frozen 上街去 general OCR blind set",
+  "source": "Pocket Earth self-authored held-out Chinese OCR documents",
+  "cases": [
+    {
+      "id": "parking-clean",
+      "label": "中文停车单 · 清晰页",
+      "mode": "document",
+      "file": "transfer/parking-clean.png",
+      "expectedText": "云栖停车场\n• 入场：2026-08-18 13:42\n• 离场：2026-08-18 16:17\n• 停车时长：2小时35分\n• 应付金额：15.00元\n• 位置：杭州市西湖区留和路129号\n校验页 B05｜从未进入训练"
+    },
+    {
+      "id": "parking-stress",
+      "label": "中文停车单 · 反光划痕压力页",
+      "mode": "document",
+      "file": "transfer/parking-stress.jpg",
+      "expectedText": "云栖停车场\n• 入场：2026-08-18 13:42\n• 离场：2026-08-18 16:17\n• 停车时长：2小时35分\n• 应付金额：15.00元\n• 位置：杭州市西湖区留和路129号\n校验页 B05｜从未进入训练"
+    }
+  ]
+}

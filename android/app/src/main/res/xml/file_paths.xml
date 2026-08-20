@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="shared_pictures" path="Pictures/" />
+    <external-path name="shared_camera" path="DCIM/" />
+    <cache-path name="app_cache" path="." />
+    <files-path name="app_files" path="." />
+</paths>

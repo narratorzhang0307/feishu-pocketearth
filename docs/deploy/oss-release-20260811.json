@@ -1,0 +1,52 @@
+{
+  "schema": "pocket-earth.oss-release/v1",
+  "release": "20260811-skills-v1",
+  "bucket": "last-night-on-earth",
+  "endpoint": "https://oss-cn-hangzhou.aliyuncs.com",
+  "publicBase": "https://last-night-on-earth.oss-cn-hangzhou.aliyuncs.com",
+  "status": "uploaded-and-verified",
+  "objects": [
+    {
+      "local": "deploy/edge-runtime/assets/heritage/guji-v2/visual-lora.mnn",
+      "key": "pocket-earth/models/guji-vision-lora/pocketearth-int8-20260810/visual-lora.mnn",
+      "bytes": 17588592,
+      "sha256": "6d24871634ff4c1a9af67c5b722f4c311c59fbbe9b23b17111e915f75a992112",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "deploy/edge-runtime/assets/heritage/rubbing-v2/visual-lora.mnn",
+      "key": "pocket-earth/models/rubbing-vision-lora/pocketearth-int8-20260810/visual-lora.mnn",
+      "bytes": 17588592,
+      "sha256": "1427fbb08d32607db54796c935d4afde634281990f5dac1be808652e4518858e",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "deploy/edge-runtime/assets/heritage/general-ocr-release/visual-lora.mnn",
+      "key": "pocket-earth/models/general-ocr-vision-lora/pocketearth-int8-20260810/visual-lora.mnn",
+      "bytes": 17588592,
+      "sha256": "d09be9ee9a41c7ec87c45e2f721ad7861a493eeb11b04611ec06380d19fc9f5e",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "deploy/edge-runtime/assets/heritage/restorer-v1/heritage-restorer.mnn",
+      "key": "pocket-earth/models/heritage-restorer/restorer-v1/heritage-restorer.mnn",
+      "bytes": 15581812,
+      "sha256": "c571f66050be527e7e531b9c116a417c4fece0ec4090cdaf5d2497a8c0eb5a87",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "deploy/edge-runtime/assets/travel/travel-planner-v1/lora.mnn",
+      "key": "pocket-earth/models/travel-planner-lora/travel-planner-v1/lora.mnn",
+      "bytes": 72633256,
+      "sha256": "791a4659ecd86dba2336ca4fdc3a4ee93640bed5b7f92370bfdc3c702450dc13",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "local": "deploy/edge-runtime/assets/exhibit/exhibit-matting-v1/exhibit-matting-fp16.mnn",
+      "key": "pocket-earth/models/exhibit-matting/exhibit-matting-v1/exhibit-matting-fp16.mnn",
+      "bytes": 146105104,
+      "sha256": "95f35d70763cd83f58e79d83ebba2c682853bee764906dce9b366d1d07ea4b10",
+      "contentType": "application/octet-stream"
+    }
+  ]
+}

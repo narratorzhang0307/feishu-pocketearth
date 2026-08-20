@@ -1,0 +1,44 @@
+{
+  "protocol": "pocket-data/v1",
+  "identity": {
+    "id": "earth.pocket.example.mapping-small",
+    "name": "一册示例内容地图",
+    "version": "1.0.0",
+    "author": "Pocket Earth",
+    "description": "用于验证书籍地点证据 Data Pack 导入的最小示例"
+  },
+  "schema": { "name": "pocket.mapping/v1", "version": "1.0.0", "record_count": 1 },
+  "compatibility": { "skills": ["pocket.mapping"], "runtime_min": "1.0.0" },
+  "privacy": "private",
+  "provenance": { "source": "Pocket Earth protocol example", "license": "private-use", "generated_at": "2026-08-10T00:00:00.000Z" },
+  "distribution": { "mode": "inline" },
+  "records": [
+    {
+      "id": "mapping:example-001",
+      "title": "示例游记",
+      "author": "示例作者",
+      "era": "现代",
+      "city": "杭州",
+      "sourceName": "example.txt",
+      "sourceSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "summary": "一份带原文证据、人工确认与坐标的内容 Mapping 示例。",
+      "locations": [
+        {
+          "id": "place:example-001",
+          "name": "西湖",
+          "status": "extant",
+          "relation": "scene",
+          "page": 1,
+          "quote": "原文逐字引句中的西湖。",
+          "note": "现代坐标仅代表落图候选，已由用户确认。",
+          "lng": 120.148,
+          "lat": 30.245,
+          "confidence": 0.9,
+          "confirmed": true,
+          "sourceRef": "第 1 页",
+          "sourceUrls": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,237 @@
+run sh: `/usr/local/bin/python -m torch.distributed.run --nproc_per_node 1 --master_port 23456 --master_addr dlcjz4xl668a09b3-master-0 /usr/local/lib/python3.11/site-packages/swift/cli/infer.py --model Qwen/Qwen3-VL-2B-Instruct --model_revision ae9985b208c074c10cfbe3a61b5cb7268cdc9c53 --use_hf false --infer_backend transformers --stream false --temperature 0 --repetition_penalty 1.0 --max_new_tokens 64 --max_batch_size 1 --val_dataset_sample 32 --val_dataset_shuffle false --load_args false --val_dataset /tmp/aesthetic-curator-persist/runs/learnability-v1-20260811T135300Z/eval/minimal.jsonl --adapters /tmp/aesthetic-curator-runtime/output/v0-20260811-215451/checkpoint-160 --result_path /tmp/aesthetic-curator-persist/runs/learnability-v1-20260811T135300Z/lora-results.jsonl`
+[INFO:swift] Successfully registered `/usr/local/lib/python3.11/site-packages/swift/dataset/data/dataset_info.json`.
+[INFO:swift] rank: 0, local_rank: 0, world_size: 1, local_world_size: 1
+[INFO:swift] Downloading the model from ModelScope Hub, model_id: Qwen/Qwen3-VL-2B-Instruct
+2026-08-11 22:15:57,539 | INFO    | modelscope_hub.download | Downloading 12 files from Qwen/Qwen3-VL-2B-Instruct@ae9985b208c074c10cfbe3a61b5cb7268cdc9c53
+Downloading:   0%|          | 0/12 [00:00<?, ?file/s]Downloading: 100%|██████████| 12/12 [00:00<00:00, 1921.86file/s]
+[INFO:swift] Loading the model using model_dir: /tmp/aesthetic-curator-runtime/cache/modelscope/models/Qwen--Qwen3-VL-2B-Instruct/snapshots/ae9985b208c074c10cfbe3a61b5cb7268cdc9c53
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+[INFO:swift] Setting torch_dtype: torch.bfloat16
+[WARNING:swift] Please install the package: `pip install "decord" -U`.
+[INFO:swift] Because len(args.val_dataset) > 0, setting split_dataset_ratio: 0.0
+[INFO:swift] Setting args.eval_human: False
+[INFO:swift] Setting args.lazy_tokenize: True
+[INFO:swift] args: InferArguments(use_ray=False, ray_exp_name=None, device_groups=None, model='Qwen/Qwen3-VL-2B-Instruct', model_type='qwen3_vl', model_revision='ae9985b208c074c10cfbe3a61b5cb7268cdc9c53', task_type='causal_lm', torch_dtype=torch.bfloat16, attn_impl=None, experts_impl=None, new_special_tokens=[], num_labels=None, problem_type=None, rope_scaling=None, device_map=None, max_memory={}, max_model_len=None, local_repo_path=None, init_strategy=None, template='qwen3_vl', system=None, max_length=262144, truncation_strategy='delete', max_pixels=None, agent_template=None, norm_bbox=None, use_chat_template=True, padding_side='right', padding_free=False, loss_scale='default', sequence_parallel_size=1, is_binary_loss_scale=None, template_backend='swift', response_prefix=None, enable_thinking=None, preserve_thinking=None, add_non_thinking_prefix=True, disable_ignore_empty_think=False, dataset=[], val_dataset=['/tmp/aesthetic-curator-persist/runs/learnability-v1-20260811T135300Z/eval/minimal.jsonl'], cached_dataset=[], cached_val_dataset=[], split_dataset_ratio=0.0, data_seed=42, dataset_num_proc=1, load_from_cache_file=False, dataset_shuffle=True, val_dataset_shuffle=False, streaming=False, interleave_prob=None, stopping_strategy='first_exhausted', shuffle_buffer_size=1000, download_mode='reuse_dataset_if_exists', columns={}, strict=False, remove_unused_columns=True, disable_auto_column_mapping=False, model_name=None, model_author=None, custom_dataset_info=[], quant_method=None, quant_bits=None, hqq_axis=None, bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_quant_type='nf4', bnb_4bit_use_double_quant=True, bnb_4bit_quant_storage=None, max_new_tokens=64, temperature=0.0, top_k=None, top_p=None, repetition_penalty=1.0, num_beams=1, stream=False, stop_words=[], logprobs=False, top_logprobs=None, structured_outputs_regex=None, tuner_backend='peft', tuner_type='lora', adapters=['/tmp/aesthetic-curator-runtime/output/v0-20260811-215451/checkpoint-160'], external_plugins=[], custom_register_path=[], seed=42, model_kwargs={}, enable_npu_model_patch=True, load_args=False, load_data_args=False, packing=False, packing_length=None, packing_num_proc=1, packing_strategy='binpack', lazy_tokenize=True, use_hf=False, hub_token=None, ddp_timeout=18000000, ddp_backend=None, ignore_args_error=False, use_swift_lora=False, vllm_gpu_memory_utilization=0.9, vllm_tensor_parallel_size=1, vllm_pipeline_parallel_size=1, vllm_enable_expert_parallel=False, vllm_max_num_seqs=256, vllm_max_model_len=None, vllm_disable_custom_all_reduce=True, vllm_enforce_eager=False, vllm_limit_mm_per_prompt=None, vllm_max_lora_rank=16, vllm_enable_prefix_caching=None, vllm_use_async_engine=False, vllm_quantization=None, vllm_reasoning_parser=None, vllm_disable_cascade_attn=False, vllm_mm_processor_cache_gb=None, vllm_speculative_config=None, vllm_engine_kwargs={}, vllm_data_parallel_size=1, sglang_tp_size=1, sglang_pp_size=1, sglang_dp_size=1, sglang_ep_size=1, sglang_enable_ep_moe=False, sglang_mem_fraction_static=None, sglang_context_length=None, sglang_disable_cuda_graph=False, sglang_quantization=None, sglang_kv_cache_dtype='auto', sglang_enable_dp_attention=False, sglang_disable_custom_all_reduce=True, sglang_speculative_algorithm=None, sglang_speculative_num_steps=None, sglang_speculative_eagle_topk=None, sglang_speculative_num_draft_tokens=None, lmdeploy_tp=1, lmdeploy_session_len=None, lmdeploy_cache_max_entry_count=0.8, lmdeploy_quant_policy=0, lmdeploy_vision_batch_size=1, merge_lora=False, safe_serialization=True, max_shard_size='5GB', infer_backend='transformers', result_path='/tmp/aesthetic-curator-persist/runs/learnability-v1-20260811T135300Z/lora-results.jsonl', write_batch_size=1000, metric=None, max_batch_size=1, val_dataset_sample=32, reranker_use_activation=True)
+[INFO:swift] Global seed set to 42
+[INFO:swift] Downloading the model from ModelScope Hub, model_id: Qwen/Qwen3-VL-2B-Instruct
+2026-08-11 22:15:58,010 | INFO    | modelscope_hub.download | Downloading 13 files from Qwen/Qwen3-VL-2B-Instruct@ae9985b208c074c10cfbe3a61b5cb7268cdc9c53
+Downloading:   0%|          | 0/13 [00:00<?, ?file/s]Downloading: 100%|██████████| 13/13 [00:03<00:00,  3.50file/s]Downloading: 100%|██████████| 13/13 [00:03<00:00,  3.50file/s]
+/usr/local/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+[rank0]:[W811 22:16:01.679557284 ProcessGroupNCCL.cpp:4718] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 as device used by this process is currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. You can pecify device_id in init_process_group() to force use of a particular device.
+[INFO:swift] Loading the model using model_dir: /tmp/aesthetic-curator-runtime/cache/modelscope/models/Qwen--Qwen3-VL-2B-Instruct/snapshots/ae9985b208c074c10cfbe3a61b5cb7268cdc9c53
+[WARNING:swift] Please install the package: `pip install "decord" -U`.
+[INFO:swift] Setting max_ratio: 200. You can adjust this hyperparameter through the environment variable: `MAX_RATIO`.
+[INFO:swift] Setting frame_factor: 2. You can adjust this hyperparameter through the environment variable: `FRAME_FACTOR`.
+[INFO:swift] Setting fps: 2.0. You can adjust this hyperparameter through the environment variable: `FPS`.
+[INFO:swift] Setting fps_min_frames: 4. You can adjust this hyperparameter through the environment variable: `FPS_MIN_FRAMES`.
+[INFO:swift] Setting fps_max_frames: 768. You can adjust this hyperparameter through the environment variable: `FPS_MAX_FRAMES`.
+[INFO:swift] Using environment variable `IMAGE_MAX_TOKEN_NUM`, Setting image_max_token_num: 512.
+[INFO:swift] Setting image_min_token_num: 4. You can adjust this hyperparameter through the environment variable: `IMAGE_MIN_TOKEN_NUM`.
+[INFO:swift] Setting spatial_merge_size: 2. You can adjust this hyperparameter through the environment variable: `SPATIAL_MERGE_SIZE`.
+[INFO:swift] Setting video_max_token_num: 768. You can adjust this hyperparameter through the environment variable: `VIDEO_MAX_TOKEN_NUM`.
+[INFO:swift] Setting video_min_token_num: 128. You can adjust this hyperparameter through the environment variable: `VIDEO_MIN_TOKEN_NUM`.
+[INFO:swift] model_kwargs: {'device_map': 'cuda:0', 'dtype': torch.bfloat16}
+Loading weights:   0%|          | 0/625 [00:00<?, ?it/s]Loading weights:  12%|█▏        | 75/625 [00:00<00:00, 749.43it/s]Loading weights:  25%|██▌       | 159/625 [00:00<00:00, 797.79it/s]Loading weights:  40%|███▉      | 247/625 [00:00<00:00, 830.76it/s]Loading weights:  66%|██████▌   | 412/625 [00:00<00:00, 1150.21it/s]Loading weights: 100%|██████████| 625/625 [00:00<00:00, 1281.72it/s]
+[INFO:swift] default_system: None
+[INFO:swift] max_length: 262144
+[INFO:swift] response_prefix: None
+[INFO:swift] agent_template: hermes
+[INFO:swift] norm_bbox: norm1000
+[INFO:swift] Setting ROOT_IMAGE_DIR: None. You can adjust this hyperparameter through the environment variable: `ROOT_IMAGE_DIR`.
+[INFO:swift] Setting QWENVL_BBOX_FORMAT: legacy. You can adjust this hyperparameter through the environment variable: `QWENVL_BBOX_FORMAT`.
+[INFO:swift] model: PeftModelForCausalLM(
+  (base_model): LoraModel(
+    (model): Qwen3VLForConditionalGeneration(
+      (model): Qwen3VLModel(
+        (visual): Qwen3VLVisionModel(
+          (patch_embed): Qwen3VLVisionPatchEmbed(
+            (proj): Conv3d(3, 1024, kernel_size=(2, 16, 16), stride=(2, 16, 16))
+          )
+          (pos_embed): Embedding(2304, 1024)
+          (rotary_pos_emb): Qwen3VLVisionRotaryEmbedding()
+          (blocks): ModuleList(
+            (0-23): 24 x Qwen3VLVisionBlock(
+              (norm1): LayerNorm((1024,), eps=1e-06, elementwise_affine=True)
+              (norm2): LayerNorm((1024,), eps=1e-06, elementwise_affine=True)
+              (attn): Qwen3VLVisionAttention(
+                (qkv): lora.Linear(
+                  (base_layer): Linear(in_features=1024, out_features=3072, bias=True)
+                  (lora_dropout): ModuleDict(
+                    (default): Dropout(p=0.05, inplace=False)
+                  )
+                  (lora_A): ModuleDict(
+                    (default): Linear(in_features=1024, out_features=8, bias=False)
+                  )
+                  (lora_B): ModuleDict(
+                    (default): Linear(in_features=8, out_features=3072, bias=False)
+                  )
+                  (lora_embedding_A): ParameterDict()
+                  (lora_embedding_B): ParameterDict()
+                  (lora_magnitude_vector): ModuleDict()
+                )
+                (proj): lora.Linear(
+                  (base_layer): Linear(in_features=1024, out_features=1024, bias=True)
+                  (lora_dropout): ModuleDict(
+                    (default): Dropout(p=0.05, inplace=False)
+                  )
+                  (lora_A): ModuleDict(
+                    (default): Linear(in_features=1024, out_features=8, bias=False)
+                  )
+                  (lora_B): ModuleDict(
+                    (default): Linear(in_features=8, out_features=1024, bias=False)
+                  )
+                  (lora_embedding_A): ParameterDict()
+                  (lora_embedding_B): ParameterDict()
+                  (lora_magnitude_vector): ModuleDict()
+                )
+              )
+              (mlp): Qwen3VLVisionMLP(
+                (linear_fc1): lora.Linear(
+                  (base_layer): Linear(in_features=1024, out_features=4096, bias=True)
+                  (lora_dropout): ModuleDict(
+                    (default): Dropout(p=0.05, inplace=False)
+                  )
+                  (lora_A): ModuleDict(
+                    (default): Linear(in_features=1024, out_features=8, bias=False)
+                  )
+                  (lora_B): ModuleDict(
+                    (default): Linear(in_features=8, out_features=4096, bias=False)
+                  )
+                  (lora_embedding_A): ParameterDict()
+                  (lora_embedding_B): ParameterDict()
+                  (lora_magnitude_vector): ModuleDict()
+                )
+                (linear_fc2): lora.Linear(
+                  (base_layer): Linear(in_features=4096, out_features=1024, bias=True)
+                  (lora_dropout): ModuleDict(
+                    (default): Dropout(p=0.05, inplace=False)
+                  )
+                  (lora_A): ModuleDict(
+                    (default): Linear(in_features=4096, out_features=8, bias=False)
+                  )
+                  (lora_B): ModuleDict(
+                    (default): Linear(in_features=8, out_features=1024, bias=False)
+                  )
+                  (lora_embedding_A): ParameterDict()
+                  (lora_embedding_B): ParameterDict()
+                  (lora_magnitude_vector): ModuleDict()
+                )
+                (act_fn): GELUTanh()
+              )
+            )
+          )
+          (merger): Qwen3VLVisionPatchMerger(
+            (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=True)
+            (linear_fc1): lora.Linear(
+              (base_layer): Linear(in_features=4096, out_features=4096, bias=True)
+              (lora_dropout): ModuleDict(
+                (default): Dropout(p=0.05, inplace=False)
+              )
+              (lora_A): ModuleDict(
+                (default): Linear(in_features=4096, out_features=8, bias=False)
+              )
+              (lora_B): ModuleDict(
+                (default): Linear(in_features=8, out_features=4096, bias=False)
+              )
+              (lora_embedding_A): ParameterDict()
+              (lora_embedding_B): ParameterDict()
+              (lora_magnitude_vector): ModuleDict()
+            )
+            (act_fn): GELU(approximate='none')
+            (linear_fc2): lora.Linear(
+              (base_layer): Linear(in_features=4096, out_features=2048, bias=True)
+              (lora_dropout): ModuleDict(
+                (default): Dropout(p=0.05, inplace=False)
+              )
+              (lora_A): ModuleDict(
+                (default): Linear(in_features=4096, out_features=8, bias=False)
+              )
+              (lora_B): ModuleDict(
+                (default): Linear(in_features=8, out_features=2048, bias=False)
+              )
+              (lora_embedding_A): ParameterDict()
+              (lora_embedding_B): ParameterDict()
+              (lora_magnitude_vector): ModuleDict()
+            )
+          )
+          (deepstack_merger_list): ModuleList(
+            (0-2): 3 x Qwen3VLVisionPatchMerger(
+              (norm): LayerNorm((4096,), eps=1e-06, elementwise_affine=True)
+              (linear_fc1): lora.Linear(
+                (base_layer): Linear(in_features=4096, out_features=4096, bias=True)
+                (lora_dropout): ModuleDict(
+                  (default): Dropout(p=0.05, inplace=False)
+                )
+                (lora_A): ModuleDict(
+                  (default): Linear(in_features=4096, out_features=8, bias=False)
+                )
+                (lora_B): ModuleDict(
+                  (default): Linear(in_features=8, out_features=4096, bias=False)
+                )
+                (lora_embedding_A): ParameterDict()
+                (lora_embedding_B): ParameterDict()
+                (lora_magnitude_vector): ModuleDict()
+              )
+              (act_fn): GELU(approximate='none')
+              (linear_fc2): lora.Linear(
+                (base_layer): Linear(in_features=4096, out_features=2048, bias=True)
+                (lora_dropout): ModuleDict(
+                  (default): Dropout(p=0.05, inplace=False)
+                )
+                (lora_A): ModuleDict(
+                  (default): Linear(in_features=4096, out_features=8, bias=False)
+                )
+                (lora_B): ModuleDict(
+                  (default): Linear(in_features=8, out_features=2048, bias=False)
+                )
+                (lora_embedding_A): ParameterDict()
+                (lora_embedding_B): ParameterDict()
+                (lora_magnitude_vector): ModuleDict()
+              )
+            )
+          )
+        )
+        (language_model): Qwen3VLTextModel(
+          (embed_tokens): Embedding(151936, 2048)
+          (layers): ModuleList(
+            (0-27): 28 x Qwen3VLTextDecoderLayer(
+              (self_attn): Qwen3VLTextAttention(
+                (q_proj): Linear(in_features=2048, out_features=2048, bias=False)
+                (k_proj): Linear(in_features=2048, out_features=1024, bias=False)
+                (v_proj): Linear(in_features=2048, out_features=1024, bias=False)
+                (o_proj): Linear(in_features=2048, out_features=2048, bias=False)
+                (q_norm): Qwen3VLTextRMSNorm((128,), eps=1e-06)
+                (k_norm): Qwen3VLTextRMSNorm((128,), eps=1e-06)
+              )
+              (mlp): Qwen3VLTextMLP(
+                (gate_proj): Linear(in_features=2048, out_features=6144, bias=False)
+                (up_proj): Linear(in_features=2048, out_features=6144, bias=False)
+                (down_proj): Linear(in_features=6144, out_features=2048, bias=False)
+                (act_fn): SiLUActivation()
+              )
+              (input_layernorm): Qwen3VLTextRMSNorm((2048,), eps=1e-06)
+              (post_attention_layernorm): Qwen3VLTextRMSNorm((2048,), eps=1e-06)
+            )
+          )
+          (norm): Qwen3VLTextRMSNorm((2048,), eps=1e-06)
+          (rotary_emb): Qwen3VLTextRotaryEmbedding()
+        )
+      )
+      (lm_head): Linear(in_features=2048, out_features=151936, bias=False)
+    )
+  )
+)
+[INFO:swift] Start time of running main: 2026-08-11 22:16:08.301875
+[INFO:swift] swift.__version__: 4.5.0.dev0
+[INFO:swift] request_config: RequestConfig(max_tokens=64, temperature=0.0, top_k=None, top_p=None, min_p=None, repetition_penalty=1.0, num_beams=1, stop=[], seed=None, stream=False, logprobs=False, top_logprobs=None, prompt_logprobs=None, n=1, best_of=None, presence_penalty=0.0, frequency_penalty=0.0, length_penalty=1.0, return_details=False, structured_outputs_regex=None)
+Map (num_proc=1): 100%|██████████| 32/32 [00:00<?, ? examples/s]Map (num_proc=1): 64 examples [00:00, 246.40 examples/s]        
+[INFO:swift] val_dataset: Dataset({
+    features: ['images', 'messages', 'dataset'],
+    num_rows: 32
+})
+  0%|          | 0/32 [00:00<?, ?it/s]  3%|▎         | 1/32 [00:02<01:08,  2.22s/it]  6%|▋         | 2/32 [00:04<00:59,  1.98s/it]  9%|▉         | 3/32 [00:05<00:52,  1.81s/it] 12%|█▎        | 4/32 [00:07<00:49,  1.78s/it] 16%|█▌        | 5/32 [00:08<00:42,  1.58s/it] 19%|█▉        | 6/32 [00:10<00:42,  1.65s/it] 22%|██▏       | 7/32 [00:12<00:42,  1.70s/it] 25%|██▌       | 8/32 [00:14<00:41,  1.74s/it] 28%|██▊       | 9/32 [00:15<00:36,  1.59s/it] 31%|███▏      | 10/32 [00:15<00:28,  1.28s/it] 34%|███▍      | 11/32 [00:16<00:25,  1.20s/it] 38%|███▊      | 12/32 [00:18<00:26,  1.35s/it] 41%|████      | 13/32 [00:20<00:28,  1.49s/it] 44%|████▍     | 14/32 [00:22<00:28,  1.58s/it] 47%|████▋     | 15/32 [00:23<00:28,  1.65s/it] 50%|█████     | 16/32 [00:25<00:27,  1.70s/it] 53%|█████▎    | 17/32 [00:27<00:25,  1.73s/it] 56%|█████▋    | 18/32 [00:29<00:24,  1.76s/it] 59%|█████▉    | 19/32 [00:31<00:22,  1.76s/it] 62%|██████▎   | 20/32 [00:32<00:21,  1.76s/it] 66%|██████▌   | 21/32 [00:34<00:19,  1.77s/it] 69%|██████▉   | 22/32 [00:36<00:17,  1.78s/it] 72%|███████▏  | 23/32 [00:37<00:14,  1.63s/it] 75%|███████▌  | 24/32 [00:39<00:13,  1.66s/it] 78%|███████▊  | 25/32 [00:41<00:11,  1.71s/it] 81%|████████▏ | 26/32 [00:42<00:09,  1.59s/it] 84%|████████▍ | 27/32 [00:44<00:07,  1.52s/it] 88%|████████▊ | 28/32 [00:45<00:06,  1.60s/it] 91%|█████████ | 29/32 [00:47<00:04,  1.48s/it] 94%|█████████▍| 30/32 [00:48<00:03,  1.53s/it] 97%|█████████▋| 31/32 [00:50<00:01,  1.60s/it]100%|██████████| 32/32 [00:51<00:00,  1.48s/it]100%|██████████| 32/32 [00:51<00:00,  1.61s/it]
+[rank0] {'num_prompt_tokens': 32642, 'num_generated_tokens': 1807, 'num_samples': 32, 'runtime': 51.65486620900015, 'samples/s': 0.6194963291652944, 'tokens/s': 34.98218333755272}
+[INFO:swift] The inference results have been saved to result_path: `/tmp/aesthetic-curator-persist/runs/learnability-v1-20260811T135300Z/lora-results.jsonl`.
+[INFO:swift] End time of running main: 2026-08-11 22:17:03.071517
+[rank0]:[W811 22:17:03.318186664 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

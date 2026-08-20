@@ -1,0 +1,61 @@
+{
+  "schema": "pocket-earth-photo-ocr-runtime-evidence/v1",
+  "generatedAt": "2026-08-11T01:00:10+08:00",
+  "fixture": "synthetic-only",
+  "runtime": {
+    "backend": "mnn",
+    "model": "Qwen3-VL-2B-Instruct",
+    "runtimeVersion": "MNN 3.6.1",
+    "targetUnderTest": "macOS development machine",
+    "acceleration": [],
+    "sme2Verified": false,
+    "visualLoraRuntime": {
+      "ready": true,
+      "patchId": "pocketearth/mnn-3.6.1-multimodal-lora-v2"
+    },
+    "baseVisualSha256": "087805fafbd06cfc21fd55a7e2f4120d865a8c920395bdda8f2bde34b102fa31",
+    "sharedVisualWeightSha256": "dba2242b2deb4b9cc1dbd8365b6e50e81104c5f5a7d7c4fef1b572b2a4587b29",
+    "generalOcrV6Sha256": "d09be9ee9a41c7ec87c45e2f721ad7861a493eeb11b04611ec06380d19fc9f5e",
+    "sharedWeightLinkVerified": true
+  },
+  "evaluation": {
+    "runner": "scripts/evaluate-photo-ocr-fixture.mjs",
+    "runAt": "2026-08-10T17:00:10.150Z",
+    "cases": {
+      "clean-base": {
+        "elapsedMs": 15954,
+        "cer": 0.0141,
+        "mustContainRecall": 0.8571,
+        "structuredFieldAccuracy": 0.6667,
+        "identifierRecall": 0.75,
+        "reportedConfidence": 0.98,
+        "fieldResult": { "merchant": false, "amount": true, "date": true }
+      },
+      "stress-base": {
+        "elapsedMs": 18694,
+        "cer": 0.1878,
+        "mustContainRecall": 0.4286,
+        "structuredFieldAccuracy": 0.6667,
+        "identifierRecall": 0,
+        "reportedConfidence": 0.95,
+        "fieldResult": { "merchant": true, "amount": true, "date": false }
+      },
+      "stress-general-ocr-v6": {
+        "elapsedMs": 18761,
+        "cer": 0.108,
+        "mustContainRecall": 0.7143,
+        "structuredFieldAccuracy": 0.6667,
+        "identifierRecall": 0,
+        "reportedConfidence": 0.95,
+        "fieldResult": { "merchant": true, "amount": false, "date": true }
+      }
+    }
+  },
+  "conclusion": {
+    "cleanRoute": "base",
+    "stressRoute": "base-first-then-general-ocr-v6",
+    "automaticSelection": "forbidden-when-critical-fields-conflict-without-material-quality-lead",
+    "observedTradeoff": "LoRA improved stress CER and date recovery, but regressed the amount field from 20.00 to 29.00.",
+    "androidSme2Claim": "not-proven"
+  }
+}

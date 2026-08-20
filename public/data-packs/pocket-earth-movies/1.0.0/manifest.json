@@ -1,0 +1,104 @@
+{
+  "protocol": "pocket-data/v1",
+  "identity": {
+    "id": "earth.pocket.demo.movies",
+    "name": "Pocket Earth 示例片库",
+    "version": "1.0.0",
+    "author": "Pocket Earth",
+    "description": "与电影 Skill 解耦的 Pocket Earth 决赛演示电影数据包"
+  },
+  "schema": {
+    "name": "pocket.movies/v1",
+    "version": "1.0.0",
+    "record_count": 2124
+  },
+  "compatibility": {
+    "skills": [
+      "pocket.movies"
+    ],
+    "runtime_min": "1.0.0"
+  },
+  "privacy": "public",
+  "provenance": {
+    "source": "User-provided viewing history export normalized for the Pocket Earth competition demo",
+    "license": "competition-demonstration-only",
+    "generated_at": "2026-08-10T00:00:00.000Z"
+  },
+  "distribution": {
+    "mode": "chunked"
+  },
+  "files": [
+    {
+      "role": "records",
+      "path": "chunks/records-00001.json",
+      "media_type": "application/json",
+      "bytes": 131890,
+      "sha256": "ad7b593ccacc993bb8cee1b7e1640610cd27b07286d1500b8b8dfff0780b1c82",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00002.json",
+      "media_type": "application/json",
+      "bytes": 131170,
+      "sha256": "1b4c0cb003d89096a709690e2a756d6609256893ce66d5cb6562ebe17cbb1037",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00003.json",
+      "media_type": "application/json",
+      "bytes": 130517,
+      "sha256": "0f15e0ca0375067c7400f81ec25893cd73dc115efda2ae63b340e1d2a6994afc",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00004.json",
+      "media_type": "application/json",
+      "bytes": 127872,
+      "sha256": "83ef41b7f50f452fc3164d4c9ca1e56e094fe9297fbaacb3734f68073a0206b7",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00005.json",
+      "media_type": "application/json",
+      "bytes": 124771,
+      "sha256": "f495a48a151b919a85a71132d5c6fa1c866b2e4b651c0059704e708b4571d364",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00006.json",
+      "media_type": "application/json",
+      "bytes": 125698,
+      "sha256": "5875f2bae0422d7a9cbba58dc91bab699fdbedd8d540bfce2ab340902feae157",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00007.json",
+      "media_type": "application/json",
+      "bytes": 128689,
+      "sha256": "d0d03a14dcc45af95ed57f99ff408a6a49b1edacc413f4f8c6b451cfb99e97be",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00008.json",
+      "media_type": "application/json",
+      "bytes": 131507,
+      "sha256": "489ee728dfb39862051192c3b806e789d21bfd5888bfb07ea5253b6f35213500",
+      "records": 250
+    },
+    {
+      "role": "records",
+      "path": "chunks/records-00009.json",
+      "media_type": "application/json",
+      "bytes": 66219,
+      "sha256": "74d01a14b43c4699b2a17603c2f05245db074be36d89365b0d5625f81d5d7291",
+      "records": 124
+    }
+  ]
+}

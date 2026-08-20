@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "currency": "CNY",
+  "maxCostPerLoraJob": 50,
+  "authorizedAt": "2026-08-11T20:11:56+08:00",
+  "plannedResource": "ecs.gn7i-c8g1.2xlarge",
+  "plannedNodes": 1,
+  "plannedMaxRunningTimeMinutes": 50,
+  "plannedInnerTimeoutMinutes": 48,
+  "verifiedHourlyPriceCny": 10.5,
+  "verifiedPricePerMinuteCny": 0.175,
+  "plannedMaximumResourceCostCny": 8.75,
+  "breakEvenPricePerMinuteAtCapCny": 1.0,
+  "priceSafetyMultiple": 5.7142857143,
+  "priceEvidence": [
+    {
+      "type": "official_documentation",
+      "checkedAt": "2026-08-11T21:25:00+08:00",
+      "url": "https://help.aliyun.com/en/pai/product-overview/free-trial-guide",
+      "statement": "ecs.gn7i-c8g1.2xlarge is listed at CNY 10.50 per hour"
+    },
+    {
+      "type": "successful_workspace_job",
+      "jobId": "dlc10fo3yi8efyx7",
+      "finishedAt": "2026-08-04T06:23:15Z",
+      "observedPricePerMinuteCny": 0.1748,
+      "durationSeconds": 2639
+    },
+    {
+      "type": "current_console_availability",
+      "checkedAt": "2026-08-11T21:24:00+08:00",
+      "region": "cn-shanghai",
+      "available": true
+    }
+  ],
+  "rules": {
+    "requireCurrentConsoleUnitPrice": true,
+    "requireEstimatedCost": true,
+    "requireJobMaxRunningTimeMinutes": true,
+    "requireInnerTimeout": true,
+    "innerTimeoutSafetyMinutes": 15,
+    "instanceRetentionMinutes": 0,
+    "rejectIfEstimatedCostIsUnknown": true,
+    "rejectIfEstimatedCostExceedsCny": 50
+  },
+  "submittedJob": {
+    "jobId": "dlcjz4xl668a09b3",
+    "createdAt": "2026-08-11T21:51:05+08:00",
+    "submittedAt": "2026-08-11T21:52:21+08:00",
+    "runningAt": "2026-08-11T21:53:08+08:00",
+    "finishedAt": "2026-08-11T22:17:12+08:00",
+    "status": "Succeeded",
+    "durationSeconds": 1567,
+    "estimatedResourceCostCnyAtVerifiedRate": 4.5704166667,
+    "fractionOfUserCap": 0.0914083333,
+    "runId": "learnability-v1-20260811T135300Z"
+  },
+  "status": "one_guarded_job_succeeded_under_cap"
+}

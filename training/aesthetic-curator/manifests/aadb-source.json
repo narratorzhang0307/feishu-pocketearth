@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "dataset": "AADB",
+  "officialRepository": "https://github.com/aimerykong/deepImageAestheticsAnalysis",
+  "officialRevision": "a962a1d8c313cdbec97e51381187ffbaac469b28",
+  "officialSmallImageSource": "https://drive.google.com/file/d/0BxeylfSgpk1MU2RsVXo3bEJWM2c/view?resourcekey=0-ld4H3VhRKKiSUOklGnF1Uw",
+  "officialSmallImageAttempt": {
+    "attemptedAt": "2026-08-11T19:56:00+08:00",
+    "status": "public_link_not_retrievable_by_gdown"
+  },
+  "mirror": {
+    "repository": "https://huggingface.co/datasets/Iceclear/AADB",
+    "reason": "Fallback after the official 130 MB Google Drive object rejected programmatic retrieval",
+    "expectedFile": {
+      "path": "raw/aadb/AADB.zip",
+      "bytes": 2562303457,
+      "sha256": "d4fbf021d37c96c251d61e478421f23851773100b12728d2238cc9f3c4c78f7f"
+    }
+  },
+  "audit": {
+    "archiveSha256Verified": true,
+    "zipIntegrityVerified": true,
+    "decodedUniqueImages": 9958,
+    "trainRows": 8458,
+    "validationRows": 500,
+    "oldTestRows": 1000,
+    "testNewRows": 1000,
+    "attributeCountIncludingOverallScore": 12,
+    "raterIdentifiersAvailable": false,
+    "oldTestTestNewOverlap": 873,
+    "validationTestNewOverlap": 127,
+    "exactDuplicateGroups": 28,
+    "nearDuplicateGroupsAtPHashDistance3": 57,
+    "nearDuplicateImages": 131,
+    "crossUpstreamPhaseNearDuplicateGroups": 14,
+    "testNewMirrorCopyMismatches": 0,
+    "canonicalSourcePool": "union(train, validation, old-test) = 9,958 mutually exclusive images",
+    "splitPolicy": "discard upstream phase semantics and rebuild train/validation/test by pHash duplicateGroup",
+    "redundantSplit": "testNew (873 old-test + 127 validation images)",
+    "forbiddenUse": "Do not add testNew as new images; do not generate rater-aware pairs"
+  },
+  "intendedUse": "Aggregate-score and attribute-aware hard aesthetic pairs; rater-aware use is disabled",
+  "status": "downloaded_hashed_all_images_decoded_and_phash_grouped"
+}

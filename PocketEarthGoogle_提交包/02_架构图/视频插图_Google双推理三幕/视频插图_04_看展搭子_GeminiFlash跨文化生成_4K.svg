@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="2160" viewBox="0 0 3840 2160">
+  <defs>
+    <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+      <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#163027" stroke-width="1" opacity="0.55"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="62%">
+      <stop offset="0" stop-color="#0D3324" stop-opacity="0.82"/>
+      <stop offset="0.56" stop-color="#0A1712" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#07100D" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="150%" height="160%">
+      <feDropShadow dx="14" dy="16" stdDeviation="0" flood-color="#000000" flood-opacity="0.65"/>
+    </filter>
+    <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="24" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow-00E78C" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#00E78C"/></marker><marker id="arrow-35D4FF" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#35D4FF"/></marker><marker id="arrow-B892FF" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#B892FF"/></marker><marker id="arrow-FFD95A" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#FFD95A"/></marker><marker id="arrow-FF7C6E" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#FF7C6E"/></marker>
+  </defs>
+  <rect width="3840" height="2160" fill="#07100D"/>
+  <rect width="3840" height="2160" fill="url(#grid)"/>
+  <rect width="3840" height="2160" fill="url(#glow)"/>
+  <path d="M110 170V110H170 M3670 110H3730V170 M110 1990V2050H170 M3670 2050H3730V1990" fill="none" stroke="#00E78C" stroke-width="6"/>
+  <text x="150" y="180" fill="#00E78C" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="34" font-weight="700" letter-spacing="4" >POCKET · EARTH  /  GOOGLE AI</text>
+  <text x="3460" y="180" fill="#00E78C" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="34" font-weight="700" letter-spacing="4" text-anchor="end">04 / 05</text>
+  <text x="150" y="340" fill="#00E78C" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="34" font-weight="700" letter-spacing="4" >MUSEUM COMPANION · 看展搭子</text>
+  <text x="150" y="500" fill="#F3F7F2" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="126" font-weight="700" >一张展签，生成跨文化导览</text>
+  <text x="150" y="585" fill="#A7B3AC" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="42" font-weight="500" >上传前先征得同意；Gemini Flash 补全信息，并一次生成四种结构化内容</text>
+  <line x1="150" y1="645" x2="3690" y2="645" stroke="#31423A" stroke-width="3"/>
+<g filter="url(#shadow)">
+    <rect x="150" y="760" width="760" height="1010" rx="10" fill="#101915" stroke="#F3F7F2" stroke-width="3"/>
+    <rect x="150" y="760" width="14" height="1010" rx="7" fill="#F3F7F2"/>
+  </g><text x="200" y="820" fill="#F3F7F2" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="28" font-weight="700" letter-spacing="4" >01 · CAPTURE</text><text x="200" y="892" fill="#F3F7F2" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="58" font-weight="700" >拍摄展签</text><text x="200" y="956" fill="#A7B3AC" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >相机输入 · 现场上下文</text><text x="200" y="1008" fill="#6F7C75" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >只在用户确认后进入云端</text><g>
+    <rect x="714" y="788" width="160" height="64" rx="4" fill="#F3F7F2"/>
+    <text x="794" y="831" fill="#07100D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="28" font-weight="700" text-anchor="middle">INPUT</text>
+  </g><g filter="url(#shadow)">
+    <rect x="245" y="1110" width="570" height="470" rx="8" fill="#E9E6DC" stroke="#F3F7F2" stroke-width="3"/>
+    <rect x="279" y="1144" width="502" height="82" fill="#17211D"/>
+    <text x="313" y="1201" fill="#F3F7F2" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="38" font-weight="700" >青铜器展签</text>
+    <text x="287" y="1284" fill="#3D4742" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="29" font-weight="700" >年代</text>
+    <text x="465" y="1284" fill="#17211D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="29" font-weight="700" >西周早期</text>
+    <text x="287" y="1346" fill="#3D4742" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="29" font-weight="700" >器类</text>
+    <text x="465" y="1346" fill="#17211D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="29" font-weight="700" >礼器 · 爵</text>
+    <text x="287" y="1408" fill="#3D4742" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="29" font-weight="700" >材质</text>
+    <text x="465" y="1408" fill="#17211D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="29" font-weight="700" >青铜</text>
+    <line x1="287" y1="1450" x2="773" y2="1450" stroke="#88918C" stroke-width="3"/>
+    <line x1="287" y1="1495" x2="655" y2="1495" stroke="#AAB0AC" stroke-width="3"/>
+  </g><g>
+    <rect x="245" y="1630" width="570" height="64" rx="4" fill="#F3F7F2"/>
+    <text x="530" y="1673" fill="#07100D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="28" font-weight="700" text-anchor="middle">PHOTO + LABEL</text>
+  </g><path d="M 910 1090 L 1080 1090" fill="none" stroke="#FFD95A" stroke-width="8"  marker-end="url(#arrow-FFD95A)"/><g filter="url(#shadow)">
+    <rect x="1080" y="790" width="760" height="390" rx="10" fill="#201C0E" stroke="#F3F7F2" stroke-width="3"/>
+    <rect x="1080" y="790" width="14" height="390" rx="7" fill="#FFD95A"/>
+  </g><text x="1130" y="850" fill="#FFD95A" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="28" font-weight="700" letter-spacing="4" >02 · CONSENT GATE</text><text x="1130" y="922" fill="#F3F7F2" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="56" font-weight="700" >先征得同意</text><text x="1130" y="986" fill="#A7B3AC" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >图片上传不是默认动作</text><text x="1130" y="1038" fill="#6F7C75" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >用户明确授权后才继续</text><g>
+    <rect x="1584" y="818" width="220" height="64" rx="4" fill="#FFD95A"/>
+    <text x="1694" y="861" fill="#07100D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="28" font-weight="700" text-anchor="middle">REQUIRED</text>
+  </g><g>
+    <rect x="1170" y="1070" width="580" height="64" rx="4" fill="#FFD95A"/>
+    <text x="1460" y="1113" fill="#07100D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="28" font-weight="700" text-anchor="middle">SUGGEST → CONFIRM</text>
+  </g><path d="M 1460 1190 L 1460 1300" fill="none" stroke="#35D4FF" stroke-width="8"  marker-end="url(#arrow-35D4FF)"/><g filter="url(#shadow)">
+    <rect x="1080" y="1320" width="760" height="390" rx="10" fill="#0B1C21" stroke="#F3F7F2" stroke-width="3"/>
+    <rect x="1080" y="1320" width="14" height="390" rx="7" fill="#35D4FF"/>
+  </g><text x="1130" y="1380" fill="#35D4FF" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="28" font-weight="700" letter-spacing="4" >03 · GOOGLE GEMINI</text><text x="1130" y="1452" fill="#F3F7F2" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="62" font-weight="700" >Gemini Flash</text><text x="1130" y="1516" fill="#A7B3AC" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >补全年代 · 器类 · 材质</text><text x="1130" y="1568" fill="#6F7C75" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >理解展签与现场图像</text><g>
+    <rect x="1614" y="1348" width="190" height="64" rx="4" fill="#35D4FF"/>
+    <text x="1709" y="1391" fill="#07100D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="28" font-weight="700" text-anchor="middle">CLOUD</text>
+  </g><g>
+    <rect x="1170" y="1600" width="580" height="64" rx="4" fill="#35D4FF"/>
+    <text x="1460" y="1643" fill="#07100D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="28" font-weight="700" text-anchor="middle">STRUCTURED JSON</text>
+  </g><path d="M 1840 1515 L 2010 1515" fill="none" stroke="#35D4FF" stroke-width="8"  marker-end="url(#arrow-35D4FF)"/><g filter="url(#shadow)">
+    <rect x="2050" y="760" width="760" height="400" rx="10" fill="#0C2117" stroke="#F3F7F2" stroke-width="3"/>
+    <rect x="2050" y="760" width="14" height="400" rx="7" fill="#00E78C"/>
+  </g><text x="2100" y="820" fill="#00E78C" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="28" font-weight="700" letter-spacing="4" >OUTPUT · ZH</text><text x="2100" y="892" fill="#F3F7F2" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="54" font-weight="700" >中文策展手记</text><text x="2100" y="956" fill="#A7B3AC" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >适合个人回访的中文叙事</text><text x="2100" y="1008" fill="#6F7C75" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >保留年代、器类与材质依据</text><g filter="url(#shadow)">
+    <rect x="2900" y="760" width="790" height="400" rx="10" fill="#0B1C21" stroke="#F3F7F2" stroke-width="3"/>
+    <rect x="2900" y="760" width="14" height="400" rx="7" fill="#35D4FF"/>
+  </g><text x="2950" y="820" fill="#35D4FF" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="28" font-weight="700" letter-spacing="4" >OUTPUT · EN</text><text x="2950" y="892" fill="#F3F7F2" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="54" font-weight="700" >English guide</text><text x="2950" y="956" fill="#A7B3AC" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >面向国际观众的英文导览</text><text x="2950" y="1008" fill="#6F7C75" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >不是逐字翻译，而是语境重写</text><g filter="url(#shadow)">
+    <rect x="2050" y="1260" width="760" height="400" rx="10" fill="#171324" stroke="#F3F7F2" stroke-width="3"/>
+    <rect x="2050" y="1260" width="14" height="400" rx="7" fill="#B892FF"/>
+  </g><text x="2100" y="1320" fill="#B892FF" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="28" font-weight="700" letter-spacing="4" >OUTPUT · TIMELINE</text><text x="2100" y="1392" fill="#F3F7F2" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="58" font-weight="700" >时间线</text><text x="2100" y="1456" fill="#A7B3AC" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >把器物放回历史坐标</text><text x="2100" y="1508" fill="#6F7C75" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >连接人物、朝代与文化流动</text><g filter="url(#shadow)">
+    <rect x="2900" y="1260" width="790" height="400" rx="10" fill="#211C0D" stroke="#F3F7F2" stroke-width="3"/>
+    <rect x="2900" y="1260" width="14" height="400" rx="7" fill="#FFD95A"/>
+  </g><text x="2950" y="1320" fill="#FFD95A" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="28" font-weight="700" letter-spacing="4" >OUTPUT · CROSS-CULTURE</text><text x="2950" y="1392" fill="#F3F7F2" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="54" font-weight="700" >cultural bridge</text><text x="2950" y="1456" fill="#A7B3AC" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >解释差异，避免刻板印象</text><text x="2950" y="1508" fill="#6F7C75" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="36" font-weight="500" >在两种文化之间建立理解</text><g filter="url(#shadow)"><rect x="2050" y="1715" width="1640" height="105" rx="8" fill="#00E78C"/></g><text x="2870" y="1787" fill="#07100D" font-family='"SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif' font-size="42" font-weight="700" text-anchor="middle">ONE CALL  ·  FOUR STRUCTURED OUTPUTS</text><line x1="150" y1="1940" x2="3690" y2="1940" stroke="#31423A" stroke-width="3"/>
+  <text x="150" y="2025" fill="#00E78C" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="30" font-weight="700" letter-spacing="4" >CONSENT BEFORE CLOUD · CONTEXT BEFORE GENERATION</text>
+  <text x="3690" y="2025" fill="#6F7C75" font-family='"SFMono-Regular", "JetBrains Mono", "PingFang SC", monospace' font-size="30" font-weight="500" letter-spacing="4" text-anchor="end">GEMINI FLASH / MUSEUM COMPANION</text>
+  </svg>

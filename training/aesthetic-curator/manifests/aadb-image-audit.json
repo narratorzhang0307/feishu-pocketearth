@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T12:26:25.650735+00:00",
+  "images": 9958,
+  "decoded": 9958,
+  "missingLabelsOrImages": 0,
+  "exactDuplicateGroups": 28,
+  "phashDistance": 3,
+  "nearDuplicateGroups": 57,
+  "nearDuplicateImages": 131,
+  "crossUpstreamPhaseNearDuplicateGroups": 14,
+  "crossUpstreamPhaseNearDuplicateExamples": [
+    {
+      "images": [
+        "farm1_258_19566730324_51bbf15758_b.jpg",
+        "farm1_294_19574301283_f3518fcb87_b.jpg",
+        "farm1_303_20177247091_d3f4e9dc5c_b.jpg",
+        "farm1_305_20193958051_ac2990fb24_b.jpg",
+        "farm1_306_19540524024_b0f4b7af10_b.jpg",
+        "farm1_336_19546620374_f489bf5820_b.jpg",
+        "farm1_358_20120536361_26b988773d_b.jpg",
+        "farm1_371_20176622541_b3a26b45c0_b.jpg",
+        "farm1_439_20006159850_c9e623af49_b.jpg",
+        "farm4_3737_20103608782_f0c3965ac6_b.jpg",
+        "farm4_3822_20162032235_c0664fa5ac_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "train"
+      ]
+    },
+    {
+      "images": [
+        "farm1_262_19909946498_7e750749ce_b.jpg",
+        "farm1_473_20172835735_20bd57963e_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "train"
+      ]
+    },
+    {
+      "images": [
+        "farm1_263_19655175753_d3352f6e32_b.jpg",
+        "farm1_329_20088721718_b4d794c353_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "train"
+      ]
+    },
+    {
+      "images": [
+        "farm1_263_19953322859_0b7d1a0f83_b.jpg",
+        "farm1_556_20128114872_7e0ba54de1_b.jpg",
+        "farm4_3768_20130301812_c2cddc6e3e_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "train"
+      ]
+    },
+    {
+      "images": [
+        "farm1_284_20169096082_50e321e975_b.jpg",
+        "farm1_320_20141298926_8b06a81489_b.jpg",
+        "farm1_335_20016713269_0cf280cb2a_b.jpg",
+        "farm4_3704_19584256263_df6b7d2634_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "train"
+      ]
+    },
+    {
+      "images": [
+        "farm1_287_20198450001_579a228325_b.jpg",
+        "farm1_491_20014855149_74c259c265_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "train"
+      ]
+    },
+    {
+      "images": [
+        "farm1_303_20155643005_ef8368f398_b.jpg",
+        "farm1_331_20129374226_41a15a7bac_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "validation"
+      ]
+    },
+    {
+      "images": [
+        "farm1_311_20320471332_d98bf65e7a_b.jpg",
+        "farm1_321_20142354789_d3a856c1f5_b.jpg"
+      ],
+      "phases": [
+        "train",
+        "validation"
+      ]
+    },
+    {
+      "images": [
+        "farm1_319_19993583690_bb361977af_b.jpg",
+        "farm1_477_19571267684_6730df90e5_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "train"
+      ]
+    },
+    {
+      "images": [
+        "farm1_326_19554262913_4c811b0458_b.jpg",
+        "farm1_360_20149134936_edf88bc5ed_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "train"
+      ]
+    },
+    {
+      "images": [
+        "farm1_335_20198281341_d2b30e306c_b.jpg",
+        "farm1_363_20008792299_e136e78c63_b.jpg"
+      ],
+      "phases": [
+        "train",
+        "validation"
+      ]
+    },
+    {
+      "images": [
+        "farm1_384_20073649450_3097b41bc7_b.jpg",
+        "farm1_448_20254011462_26901f13df_b.jpg"
+      ],
+      "phases": [
+        "test",
+        "train"
+      ]
+    },
+    {
+      "images": [
+        "farm1_392_20179002776_68f7051986_b.jpg",
+        "farm4_3761_20199334171_b8e2b64b9a_b.jpg"
+      ],
+      "phases": [
+        "train",
+        "validation"
+      ]
+    },
+    {
+      "images": [
+        "farm1_403_20079651981_cd289fd421_b.jpg",
+        "farm1_464_19981650212_633c651975_b.jpg"
+      ],
+      "phases": [
+        "train",
+        "validation"
+      ]
+    }
+  ],
+  "testNewMirrorCopyMismatches": 0,
+  "testNewMirrorCopyMismatchExamples": [],
+  "rule": "Rebuild all Pocket Earth splits by duplicateGroup; never preserve an upstream split across a group."
+}

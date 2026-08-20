@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T12:43:23.816401+00:00",
+  "splitSeed": "pocket-earth-aadb-v1",
+  "pairSeed": 20260811,
+  "images": 9958,
+  "splitImages": {
+    "train": 7959,
+    "validation": 1022,
+    "test": 977
+  },
+  "splitGroups": {
+    "train": 7903,
+    "validation": 1015,
+    "test": 966
+  },
+  "duplicateGroupOverlap": {
+    "trainValidation": 0,
+    "trainTest": 0,
+    "validationTest": 0
+  },
+  "canonicalPairs": {
+    "train": 400,
+    "validation": 80,
+    "test": 80
+  },
+  "trainingRowsAfterPositionSwap": 800,
+  "maxCanonicalImageUses": 2,
+  "reasonCounts": {
+    "train": {
+      "BalancingElements": 37,
+      "ColorHarmony": 37,
+      "Content": 37,
+      "DoF": 37,
+      "Light": 36,
+      "MotionBlur": 36,
+      "Object": 36,
+      "Repetition": 36,
+      "RuleOfThirds": 36,
+      "Symmetry": 36,
+      "VividColor": 36
+    },
+    "validation": {
+      "BalancingElements": 8,
+      "ColorHarmony": 8,
+      "Content": 8,
+      "DoF": 7,
+      "Light": 7,
+      "MotionBlur": 7,
+      "Object": 7,
+      "Repetition": 7,
+      "RuleOfThirds": 7,
+      "Symmetry": 7,
+      "VividColor": 7
+    },
+    "test": {
+      "BalancingElements": 8,
+      "ColorHarmony": 8,
+      "Content": 8,
+      "DoF": 7,
+      "Light": 7,
+      "MotionBlur": 7,
+      "Object": 7,
+      "Repetition": 7,
+      "RuleOfThirds": 7,
+      "Symmetry": 7,
+      "VividColor": 7
+    }
+  },
+  "preferredPositionCounts": {
+    "train": {
+      "A": 189,
+      "B": 211
+    },
+    "validation": {
+      "A": 33,
+      "B": 47
+    },
+    "test": {
+      "A": 40,
+      "B": 40
+    }
+  },
+  "gates": {
+    "zeroDuplicateGroupLeakage": true,
+    "allPairsWithinOneSplit": true,
+    "allPairsHavePositionSwap": true
+  }
+}

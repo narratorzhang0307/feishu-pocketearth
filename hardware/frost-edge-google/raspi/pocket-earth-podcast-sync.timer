@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh Pocket Earth verified podcast every day
+
+[Timer]
+OnBootSec=2min
+OnCalendar=*-*-* 08:20:00 Asia/Shanghai
+Persistent=true
+RandomizedDelaySec=90
+Unit=pocket-earth-podcast-sync.service
+
+[Install]
+WantedBy=timers.target

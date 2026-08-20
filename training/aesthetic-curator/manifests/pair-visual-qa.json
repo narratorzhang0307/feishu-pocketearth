@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T21:14:00+08:00",
+  "reviews": [
+    {
+      "dataset": "AADB",
+      "artifact": "normalized/aadb-canonical-pairs.jsonl",
+      "contactSheets": "contact-sheets/aadb-v1",
+      "sampledCanonicalPairs": 44,
+      "decision": "rejected",
+      "reason": "Score-and-attribute-only matching produced cross-content comparisons such as people versus flowers; it can teach subject preference instead of aesthetic preference.",
+      "allowedForTraining": false
+    },
+    {
+      "dataset": "AADB",
+      "artifact": "normalized/aadb-semantic-pairs.jsonl",
+      "contactSheets": "contact-sheets/aadb-semantic-v1",
+      "sampledCanonicalPairs": 44,
+      "samplingRule": "four deterministic train pairs for each of 11 reason codes",
+      "decision": "approved_for_learnability_pilot",
+      "reason": "Pairs are visually comparable after the CLIP semantic-neighbor gate; the selected train set has CLIP similarity 0.828171 to 0.972283.",
+      "allowedForTraining": true
+    },
+    {
+      "dataset": "TAD66K",
+      "artifact": "normalized/tad66k-semantic-pairs.jsonl",
+      "contactSheets": "contact-sheets/tad66k-semantic-v1",
+      "sampledCanonicalPairs": 94,
+      "samplingRule": "two deterministic train pairs for each of 47 upstream themes",
+      "decision": "approved_for_learnability_pilot",
+      "pairComparabilityApproved": 94,
+      "notes": [
+        "All sampled pairs share a broad subject, scene, object or photographic series suitable for A/B comparison.",
+        "A small number of upstream theme names are visually noisy, for example a canyon pair under family; theme is used only for coverage balancing and is never emitted as the training reason code.",
+        "Preference labels remain the released TAD66K aggregate scores and were not manually relabeled during this comparability review."
+      ],
+      "allowedForTraining": true
+    }
+  ],
+  "gate": {
+    "naiveAadbPairsQuarantined": true,
+    "semanticAadbPairsApproved": true,
+    "semanticTad66kPairsApproved": true,
+    "spaqPairsApproved": false,
+    "spaqReason": "Images are intentionally deferred; annotations alone are not pair-generation ready."
+  }
+}

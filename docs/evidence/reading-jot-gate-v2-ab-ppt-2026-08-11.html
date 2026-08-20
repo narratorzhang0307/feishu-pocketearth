@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1440, initial-scale=1" />
+  <title>Reading Jot · Gate v2 A/B Evidence</title>
+  <style>
+    :root { --ink:#0b0b0b; --paper:#f4f2eb; --green:#00ec86; --mint:#dfffee; --pink:#ff4f7d; --pale-pink:#ffe4ec; --cream:#fff6d9; --gray:#6c6c6c; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; width:1440px; min-height:810px; background:#cbcaca; color:var(--ink); font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif; }
+    body[data-slide] { width:1280px; height:720px; overflow:hidden; }
+    body[data-slide="1"] .slide:not(#slide-1), body[data-slide="2"] .slide:not(#slide-2), body[data-slide="3"] .slide:not(#slide-3) { display:none; }
+    body[data-slide] .slide { transform:scale(.8888889); transform-origin:0 0; }
+    .slide { position:relative; width:1440px; height:810px; overflow:hidden; padding:42px 56px; background:var(--paper); border:5px solid var(--ink); }
+    .topline { display:flex; align-items:center; justify-content:space-between; padding-bottom:19px; border-bottom:4px solid var(--ink); }
+    .brand { font:900 17px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.17em; }
+    .run-id { color:var(--gray); font:700 13px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace; text-align:right; }
+    .eyebrow { margin-top:24px; color:#08784b; font:900 15px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.14em; }
+    h1 { margin:10px 0 8px; font-size:48px; line-height:1.05; letter-spacing:-.04em; }
+    h2 { margin:0; font-size:27px; line-height:1.15; }
+    h3 { margin:0; font-size:19px; }
+    p { margin:0; }
+    .subtitle { color:#5f5f5f; font-size:18px; }
+    .badge { display:inline-flex; align-items:center; gap:7px; border:2px solid var(--ink); padding:7px 11px; background:#fff; font:900 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .badge.green { background:var(--green); }
+    .badge.pink { background:var(--pale-pink); }
+    .panel { border:3px solid var(--ink); background:#fff; }
+    .shadow { box-shadow:8px 8px 0 var(--ink); }
+    .runtime { display:grid; grid-template-columns:1.1fr 1fr 1fr 1fr; gap:14px; margin-top:24px; }
+    .runtime > div { border:3px solid var(--ink); background:#fff; padding:15px 16px; min-height:94px; }
+    .runtime strong { display:block; margin-bottom:9px; font-size:17px; }
+    .runtime span { color:var(--gray); font:700 13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .runtime .ready { background:var(--mint); }
+    .flow { display:grid; grid-template-columns:repeat(6,1fr); gap:11px; margin-top:25px; }
+    .step { position:relative; min-height:132px; border:3px solid var(--ink); background:#fff; padding:15px 13px; }
+    .step:not(:last-child)::after { content:"→"; position:absolute; z-index:2; top:45px; right:-20px; font-size:24px; font-weight:900; }
+    .step b { display:block; margin-bottom:9px; font:900 12px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace; color:#08784b; }
+    .step strong { display:block; margin-bottom:8px; font-size:16px; }
+    .step small { color:var(--gray); font-size:12px; line-height:1.45; }
+    .route-summary { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:24px; }
+    .route { border:3px solid var(--ink); padding:18px 20px; background:var(--mint); }
+    .route.stress { background:var(--pale-pink); }
+    .route .title { display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; }
+    .route p { font-size:15px; line-height:1.5; color:#444; }
+    .footer { position:absolute; left:56px; right:56px; bottom:20px; display:flex; justify-content:space-between; color:#777; font:700 11px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .ab-grid { display:grid; grid-template-columns:385px 1fr 1fr; gap:18px; margin-top:22px; }
+    .sample { border:3px solid var(--ink); background:#dedbd2; padding:13px; }
+    .sample img { display:block; width:100%; height:330px; object-fit:contain; background:#eceae4; border:2px solid var(--ink); }
+    .sample .hash { margin-top:10px; color:#666; font:700 10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    .candidate { position:relative; border:3px solid var(--ink); background:#fff; padding:18px; height:390px; }
+    .candidate.bad { background:#fff8fa; }
+    .candidate.good { background:#f4fff8; }
+    .candidate-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding-bottom:14px; border-bottom:2px solid var(--ink); }
+    .metrics { display:flex; gap:9px; margin-top:13px; }
+    .metric { flex:1; border:2px solid var(--ink); padding:9px; text-align:center; background:#fff; }
+    .metric b { display:block; font:900 20px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .metric span { color:#777; font-size:10px; }
+    .transcript { margin-top:13px; height:160px; overflow:hidden; white-space:pre-wrap; border:2px solid var(--ink); background:#f2f2f2; padding:12px; font:600 13px/1.44 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .fade-tail { position:absolute; left:20px; right:20px; bottom:16px; border:2px solid var(--ink); padding:8px 10px; background:var(--cream); font-size:12px; font-weight:800; }
+    .gate-bar { display:grid; grid-template-columns:180px 1fr; align-items:stretch; margin-top:18px; border:3px solid var(--ink); }
+    .gate-bar strong { display:flex; align-items:center; justify-content:center; background:var(--green); border-right:3px solid var(--ink); font:900 14px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .gate-bar p { padding:13px 16px; background:#fff; font-size:14px; line-height:1.45; }
+    .stress-layout { display:grid; grid-template-columns:330px 1fr; gap:20px; margin-top:20px; }
+    .stress-layout .sample img { height:410px; }
+    .timeline { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .vote { position:relative; min-height:420px; border:3px solid var(--ink); background:#fff; padding:17px 14px; }
+    .vote:not(:last-child)::after { content:"→"; position:absolute; z-index:2; right:-20px; top:92px; font-size:26px; font-weight:900; }
+    .vote .num { color:#08784b; font:900 12px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .vote h3 { margin:10px 0 5px; }
+    .vote .time { font:900 25px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .vote .time small { font-size:11px; color:#777; }
+    .vote .mini { margin-top:14px; height:196px; overflow:hidden; white-space:pre-wrap; border:2px solid var(--ink); background:#f2f2f2; padding:10px; font:600 11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .vote .status { position:absolute; left:14px; right:14px; bottom:15px; border:2px solid var(--ink); padding:9px; text-align:center; font:900 11px ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--cream); }
+    .vote.accept { background:var(--mint); }
+    .vote.accept .status { background:var(--green); }
+    .claim { margin-top:17px; border:3px solid var(--ink); padding:12px 16px; background:#fff; font-size:13px; line-height:1.45; }
+  </style>
+</head>
+<body>
+  <section class="slide" id="slide-1">
+    <div class="topline"><div class="brand">POCKET EARTH · QWEN + MNN</div><div class="run-id">REAL RUN · 2026-08-11 22:27 CST<br/>GATE V2 / AB RERUN</div></div>
+    <div class="eyebrow">01 · RUNTIME & ROUTING PROOF</div>
+    <h1>Reading Jot：同一基座，按难度路由 LoRA</h1>
+    <p class="subtitle">这不是静态 Smoke UI：本轮重新请求本地 MNN，记录了两路候选、增强复核和最终门控。</p>
+    <div class="runtime">
+      <div class="ready"><strong>✓ MNN READY</strong><span>MNN 3.6.1<br/>backend = mnn</span></div>
+      <div><strong>Qwen3‑VL‑2B</strong><span>同一视觉基座<br/>max tokens 256</span></div>
+      <div><strong>OCR LORA READY</strong><span>general-ocr-vision<br/>visual patch v2</span></div>
+      <div><strong>固定输入</strong><span>clean / stress<br/>SHA256 锁定</span></div>
+    </div>
+    <div class="flow">
+      <div class="step"><b>STEP 01</b><strong>用户画线</strong><small>红线或双竖线选择真实书页内容。</small></div>
+      <div class="step"><b>STEP 02</b><strong>本地裁剪</strong><small>仅处理选区；原图保持在用户相册。</small></div>
+      <div class="step"><b>STEP 03</b><strong>Qwen Base</strong><small>默认首路由，先检查输出完整性。</small></div>
+      <div class="step"><b>STEP 04</b><strong>条件 LoRA</strong><small>只有压力或 Base 失败才进入候选。</small></div>
+      <div class="step"><b>STEP 05</b><strong>增强第三票</strong><small>灰度＋对比度，独立验证 LoRA。</small></div>
+      <div class="step"><b>STEP 06</b><strong>用户校文</strong><small>结果是文字，可编辑后再保存。</small></div>
+    </div>
+    <div class="route-summary">
+      <div class="route"><div class="title"><h2>CLEAN → BASE KEPT</h2><span class="badge">13.18s</span></div><p>Base 通过硬门。LoRA 更慢且出现长未知字符尾、单词循环和终端塌缩，不进入无意义复核。</p></div>
+      <div class="route stress"><div class="title"><h2>STRESS → LORA ACCEPTED</h2><span class="badge pink">3 VOTES</span></div><p>Base 失败；LoRA 第一票通过后仍不直接相信，增强视图第三票再次支持，才采纳 LoRA。</p></div>
+    </div>
+    <div class="footer"><span>Source: reading-jot-gate-v2-ab-rerun-2026-08-11.json</span><span>真实运行时 Smoke A/B，不替代 36 页冻结盲测</span></div>
+  </section>
+
+  <section class="slide" id="slide-2">
+    <div class="topline"><div class="brand">POCKET EARTH · READING JOT</div><div class="run-id">CASE 01 / CLEAN<br/>SAME INPUT · SAME BASE</div></div>
+    <div class="eyebrow">02 · CLEAN INPUT A/B</div>
+    <h1>清晰页：LoRA 没有更好，质量门拒绝“强行使用”</h1>
+    <p class="subtitle">两路 CER 相同；但 LoRA 输出尾部发生结构性塌缩。CER 不能替代输出完整性硬门。</p>
+    <div class="ab-grid">
+      <div class="sample"><img src="/tests/fixtures/reading-jot/transfer/parking-clean.png" alt="清晰停车单固定样本"/><div class="hash">SHA256<br/>c6481c60499ac609999e9d461bff8da451b9b9b2c04a3745e806a11e67f59ad9</div></div>
+      <div class="candidate good">
+        <div class="candidate-head"><div><span class="badge green">PASS</span><h2 style="margin-top:9px">Qwen Base</h2></div><span class="badge">DEFAULT</span></div>
+        <div class="metrics"><div class="metric"><b>13,182</b><span>ms</span></div><div class="metric"><b>1.27%</b><span>CER</span></div><div class="metric"><b>256</b><span>budget</span></div></div>
+        <div class="transcript">云栖停车场
+· 入场：2026-08-18 13:42
+· 离场：2026-08-18 16:17
+· 停车时长：2小时35分
+· 应付金额：15.00元
+· 位置：杭州市西湖区留和路129号
+校验员 B05 | 从未进入训练</div>
+        <div class="fade-tail" style="background:var(--mint)">完整结束 · 无循环 · 无异常未知字符尾</div>
+      </div>
+      <div class="candidate bad">
+        <div class="candidate-head"><div><span class="badge pink">FAIL</span><h2 style="margin-top:9px">Base + OCR LoRA</h2></div><span class="badge">ADAPTER</span></div>
+        <div class="metrics"><div class="metric"><b>17,235</b><span>ms</span></div><div class="metric"><b>1.27%</b><span>CER</span></div><div class="metric"><b>256</b><span>budget</span></div></div>
+        <div class="transcript"># 云栖停车场
+- 入场：2026-08-18 13:42
+- 离场：2026-08-18 16:17
+…
+校验员 B05｜从未进入训练
+□ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □
+□ □ □ □ □ □ □ □ □ □ □ □ □ □ □ □</div>
+        <div class="fade-tail">unknown-heavy · word-loop · terminal-collapse</div>
+      </div>
+    </div>
+    <div class="gate-bar"><strong>QUALITY GATE</strong><p><b>BASE KEPT：</b>LoRA 触发塌缩、任务漂移或完整性问题；保留通过硬门的 Base。没有因为“装了 LoRA”就强行调用。</p></div>
+    <div class="footer"><span>policy: reading-jot-gate-v2-streetgo-derived</span><span>Measured on local MNN endpoint · 2026-08-11</span></div>
+  </section>
+
+  <section class="slide" id="slide-3">
+    <div class="topline"><div class="brand">POCKET EARTH · READING JOT</div><div class="run-id">CASE 02 / STRESS<br/>GLARE + SCRATCH</div></div>
+    <div class="eyebrow">03 · STRESS INPUT / THREE-VOTE GATE</div>
+    <h1>压力页：LoRA 只有经过独立第三票，才允许获胜</h1>
+    <p class="subtitle">Base 出现 decode 边界重试和长未知字符尾；LoRA 更完整，但仍需增强视图复核。</p>
+    <div class="stress-layout">
+      <div class="sample"><img src="/tests/fixtures/reading-jot/transfer/parking-stress.jpg" alt="反光划痕压力样本"/><div class="hash">SHA256<br/>d49da16c9ad85d61b32be439d67a25c8ec09fcc5255c386cd893d0ff5a43818f</div></div>
+      <div>
+        <div class="timeline">
+          <div class="vote"><div class="num">VOTE 01</div><h3>Qwen Base</h3><div class="time">31,826 <small>ms</small></div><div class="mini">云栖停车场
+· 入场：2026-08-18 13:42
+…
+校验员 BOS | 从未进入训练
+□ □ □ □ □ □ □ □ □ □ □ □
+□ □ □ □ □ □ □ □ □ □ □ □</div><div class="status">FAIL · 255 TOKEN RETRY</div></div>
+          <div class="vote"><div class="num">VOTE 02</div><h3>OCR LoRA</h3><div class="time">9,451 <small>ms</small></div><div class="mini">云栖停车场
+
+• 入场：2026-08-18 13:42
+• 离场：2026-08-18 16:17
+• 停车时长：2小时35分
+…
+校验员 BOS | 从未进入训练
+□</div><div class="status">PASS · 但不立即采纳</div></div>
+          <div class="vote"><div class="num">VOTE 03</div><h3>增强视图 LoRA</h3><div class="time">9,169 <small>ms</small></div><div class="mini"># 云栖停车场
+
+- 入场：2026-08-18 13:42
+- 离场：2026-08-18 16:17
+- 停车时长：2小时35分
+- 应付金额：15.00元
+- 位置：杭州市西湖区留和路129号</div><div class="status">PASS · 独立视图支持</div></div>
+          <div class="vote accept"><div class="num">ROUTER</div><h3>最终路由</h3><div class="time">LORA</div><div class="mini">Base：
+unknown-heavy
+word-loop
+terminal-collapse
+
+LoRA：第一票通过
+增强视图：再次支持
+
+最终文字仍交给用户校文。</div><div class="status">LORA ACCEPTED</div></div>
+        </div>
+        <div class="claim"><b>结论边界：</b>本例证明“分条件路由＋第三票门控”已经真实运行，并不说明 LoRA 对所有图片都更准确。清晰页仍然由 Base 获胜。</div>
+      </div>
+    </div>
+    <div class="footer"><span>MNN 3.6.1 · Qwen3‑VL‑2B · general-ocr-vision</span><span>原文可编辑 · 用户最终确认 · IndexedDB 保存</span></div>
+  </section>
+  <script>
+    const slide = new URLSearchParams(location.search).get('slide');
+    if (slide && ['1','2','3'].includes(slide)) document.body.dataset.slide = slide;
+  </script>
+</body>
+</html>

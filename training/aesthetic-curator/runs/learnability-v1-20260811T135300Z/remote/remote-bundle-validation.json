@@ -1,0 +1,12 @@
+{
+  "gates": {
+    "manifestReady": true,
+    "trainRows": true,
+    "validationRows": true,
+    "testRows": true,
+    "imageCount": true,
+    "allImagesPresent": true,
+    "promptContract": true
+  },
+  "ready": true
+}

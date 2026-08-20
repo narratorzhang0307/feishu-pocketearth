@@ -1,0 +1,24 @@
+[Unit]
+Description=Pocket Earth Whisplay Project Launcher
+Wants=whisplay-daemon.service pocket-earth-edge.service pocket-earth-gemma.service
+After=whisplay-daemon.service pocket-earth-edge.service pocket-earth-gemma.service sunset-radio-whisplay.service
+ConditionPathExists=/home/pi/pocket-earth/frost_pi_project_launcher.py
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+SupplementaryGroups=audio video gpio input spi i2c
+WorkingDirectory=/home/pi/pocket-earth
+EnvironmentFile=-/etc/pocket-earth-edge.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/home/pi/pocket-earth:/home/pi/Whisplay/runtime
+Environment=WHISPLAY_RUNTIME=/home/pi/Whisplay/runtime
+Environment=FROST_MIRROR_PATH=/run/pocket-earth-edge/live.png
+ExecStart=/usr/bin/python3 -u /home/pi/pocket-earth/frost_pi_project_launcher.py
+Restart=always
+RestartSec=3
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
