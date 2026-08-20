@@ -51,31 +51,44 @@ export function createFeishuWriteback({ client, config }) {
       return client.sendInteractiveCard(task.openId, buildResultCard(task, config, 'review'))
     },
 
-    async write(task, locations) {
-      const document = await client.createDocument(
-        `Pocket Earth｜${task.fileName}｜${new Date(task.createdAt).toLocaleDateString('zh-CN')}`,
-        task._private?.userAccessToken || '',
-      )
-      await client.appendDocumentBlocks(document.documentId, documentBlocks(task, locations), task._private?.userAccessToken || '')
-      const bitable = await client.createBitableRecords(locations.map((location) => ({
-        '任务 ID': task.taskId,
-        '来源文件': task.fileName,
-        '原文地点': location.nameAsWritten,
-        '现代地名': location.modernName,
-        '页码': location.page,
-        '原文证据': location.evidence,
-        '纬度': location.latitude,
-        '经度': location.longitude,
-        '置信度': location.confidence,
-        '审核状态': location.reviewStatus,
-      })))
-      const outputs = { document, bitable, notification: null }
-      try {
-        outputs.notification = await client.sendInteractiveCard(task.openId, buildResultCard({ ...task, locations, outputs }, config, 'completed'))
-      } catch (error) {
-        // 文档与表格已经成功写入时，消息通知失败不能把核心成果回滚成“失败”。
-        // 错误仍随任务结果返回，运维可据此单独补发卡片。
-        outputs.notification = { skipped: true, reason: String(error?.message || error).slice(0, 500) }
+    async write(task, locations, checkpoint = async () => {}) {
+      const outputs = { ...(task.outputs || {}) }
+      if (!outputs.document?.documentId) {
+        outputs.document = await client.createDocument(
+          `Pocket Earth｜${task.fileName}｜${new Date(task.createdAt).toLocaleDateString('zh-CN')}`,
+          task._private?.userAccessToken || '',
+        )
+        await checkpoint(outputs)
+      }
+      if (!outputs.documentBlocksWritten) {
+        await client.appendDocumentBlocks(outputs.document.documentId, documentBlocks(task, locations), task._private?.userAccessToken || '')
+        outputs.documentBlocksWritten = true
+        await checkpoint(outputs)
+      }
+      if (!outputs.bitable) {
+        outputs.bitable = await client.createBitableRecords(locations.map((location) => ({
+          '任务 ID': task.taskId,
+          '来源文件': task.fileName,
+          '原文地点': location.nameAsWritten,
+          '现代地名': location.modernName,
+          '页码': location.page,
+          '原文证据': location.evidence,
+          '纬度': location.latitude,
+          '经度': location.longitude,
+          '置信度': location.confidence,
+          '审核状态': location.reviewStatus,
+        })))
+        await checkpoint(outputs)
+      }
+      if (!outputs.notification || outputs.notification.skipped) {
+        try {
+          outputs.notification = await client.sendInteractiveCard(task.openId, buildResultCard({ ...task, locations, outputs }, config, 'completed'))
+        } catch (error) {
+          // 文档与表格已经成功写入时，消息通知失败不能把核心成果回滚成“失败”。
+          // 错误仍随任务结果返回，运维可据此单独补发卡片。
+          outputs.notification = { skipped: true, reason: String(error?.message || error).slice(0, 500) }
+        }
+        await checkpoint(outputs)
       }
       return outputs
     },

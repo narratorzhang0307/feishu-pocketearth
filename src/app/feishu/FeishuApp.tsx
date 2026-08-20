@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import {
   AlertTriangle, Bot, Check, CheckCircle2, ExternalLink, FileSearch, FileText,
   Globe2, Loader2, MapPin, RefreshCw, ShieldCheck, UploadCloud, X,
@@ -21,6 +21,8 @@ const STATUS_COPY: Record<FeishuTask['status'], string> = {
 };
 
 const RUNNING = new Set<FeishuTask['status']>(['queued', 'ocr_running', 'qwen_running', 'writing_back']);
+const RealResultMap = lazy(() => import('./FeishuResultMap'));
+const HAS_REAL_MAP = Boolean(import.meta.env.VITE_MAPBOX_TOKEN);
 
 function bytesLabel(bytes: number) {
   return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.ceil(bytes / 1024)} KB`;
@@ -61,6 +63,11 @@ function StatusRail({ task }: { task: FeishuTask }) {
 
 function KnowledgeMap({ locations }: { locations: ReviewedLocation[] }) {
   const plotted = locations.filter((item) => Number.isFinite(item.latitude) && Number.isFinite(item.longitude));
+  if (HAS_REAL_MAP && plotted.length) return (
+    <Suspense fallback={<div className="flex h-80 items-center justify-center rounded-2xl bg-slate-950 text-sm text-slate-300"><Loader2 className="mr-2 h-4 w-4 animate-spin" />正在准备真实地图…</div>}>
+      <RealResultMap locations={locations} />
+    </Suspense>
+  );
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 text-white shadow-sm">
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
@@ -199,6 +206,14 @@ export default function FeishuApp() {
     finally { setBusy(false); }
   };
 
+  const resetUpload = () => {
+    setTask(null);
+    setFile(null);
+    setReviewed([]);
+    setError('');
+    history.replaceState(null, '', '/feishu');
+  };
+
   if (authenticating) return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-slate-50">
       <div className="text-center"><Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" /><p className="mt-4 text-sm font-semibold text-slate-600">正在通过飞书安全免登…</p></div>
@@ -249,7 +264,7 @@ export default function FeishuApp() {
                 </div>
                 <StatusRail task={task} />
                 {RUNNING.has(task.status) && <div className="flex items-center gap-3 rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800"><Loader2 className="h-4 w-4 animate-spin" />{task.progress.label}</div>}
-                {task.status === 'failed' && <div className="rounded-xl border border-red-200 bg-red-50 p-4"><div className="flex gap-2 text-sm font-bold text-red-800"><AlertTriangle className="h-5 w-5" />工作流没有伪造兜底结果</div><p className="mt-2 break-words font-mono text-xs text-red-700">{task.error}</p><button onClick={retry} disabled={busy} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white"><RefreshCw className="h-4 w-4" />修正配置后重试</button></div>}
+                {task.status === 'failed' && <div className="rounded-xl border border-red-200 bg-red-50 p-4"><div className="flex gap-2 text-sm font-bold text-red-800"><AlertTriangle className="h-5 w-5" />工作流没有伪造兜底结果</div><p className="mt-2 break-words font-mono text-xs text-red-700">{task.error}</p><button onClick={task.sourceRequired ? resetUpload : retry} disabled={busy} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white">{task.sourceRequired ? <UploadCloud className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}{task.sourceRequired ? '重新上传原文件并恢复' : task.retryStage === 'writeback' ? '返回审核并继续写回' : '修正配置后重试'}</button></div>}
               </div>
             )}
           </section>

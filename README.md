@@ -11,6 +11,8 @@
 飞书改造的部署、权限、OCR 接口契约和验收步骤见
 [`docs/feishu/部署与上手指南.md`](docs/feishu/部署与上手指南.md)；比赛期间新增内容与源工程隔离证据见
 [`docs/feishu/比赛改造更新日志.md`](docs/feishu/比赛改造更新日志.md)。
+仓库同时提供可部署的 [`services/paddle-ocr`](services/paddle-ocr) 自托管服务，不需要用外部
+OCR SaaS 或演示假数据补齐链路。
 
 Pocket Earth 是一个由用户长期拥有的本地 Frost Agent。它通过可安装、可验证、
 可装备、可回滚和可卸载的 Skills 获得能力；Skill 与 Data Pack 分离，因此同一能力
@@ -48,6 +50,7 @@ npm run dev
 npm run typecheck
 npm test -- --run
 npm run build
+npm run feishu:verify
 npm run verify:first-paint
 npm run build:mobile
 ```

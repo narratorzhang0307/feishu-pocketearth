@@ -48,10 +48,14 @@ export type FeishuTask = {
   locations: ExtractedLocation[];
   outputs: {
     document?: { documentId: string; url: string };
+    documentBlocksWritten?: boolean;
     bitable?: { skipped?: boolean; reason?: string };
+    notification?: { skipped?: boolean; reason?: string; messageId?: string } | null;
   };
   error: string | null;
   attempt: number;
+  retryStage?: 'analysis' | 'writeback' | null;
+  sourceRequired?: boolean;
 };
 
 export type ReviewedLocation = ExtractedLocation & { approved: boolean };

@@ -16,6 +16,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "feishu:verify": "npm run typecheck && vitest run server/feishu && cd services/paddle-ocr && python3 -m unittest -v test_contract.py",
     "datapack:build": "node scripts/data-packs/build-library.mjs",
     "datapack:verify": "node scripts/data-packs/verify-library.mjs",
     "datapack:validate": "node scripts/data-packs/validate-pack.mjs",

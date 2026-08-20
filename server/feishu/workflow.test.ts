@@ -33,12 +33,15 @@ describe('Feishu AI task workflow', () => {
     const first = await workflow.createTask({ identity, source, userAccessToken: 'server-only-token' });
     const reviewTask = await eventually(() => store.get(first.task.taskId), (task) => task?.status === 'awaiting_review');
     expect(reviewTask?.taskId).toBe(first.task.taskId);
+    expect(store.getInternal(first.task.taskId)._private.source).toBeNull();
     const completed = await workflow.confirmAndWrite(first.task.taskId, reviewTask!.locations.map((location: { id: string; modernName: string; description: string; latitude: number; longitude: number }) => ({ ...location, approved: true })));
     expect(completed).toMatchObject({ taskId: first.task.taskId, status: 'completed' });
     expect(JSON.stringify(completed)).not.toContain('server-only-token');
+    expect(store.getInternal(first.task.taskId)._private.userAccessToken).toBe('');
 
     const duplicate = await workflow.createTask({ identity, source, userAccessToken: 'another-token' });
     expect(duplicate).toMatchObject({ reused: true, task: { taskId: first.task.taskId } });
+    expect(store.getInternal(first.task.taskId)._private.userAccessToken).toBe('');
   });
 
   it('surfaces provider failures instead of creating fake locations', async () => {
@@ -54,5 +57,27 @@ describe('Feishu AI task workflow', () => {
     const created = await workflow.createTask({ identity, source });
     const failed = await eventually(() => store.get(created.task.taskId), (task) => task?.status === 'failed');
     expect(failed).toMatchObject({ status: 'failed', error: 'paddle_ocr_not_configured', locations: [] });
+  });
+
+  it('reopens the review stage after a writeback failure without repeating OCR or Qwen', async () => {
+    const dataDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-writeback-'));
+    const store = new FeishuTaskStore({ dataDir, workflowVersion: 'test-v3' });
+    await store.init();
+    let ocrCalls = 0;
+    let extractCalls = 0;
+    const workflow = createFeishuWorkflow({
+      store,
+      ocr: { recognize: async () => { ocrCalls += 1; return { engine: 'ocr', pages: [{ page: 1, text: '杭州西湖' }] }; } },
+      extractor: { extract: async () => { extractCalls += 1; return { model: 'qwen-test', locations: [{ id: 'location-1', nameAsWritten: '杭州西湖', modernName: '西湖', description: '', page: 1, evidence: '杭州西湖', latitude: 30.25, longitude: 120.15, confidence: 0.9, reviewStatus: 'pending' }] }; } },
+      writeback: { notifyReview: async () => ({}), write: async () => { throw new Error('feishu_document_unavailable'); } },
+    });
+    const created = await workflow.createTask({ identity, source });
+    const review = await eventually(() => store.get(created.task.taskId), (task) => task?.status === 'awaiting_review');
+    await expect(workflow.confirmAndWrite(created.task.taskId, review!.locations.map((location: { id: string }) => ({ ...location, approved: true })))).rejects.toThrow('feishu_document_unavailable');
+    expect(store.get(created.task.taskId)).toMatchObject({ status: 'failed', retryStage: 'writeback' });
+
+    const reopened = await workflow.retry(created.task.taskId);
+    expect(reopened).toMatchObject({ status: 'awaiting_review', retryStage: 'writeback' });
+    expect({ ocrCalls, extractCalls }).toEqual({ ocrCalls: 1, extractCalls: 1 });
   });
 });

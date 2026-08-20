@@ -23,9 +23,10 @@ function json(raw) {
 function httpError(error) {
   const message = String(error?.message || error || 'unknown_error')
   if (message === 'unauthorized') return { code: 401, message }
+  if (message.includes('too_large')) return { code: 413, message }
   if (message.includes('not_found')) return { code: 404, message }
   if (message.includes('not_awaiting') || message.includes('not_failed')) return { code: 409, message }
-  if (message.includes('invalid') || message.includes('missing') || message.includes('unsupported') || message.includes('incomplete')) return { code: 400, message }
+  if (message.includes('invalid') || message.includes('missing') || message.includes('unsupported') || message.includes('incomplete') || message.includes('required')) return { code: 400, message }
   return { code: 500, message }
 }
 
