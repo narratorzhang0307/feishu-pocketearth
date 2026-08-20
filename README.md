@@ -14,6 +14,12 @@
 仓库同时提供可部署的 [`services/paddle-ocr`](services/paddle-ocr) 自托管服务，不需要用外部
 OCR SaaS 或演示假数据补齐链路。
 
+飞书比赛版上线前可先执行 `npm run feishu:preflight`；完整容器编排使用：
+
+```bash
+docker compose -f compose.feishu.yaml up --build -d
+```
+
 Pocket Earth 是一个由用户长期拥有的本地 Frost Agent。它通过可安装、可验证、
 可装备、可回滚和可卸载的 Skills 获得能力；Skill 与 Data Pack 分离，因此同一能力
 可以加载 Pocket Earth 示例数据，也可以加载遵循开放协议的第三方数据。
@@ -51,6 +57,7 @@ npm run typecheck
 npm test -- --run
 npm run build
 npm run feishu:verify
+npm run feishu:preflight
 npm run verify:first-paint
 npm run build:mobile
 ```

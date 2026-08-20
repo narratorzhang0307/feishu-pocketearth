@@ -1,0 +1,48 @@
+name: pocket-earth-feishu
+
+services:
+  pocket-earth:
+    build:
+      context: .
+      dockerfile: Dockerfile.feishu
+      args:
+        VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:-}
+    restart: unless-stopped
+    init: true
+    env_file: .env
+    environment:
+      API_PORT: 3009
+      FEISHU_DATA_DIR: /data/feishu
+      PADDLE_OCR_URL: http://paddle-ocr:8010/v1/ocr
+    ports:
+      - "${POCKET_EARTH_PORT:-3009}:3009"
+    volumes:
+      - feishu-data:/data/feishu
+    depends_on:
+      paddle-ocr:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  paddle-ocr:
+    build:
+      context: services/paddle-ocr
+    restart: unless-stopped
+    init: true
+    environment:
+      OCR_API_KEY: ${PADDLE_OCR_API_KEY:-}
+      OCR_DEVICE: ${OCR_DEVICE:-cpu}
+      OCR_MAX_BYTES: ${OCR_MAX_BYTES:-18874368}
+      OCR_MAX_PAGES: ${OCR_MAX_PAGES:-30}
+      OCR_CONCURRENCY: ${OCR_CONCURRENCY:-1}
+    volumes:
+      - paddle-models:/home/pocketocr/.paddlex
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  feishu-data:
+  paddle-models:

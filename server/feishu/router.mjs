@@ -1,6 +1,6 @@
 import { readFeishuConfig, publicFeishuConfig } from './config.mjs'
 import { createFeishuClient } from './client.mjs'
-import { verifyEventCallback } from './security.mjs'
+import { createEventDeduplicator, decryptEventPayload, verifyEventCallback, verifyEventToken } from './security.mjs'
 import { SessionStore } from './session-store.mjs'
 import { FeishuTaskStore } from './task-store.mjs'
 import { createOcrProvider } from './ocr-provider.mjs'
@@ -35,6 +35,7 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
   const client = createFeishuClient(config, fetchImpl)
   const sessions = new SessionStore()
   const taskLimiter = createSlidingWindowLimiter({ limit: config.taskRateLimitPerMinute, windowMs: 60_000 })
+  const eventDeduplicator = createEventDeduplicator()
   const store = new FeishuTaskStore({ dataDir: config.dataDir, workflowVersion: config.workflowVersion })
   await store.init()
   const workflow = createFeishuWorkflow({
@@ -86,9 +87,19 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
         const body = json(raw)
         const verified = verifyEventCallback({ headers: req.headers, rawBody: raw, body, config })
         if (!verified.ok) { sendJSON(res, { error: verified.error }, 401); return true }
-        if (body.challenge) { sendJSON(res, { challenge: body.challenge }); return true }
+        let eventBody = body
+        if (body.encrypt) {
+          try { eventBody = decryptEventPayload(body.encrypt, config.encryptKey) }
+          catch (error) { sendJSON(res, { error: String(error?.message || error) }, 401); return true }
+          const tokenVerified = verifyEventToken(eventBody, config)
+          if (!tokenVerified.ok) { sendJSON(res, { error: tokenVerified.error }, 401); return true }
+        }
+        if (eventBody.challenge) { sendJSON(res, { challenge: eventBody.challenge }); return true }
         sendJSON(res, { code: 0 })
-        queueMicrotask(() => { void store.audit('feishu_event_received', null, { eventType: body?.header?.event_type || body?.type || 'encrypted' }) })
+        const eventId = eventBody?.header?.event_id || eventBody?.uuid || ''
+        if (eventDeduplicator.accept(eventId)) {
+          queueMicrotask(() => { void store.audit('feishu_event_received', null, { eventId, eventType: eventBody?.header?.event_type || eventBody?.type || 'unknown' }) })
+        }
         return true
       }
 

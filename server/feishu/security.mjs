@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from 'node:crypto'
+import { createDecipheriv, createHash, timingSafeEqual } from 'node:crypto'
 
 function equalText(left, right) {
   const a = Buffer.from(String(left || ''))
@@ -10,6 +10,61 @@ export function eventSignature({ timestamp, nonce, encryptKey, rawBody }) {
   return createHash('sha256')
     .update(`${timestamp || ''}${nonce || ''}${encryptKey || ''}${rawBody || ''}`)
     .digest('hex')
+}
+
+export function decryptEventText(encrypt, encryptKey) {
+  const encoded = String(encrypt || '')
+  if (!encryptKey) throw new Error('feishu_event_encrypt_key_missing')
+  if (!encoded || encoded.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) {
+    throw new Error('feishu_event_decrypt_failed')
+  }
+  try {
+    const payload = Buffer.from(encoded, 'base64')
+    if (payload.length <= 16 || (payload.length - 16) % 16 !== 0) throw new Error('invalid_ciphertext_length')
+    const key = createHash('sha256').update(String(encryptKey)).digest()
+    const decipher = createDecipheriv('aes-256-cbc', key, payload.subarray(0, 16))
+    return Buffer.concat([decipher.update(payload.subarray(16)), decipher.final()]).toString('utf8')
+  } catch {
+    throw new Error('feishu_event_decrypt_failed')
+  }
+}
+
+export function decryptEventPayload(encrypt, encryptKey) {
+  try {
+    const body = JSON.parse(decryptEventText(encrypt, encryptKey))
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('invalid_event_body')
+    return body
+  } catch (error) {
+    if (error?.message === 'feishu_event_encrypt_key_missing') throw error
+    throw new Error('feishu_event_decrypt_failed')
+  }
+}
+
+export function verifyEventToken(body, config) {
+  if (!config.verificationToken) return { ok: true }
+  const token = body?.token || body?.header?.token || body?.event?.token || ''
+  return equalText(token, config.verificationToken)
+    ? { ok: true }
+    : { ok: false, error: 'feishu_verification_token_invalid' }
+}
+
+export function createEventDeduplicator({ ttlMs = 24 * 60 * 60 * 1000, maxEntries = 5000, now = Date.now } = {}) {
+  const seen = new Map()
+  return {
+    accept(eventId) {
+      const id = String(eventId || '')
+      if (!id) return true
+      const current = now()
+      const existing = seen.get(id)
+      if (existing && existing > current) return false
+      if (seen.size >= maxEntries) {
+        for (const [key, expiresAt] of seen) if (expiresAt <= current) seen.delete(key)
+        if (seen.size >= maxEntries) seen.delete(seen.keys().next().value)
+      }
+      seen.set(id, current + ttlMs)
+      return true
+    },
+  }
 }
 
 export function verifyEventCallback({ headers = {}, rawBody = '', body = {}, config, now = Date.now() }) {
@@ -30,10 +85,7 @@ export function verifyEventCallback({ headers = {}, rawBody = '', body = {}, con
     if (!equalText(signature, expected)) return { ok: false, error: 'feishu_event_signature_invalid' }
   }
 
-  if (config.verificationToken && !body?.encrypt) {
-    const token = body?.token || body?.header?.token || body?.event?.token || ''
-    if (!equalText(token, config.verificationToken)) return { ok: false, error: 'feishu_verification_token_invalid' }
-  }
+  if (!body?.encrypt) return verifyEventToken(body, config)
 
   return { ok: true }
 }

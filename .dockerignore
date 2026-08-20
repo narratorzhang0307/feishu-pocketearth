@@ -1,0 +1,14 @@
+.git
+.env
+node_modules
+dist
+var
+android
+ios
+hardware
+artifacts
+docs
+*.docx
+*.pptx
+*.pdf
+npm-debug.log*
