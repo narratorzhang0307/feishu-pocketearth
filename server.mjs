@@ -17,6 +17,7 @@ import dns from 'node:dns'
 import { getTravelPlaceSources } from './knowledge/travel-place-sources.mjs'
 import { buildQwenChatBody, buildQwenImageBody, createQwenProvider, qwenModelForTask, readQwenImageUrl } from './server/qwen-provider.mjs'
 import { applySecurityHeaders, boundedText, clientAddress, createSlidingWindowLimiter, isSafeDataImage, isSafeInlineImage } from './server/security.mjs'
+import { createFeishuRouter } from './server/feishu/router.mjs'
 
 // 阿里云盒子 IPv6 路由不通：node fetch 默认 v6 优先会 ETIMEDOUT（curl 正常的经典差异）→ 强制 v4 优先
 dns.setDefaultResultOrder('ipv4first')
@@ -78,6 +79,16 @@ function readBody(req, maxBytes = 26 * 1024 * 1024) {   // 26MB 上限（略高�
     req.on('error', reject)   // socket 出错别让 Promise 永挂
   })
 }
+
+// 飞书比赛版的新增服务边界。原 Pocket Earth 的 Qwen/MNN/Android 链路保持不变；
+// 飞书免登、任务状态机、OCR→Qwen→人工确认→飞书写回均封装在独立模块中。
+const FEISHU = await createFeishuRouter({
+  env: process.env,
+  rootDir: __dirname,
+  qwenProvider: QWEN,
+  readBody,
+  sendJSON,
+})
 
 // ——————————————————— /api/edge（Qwen3/Qwen3-VL + 可插拔 MNN Skills） ———————————————————
 // 与“上街去”的开发中间件保持同一契约：文字、视觉、Travel LoRA、铭文 LoRA 与展品抠图
@@ -804,12 +815,13 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/travel-place-brief') return await handleTravelPlaceBrief(req, res)
     if (p === '/api/edge') return await handleEdge(req, res)
     if (p === '/api/edge-assets') return await handleEdgeAssetImport(req, res)
-    if (p === '/healthz') return sendJSON(res, { ok: true, edge: MNN_EDGE_ENABLED ? 'qwen-mnn' : 'stub', edgeModelInstalled: false, llm: QWEN.key ? QWEN.name : 'off', model: QWEN.key ? QWEN.model : '', memory: 'private-local', travelMcp: 'osm+openmeteo' })
+    if (p.startsWith('/api/feishu/')) return await FEISHU.handle(req, res, url)
+    if (p === '/healthz') return sendJSON(res, { ok: true, edge: MNN_EDGE_ENABLED ? 'qwen-mnn' : 'stub', edgeModelInstalled: false, llm: QWEN.key ? QWEN.name : 'off', model: QWEN.key ? QWEN.model : '', memory: 'private-local', travelMcp: 'osm+openmeteo', feishu: FEISHU.health() })
     return await serveStatic(req, res, p)
   } catch (e) {
     if (!res.headersSent) { res.writeHead(500); res.end('server error') } else { try { res.destroy() } catch { /* socket 已断 */ } }
   }
 })
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[pocket-earth] 监听 :${PORT}  llm=${QWEN.key ? QWEN.name + '/' + QWEN.model : 'off'}  edge=${MNN_EDGE_ENABLED ? 'qwen-mnn' : 'stub'}  unsplash=${UNSPLASH_KEY ? 'on' : 'off'}`)
+  console.log(`[pocket-earth-feishu] 监听 :${PORT}  llm=${QWEN.key ? QWEN.name + '/' + QWEN.model : 'off'}  edge=${MNN_EDGE_ENABLED ? 'qwen-mnn' : 'stub'}  feishu=${FEISHU.health().configured ? 'on' : 'setup-required'}  unsplash=${UNSPLASH_KEY ? 'on' : 'off'}`)
 })

@@ -8,7 +8,16 @@ import { httpBrain } from "../frost-agent/harness/httpBrain";
 // 接入阿里云百炼 Qwen 云脑；无 key 时 Skill 自动走确定性规则 fallback。
 setFrostBrain(httpBrain);
 
-createRoot(document.getElementById("root")!).render(<App />);
+const isFeishuWorkspace = window.location.pathname === '/feishu' || window.location.pathname.startsWith('/feishu/');
+
+if (isFeishuWorkspace) {
+  // 飞书比赛新增入口独立于原有三 Tab / Android 链路，便于证明改造范围与回归隔离。
+  import('./app/feishu/FeishuApp').then(({ default: FeishuApp }) => {
+    createRoot(document.getElementById("root")!).render(<FeishuApp />);
+  });
+} else {
+  createRoot(document.getElementById("root")!).render(<App />);
+}
 
 // 用库存给长期画像播种一次（幂等）。懒加载 profileSeed 及其库存大 JSON（movies/books），
 // 并把它推迟到「用户首次交互」——首屏只渲染地球 tab、不需要画像，这样这 1MB+ 数据就不会和

@@ -9,6 +9,8 @@ import { travelPlaceSources } from './frost-agent/planet/viteTravelPlaceSources'
 import { frostEdge } from './frost-agent/edge/viteEdge'
 // @ts-expect-error Plain ESM is shared with production Node server.
 import { buildQwenChatBody, buildQwenImageBody, createQwenProvider, qwenModelForTask, readQwenImageUrl } from './server/qwen-provider.mjs'
+// @ts-expect-error Plain ESM Feishu router is shared by Vite and the production Node server.
+import { createFeishuRouter } from './server/feishu/router.mjs'
 // Production 由 server.mjs 提供完整 travel-mcp；开发态至少保留同源地理编码。
 // 否则 Vite 会把 /api/travel-mcp 回退成 index.html，Mapping 候选永远拿不到坐标。
 function travelGeocodeDev(): Plugin {
@@ -50,6 +52,34 @@ function readDevBody(req: any): Promise<string> {
     req.on('data', (c: Buffer) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)))
     req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
   })
+}
+
+// 飞书工作流开发态与生产态共用同一个 router，避免 Demo 在 Vite 可用、部署后契约漂移。
+function feishuDev(env: Record<string, string>): Plugin {
+  return {
+    name: 'pocket-earth-feishu',
+    async configureServer(server) {
+      const qwenProvider = createQwenProvider(env)
+      const sendJSON = (res: any, value: unknown, code = 200) => {
+        res.statusCode = code
+        res.setHeader('content-type', 'application/json; charset=utf-8')
+        res.setHeader('cache-control', 'no-store')
+        res.end(JSON.stringify(value))
+      }
+      const router = await createFeishuRouter({
+        env,
+        rootDir: process.cwd(),
+        qwenProvider,
+        readBody: readDevBody,
+        sendJSON,
+      })
+      server.middlewares.use((req, res, next) => {
+        if (!String(req.url || '').startsWith('/api/feishu/')) { next(); return }
+        const url = new URL(req.url || '/', 'http://localhost')
+        void router.handle(req, res, url)
+      })
+    },
+  }
 }
 
 // LLM 代理：dev 中间件，把 /api/frost-llm 转给云脑。
@@ -241,7 +271,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    plugins: [react(), tailwindcss(), frostEdge(env), travelGeocodeDev(), travelPlaceSources(env), frostLlm(env), unsplashProxy(env)],
+    plugins: [react(), tailwindcss(), feishuDev(env), frostEdge(env), travelGeocodeDev(), travelPlaceSources(env), frostLlm(env), unsplashProxy(env)],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

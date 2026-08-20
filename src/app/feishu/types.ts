@@ -1,0 +1,57 @@
+export type FeishuConfig = {
+  appId: string;
+  configured: boolean;
+  devBypassAuth: boolean;
+  maxUploadBytes: number;
+  acceptedTypes: string[];
+  integrations: { ocr: boolean; qwen: boolean; document: boolean; bitable: boolean };
+};
+
+export type FeishuUser = {
+  openId: string;
+  name: string;
+  avatarUrl?: string;
+};
+
+export type ExtractedLocation = {
+  id: string;
+  nameAsWritten: string;
+  modernName: string;
+  description: string;
+  page: number;
+  evidence: string;
+  latitude: number | null;
+  longitude: number | null;
+  confidence: number;
+  reviewStatus: 'pending' | 'approved' | 'rejected';
+};
+
+export type FeishuTaskStatus =
+  | 'queued'
+  | 'ocr_running'
+  | 'qwen_running'
+  | 'awaiting_review'
+  | 'writing_back'
+  | 'completed'
+  | 'failed';
+
+export type FeishuTask = {
+  taskId: string;
+  fileName: string;
+  sourceType: 'pdf' | 'image';
+  sha256: string;
+  workflowVersion: string;
+  createdAt: string;
+  updatedAt: string;
+  status: FeishuTaskStatus;
+  progress: { current: number; total: number; label: string };
+  locations: ExtractedLocation[];
+  outputs: {
+    document?: { documentId: string; url: string };
+    bitable?: { skipped?: boolean; reason?: string };
+  };
+  error: string | null;
+  attempt: number;
+};
+
+export type ReviewedLocation = ExtractedLocation & { approved: boolean };

@@ -41,6 +41,7 @@ resource-library/world-photos.json
 var/knowledge/
 var/data-packs/
 var/toolchains/
+var/feishu/
 .ossutil_checkpoint/
 
 # 本地生成 / 准备用的临时产物，不入库

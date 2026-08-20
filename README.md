@@ -1,11 +1,22 @@
-# Pocket Earth · 阿里决赛版
+# Pocket Earth · 飞书 AI Native 改造版
+
+本目录是在 Pocket Earth 决赛基线上创建的**独立飞书比赛工程**。原决赛源目录保持只读；
+本工程新增 `/feishu` 工作台和服务端飞书适配层，使飞书身份、任务、人工确认、通知与成果
+沉淀直接参与核心运行，而不是把 AI 结果复制到飞书或只放一个链接。
+
+比赛新增闭环：
+
+`飞书免登 → PDF/图片上传 → PaddleOCR/PP-Structure → Qwen 证据化地点抽取 → 飞书内人工确认 → 飞书文档/多维表格/消息卡片 → 知识地球`
+
+飞书改造的部署、权限、OCR 接口契约和验收步骤见
+[`docs/feishu/部署与上手指南.md`](docs/feishu/部署与上手指南.md)；比赛期间新增内容与源工程隔离证据见
+[`docs/feishu/比赛改造更新日志.md`](docs/feishu/比赛改造更新日志.md)。
 
 Pocket Earth 是一个由用户长期拥有的本地 Frost Agent。它通过可安装、可验证、
 可装备、可回滚和可卸载的 Skills 获得能力；Skill 与 Data Pack 分离，因此同一能力
 可以加载 Pocket Earth 示例数据，也可以加载遵循开放协议的第三方数据。
 
-本目录是唯一决赛工程。当前模型主链路是 Qwen + MNN，不再以 Gemini、Gemma 或
-GMI 作为核心依赖。
+当前模型主链路仍是 Qwen + MNN，不再以 Gemini、Gemma 或 GMI 作为核心依赖。
 
 ## 已落地的核心架构
 
@@ -27,6 +38,9 @@ Book-to-Earth；文化遗产碑拓识读/复原已按统一 Skill 协议接入�
 npm install
 npm run dev
 ```
+
+配置 `FEISHU_DEV_BYPASS_AUTH=true` 后，本地访问 `http://localhost:5173/feishu` 可验收界面；
+正式比赛部署必须关闭该开关，并从飞书工作台 Web App 入口访问公网 HTTPS 地址。
 
 常用验收：
 
