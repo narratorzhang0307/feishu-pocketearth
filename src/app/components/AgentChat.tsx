@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, Check, Database, Loader2 } from 'lucide-react';
 import { edgeSafe } from '../../../frost-agent/edge/contract';
 import { assembleMemory } from '../lib/memoryRouter';
 import { HUMAN_VOICE, cleanVoice } from '../../../frost-agent/harness/persona';
@@ -7,6 +7,8 @@ import { streamText } from '../../../frost-agent/sync/stream';
 import { streamComplete } from '../lib/streamComplete';
 import AgentLuIcon from './AgentLuIcon';
 import UserZhaIcon from './UserZhaIcon';
+import { upsertFeishuLibraryRecords } from '../feishu/api';
+import type { FrostSubmissionDraft } from '../feishu/frostSubmission';
 
 // 通用「对话层」：各 Skill（读书 / 观影 / 城市播客）共用的对话框。
 // Qwen/MNN 端侧先做意图分类（端侧「挑」），Qwen 云脑结合脱敏上下文作答（云「写」）。
@@ -23,9 +25,23 @@ export interface AgentChatConfig {
   // 「这部作品用户接触过吗」查询（命中已看/已读全集则返回标注词如「看过」，否则 null）。
   // 用于推荐去重：扫云脑回复里的《作品名》，把用户已看过的当场标出来（确定性兜底，不靠云脑自觉）。
   checkSeen?: (title: string) => string | null;
+  // 飞书比赛版：识别用户明确的“记录/提交”意图，先生成草稿，必须再次点击确认才写入多维表格。
+  feishuSubmission?: {
+    createDraft: (text: string) => FrostSubmissionDraft | null;
+  };
 }
 
-interface Turn { role: 'user' | 'agent'; text: string; intent?: string; error?: boolean }
+interface Turn {
+  role: 'user' | 'agent';
+  text: string;
+  intent?: string;
+  error?: boolean;
+  submission?: {
+    draft: FrostSubmissionDraft;
+    status: 'ready' | 'sending' | 'done' | 'error';
+    error?: string;
+  };
+}
 
 // 用户是否在要「没接触过的新东西」（→ 走源头过滤路径，别事后红标注补救）。
 // 明确要「经典/名著」则不算（那种就是想聊已知作品，红标注可出现）。
@@ -95,6 +111,19 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
     setInput('');
     lastAskRef.current = text;   // 供「重试」回放
     const history = turns.slice(-6).map((t) => `${t.role === 'user' ? '用户' : '我'}：${t.text}`).join('\n');
+    const submissionDraft = config.feishuSubmission?.createDraft(text) || null;
+    if (submissionDraft) {
+      setTurns((current) => [
+        ...current,
+        { role: 'user', text },
+        {
+          role: 'agent',
+          text: `已整理为${submissionDraft.label}。确认后，我会把它提交到飞书多维表格，状态设为“待分析”；之后仍由你审核，未确认前不会进入地球。`,
+          submission: { draft: submissionDraft, status: 'ready' },
+        },
+      ]);
+      return;
+    }
     setTurns((t) => [...t, { role: 'user', text }]);
     setBusy(true);
     try {
@@ -154,6 +183,30 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
     }
   };
 
+  const submitToFeishu = async (turnIndex: number, draft: FrostSubmissionDraft) => {
+    setTurns((current) => current.map((turn, index) => index === turnIndex
+      ? { ...turn, submission: { draft, status: 'sending' } }
+      : turn));
+    try {
+      await upsertFeishuLibraryRecords(draft.domain, [draft.record], {
+        status: '待分析',
+        source: 'Frost Agent',
+      });
+      setTurns((current) => current.map((turn, index) => index === turnIndex
+        ? {
+          ...turn,
+          text: `${draft.label}已提交到飞书多维表格，当前状态为“待分析”。你可以直接在飞书补充字段，分析后再确认是否进入地球。`,
+          submission: { draft, status: 'done' },
+        }
+        : turn));
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : '提交失败';
+      setTurns((current) => current.map((turn, index) => index === turnIndex
+        ? { ...turn, submission: { draft, status: 'error', error: detail } }
+        : turn));
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-[#EAEAEA] min-h-0">
       <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-3 min-h-0">
@@ -181,7 +234,34 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
                 {t.intent && !t.error && <span className="not-italic" style={{ color: config.accent }}>· 端侧识别意图：{t.intent}</span>}
               </div>
               <div className={`bg-white border-2 px-3 py-2 text-[12px] leading-relaxed whitespace-pre-wrap shadow-[2px_2px_0_rgba(0,0,0,0.85)] ${t.error ? 'border-[#d23b3b]' : 'border-black'}`}>{t.text}</div>
-              {config.checkSeen && !t.error && (() => {
+              {t.submission && (
+                <div className="border-2 border-black bg-[#F5F2E9] p-2 text-[10px] leading-relaxed">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <Database className="h-3.5 w-3.5" strokeWidth={2.7} style={{ color: config.accent }} />
+                    飞书多维表格草稿 · {t.submission.draft.label}
+                  </div>
+                  {t.submission.status === 'done' ? (
+                    <div className="mt-2 flex items-center gap-1.5 border-2 border-black bg-white px-2 py-1.5 font-bold text-[#168654]">
+                      <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 待分析
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={t.submission.status === 'sending'}
+                      onClick={() => void submitToFeishu(i, t.submission!.draft)}
+                      className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black px-2 py-2 font-bold shadow-[1px_1px_0_#000] active:translate-y-px disabled:opacity-45"
+                      style={{ background: config.accent }}
+                    >
+                      {t.submission.status === 'sending' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" strokeWidth={2.7} />}
+                      {t.submission.status === 'sending' ? '正在提交…' : t.submission.status === 'error' ? '重试提交到飞书' : '确认提交到飞书 · 待分析'}
+                    </button>
+                  )}
+                  {t.submission.status === 'error' && (
+                    <div className="mt-1.5 text-[#b3261e]">提交失败：{t.submission.error}</div>
+                  )}
+                </div>
+              )}
+              {config.checkSeen && !t.error && !t.submission && (() => {
                 // 确定性去重：扫回复里的《作品名》，把命中已看/已读全集的当场标红（不靠云脑自觉）
                 const titles = [...new Set(t.text.match(/《[^》]+》/g) || [])];
                 const seen = titles.map((m) => { const lb = config.checkSeen!(m.slice(1, -1)); return lb ? `${m}（${lb}）` : null; }).filter(Boolean) as string[];

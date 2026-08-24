@@ -414,7 +414,12 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
   }
 
   async function ensureSchema() {
-    if (!config.bitableAppToken) throw new Error('bitable_not_configured')
+    let createdApp = false
+    if (!config.bitableAppToken) {
+      const created = await client.createBitableApp('Pocket Earth · 我的知识库')
+      config.bitableAppToken = created.appToken
+      createdApp = true
+    }
     if (!config.bitableLibraryTables) config.bitableLibraryTables = {}
     const existingTables = await client.listBitableTables()
     const createdTables = []
@@ -449,6 +454,7 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
     return {
       appToken: config.bitableAppToken,
       appUrl: `https://feishu.cn/base/${encodeURIComponent(config.bitableAppToken)}`,
+      createdApp,
       tables,
       createdTables,
       createdFields,

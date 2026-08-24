@@ -189,6 +189,19 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     return items
   }
 
+  async function createBitableApp(name) {
+    const token = await cachedToken('tenant')
+    const data = await request('/bitable/v1/apps', {
+      method: 'POST', token,
+      body: { name: safeText(name, 100) },
+      timeoutMs: 30000,
+      operation: 'create_feishu_bitable_app',
+    })
+    const appToken = data?.data?.app?.app_token || data?.data?.app_token
+    if (!appToken) throw new Error('bitable_app_token_missing')
+    return { appToken }
+  }
+
   async function createBitableTable(name) {
     if (!config.bitableAppToken) throw new Error('bitable_not_configured')
     const token = await cachedToken('tenant')
@@ -266,6 +279,7 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     updateBitableRecords,
     deleteBitableRecords,
     listBitableRecords,
+    createBitableApp,
     createBitableTable,
     listBitableTables,
     listBitableFields,

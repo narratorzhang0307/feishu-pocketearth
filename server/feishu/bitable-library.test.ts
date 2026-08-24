@@ -123,4 +123,37 @@ describe('Feishu Bitable library adapter', () => {
     const payload = JSON.parse(updates[1].records[0].fields['数据 JSON']);
     expect(payload.locations).toEqual([{ kind: 'story', place: '巴黎', lng: 2.35, lat: 48.85, confidence: 0.9 }]);
   });
+
+  it('creates the four knowledge tables and their collaborative fields in one action', async () => {
+    const dataDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-schema-'));
+    const createdTables: string[] = [];
+    const createdFields: Array<{ tableId: string; fieldName: string; type: number }> = [];
+    const config: any = { dataDir, bitableAppToken: '', bitableLibraryTables: {} };
+    const client = {
+      createBitableApp: async () => ({ appToken: 'base-created' }),
+      listBitableTables: async () => [],
+      createBitableTable: async (name: string) => { createdTables.push(name); return { tableId: `tbl-${createdTables.length}` }; },
+      listBitableFields: async () => [],
+      createBitableField: async (tableId: string, fieldName: string, type: number) => { createdFields.push({ tableId, fieldName, type }); },
+      listBitableRecords: async () => [],
+      createBitableRecords: async () => ({}),
+      updateBitableRecords: async () => ({}),
+    };
+    const library = createBitableLibrary({ client, config });
+
+    const result = await library.ensureSchema();
+
+    expect(result).toMatchObject({
+      appToken: 'base-created', createdApp: true,
+      createdTables: ['books', 'movies', 'music', 'photos'],
+      tables: {
+        books: { tableId: 'tbl-1', name: 'Pocket Earth · 书籍' },
+        photos: { tableId: 'tbl-4', name: 'Pocket Earth · 照片' },
+      },
+    });
+    expect(createdTables).toEqual(['Pocket Earth · 书籍', 'Pocket Earth · 电影', 'Pocket Earth · 音乐', 'Pocket Earth · 照片']);
+    expect(createdFields.some((field) => field.fieldName === '审核状态')).toBe(true);
+    expect(createdFields.some((field) => field.fieldName === '数据 JSON')).toBe(true);
+    expect(config.bitableLibraryTables).toEqual({ books: 'tbl-1', movies: 'tbl-2', music: 'tbl-3', photos: 'tbl-4' });
+  });
 });

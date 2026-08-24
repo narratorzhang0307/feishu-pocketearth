@@ -13,7 +13,7 @@ import type { FeishuConfig, FeishuTask, FeishuUser, ReviewedLocation } from './t
 const STATUS_COPY: Record<FeishuTask['status'], string> = {
   queued: '已进入飞书任务队列',
   ocr_running: 'PaddleOCR 正在识别版面与文字',
-  qwen_running: 'Qwen 正在抽取地点与原文证据',
+  qwen_running: 'AI 正在抽取地点与原文证据',
   awaiting_review: '等待你确认地点、证据和坐标',
   writing_back: '正在写回飞书文档与多维表格',
   completed: '飞书知识闭环已完成',
@@ -39,7 +39,7 @@ function fileBase64(file: File) {
 
 function StatusRail({ task }: { task: FeishuTask }) {
   const steps = [
-    ['ocr_running', 'OCR 识别'], ['qwen_running', 'Qwen 抽取'],
+    ['ocr_running', 'OCR 识别'], ['qwen_running', 'AI 抽取'],
     ['awaiting_review', '人工确认'], ['completed', '飞书写回'],
   ];
   const progress = task.status === 'failed' ? task.progress.current : task.progress.current;
@@ -237,7 +237,7 @@ export default function FeishuApp() {
           <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 px-6 py-8 text-white md:px-8">
               <div className="flex items-start justify-between gap-5">
-                <div><span className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-[10px] font-bold tracking-widest text-emerald-200">飞书 AI 原生工作流</span><h2 className="mt-5 max-w-xl text-3xl font-black leading-tight md:text-4xl">上传 PDF 或图片，生成一份可审计、可协作的地理知识成果。</h2><p className="mt-4 max-w-xl text-sm leading-6 text-slate-300">飞书负责身份、任务、人工审核和成果沉淀；PaddleOCR 与 Qwen 负责真实识别、抽取和判断。</p></div>
+                <div><span className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-[10px] font-bold tracking-widest text-emerald-200">飞书 AI 原生工作流</span><h2 className="mt-5 max-w-xl text-3xl font-black leading-tight md:text-4xl">上传 PDF 或图片，生成一份可审计、可协作的地理知识成果。</h2><p className="mt-4 max-w-xl text-sm leading-6 text-slate-300">飞书负责身份、任务、人工审核和成果沉淀；OCR 与 AI 负责真实识别、抽取和判断。</p></div>
                 <Bot className="hidden h-14 w-14 shrink-0 text-emerald-300 md:block" />
               </div>
             </div>
@@ -248,7 +248,7 @@ export default function FeishuApp() {
                   <input className="hidden" type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={chooseFile} />
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-200"><UploadCloud className="h-7 w-7" /></div>
                   <p className="mt-4 text-base font-bold">{file ? file.name : '选择一份 PDF 或图片资料'}</p>
-                  <p className="mt-2 text-xs text-slate-500">{file ? `${bytesLabel(file.size)} · 点击可更换` : `真实文件进入 OCR → Qwen → 飞书审核链路，上限 ${config ? bytesLabel(config.maxUploadBytes) : '—'}`}</p>
+                  <p className="mt-2 text-xs text-slate-500">{file ? `${bytesLabel(file.size)} · 点击可更换` : `真实文件进入 OCR → AI → 飞书审核链路，上限 ${config ? bytesLabel(config.maxUploadBytes) : '—'}`}</p>
                 </label>
                 <button disabled={!file || busy || !user} onClick={submit} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSearch className="h-4 w-4" />}启动飞书 AI 任务
@@ -300,8 +300,8 @@ export default function FeishuApp() {
 
         <aside className="space-y-5">
           {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><div className="flex items-center gap-2 font-bold"><AlertTriangle className="h-4 w-4" />需要处理</div><p className="mt-2 break-words text-xs leading-5">{error}</p></div>}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">实时能力状态</p><div className="mt-4 flex flex-wrap gap-2">{config && <><IntegrationBadge ready={config.configured} label="飞书免登" /><IntegrationBadge ready={config.integrations.ocr} label="真实 OCR" /><IntegrationBadge ready={config.integrations.qwen} label="Qwen" /><IntegrationBadge ready={config.integrations.document} label="飞书文档" /><IntegrationBadge ready={config.integrations.bitable} label="多维表格" /></>}</div></section>
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">为什么这是 Feishu AI Native</p><ol className="mt-4 space-y-4 text-sm text-slate-700">{[['1', '飞书身份与文件启动真实任务'], ['2', 'OCR 和 Qwen 在任务中完成分析'], ['3', '用户在飞书内核对证据与坐标'], ['4', '结果回写文档、表格和消息卡片']].map(([number, copy]) => <li key={number} className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">{number}</span><span className="leading-6">{copy}</span></li>)}</ol></section>
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">实时能力状态</p><div className="mt-4 flex flex-wrap gap-2">{config && <><IntegrationBadge ready={config.configured} label="飞书免登" /><IntegrationBadge ready={config.integrations.ocr} label="真实 OCR" /><IntegrationBadge ready={config.integrations.qwen} label="AI 分析" /><IntegrationBadge ready={config.integrations.document} label="飞书文档" /><IntegrationBadge ready={config.integrations.bitable} label="多维表格" /></>}</div></section>
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">为什么这是 Feishu AI Native</p><ol className="mt-4 space-y-4 text-sm text-slate-700">{[['1', '飞书身份与文件启动真实任务'], ['2', 'OCR 和 AI 在任务中完成分析'], ['3', '用户在飞书内核对证据与坐标'], ['4', '结果回写文档、表格和消息卡片']].map(([number, copy]) => <li key={number} className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">{number}</span><span className="leading-6">{copy}</span></li>)}</ol></section>
           {task && <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">可审计信息</p><dl className="mt-4 space-y-3 text-xs"><div><dt className="text-slate-400">文件 SHA-256</dt><dd className="mt-1 break-all font-mono text-slate-700">{task.sha256}</dd></div><div><dt className="text-slate-400">工作流版本</dt><dd className="mt-1 font-mono text-slate-700">{task.workflowVersion}</dd></div><div><dt className="text-slate-400">执行次数</dt><dd className="mt-1 font-semibold text-slate-700">{task.attempt}</dd></div></dl></section>}
         </aside>
       </main>

@@ -72,6 +72,7 @@ export type FeishuLibraryBootstrapResult = {
   ok: boolean;
   appToken: string;
   appUrl: string;
+  createdApp: boolean;
   tables: Record<FeishuLibraryDomain, { tableId: string; name: string }>;
   createdTables: FeishuLibraryDomain[];
   createdFields: Array<{ domain: FeishuLibraryDomain; fieldName: string }>;

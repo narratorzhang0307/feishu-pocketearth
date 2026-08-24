@@ -169,6 +169,16 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
         </button>
       </div>
 
+      {(message || state.error) && !open && (
+        <div
+          aria-live="polite"
+          className="mt-1.5 border-2 border-black bg-white px-2.5 py-2 text-[9px] font-bold leading-relaxed"
+          style={{ borderLeftColor: state.error && !message ? '#b3261e' : accent, borderLeftWidth: 5 }}
+        >
+          {message || state.error}
+        </div>
+      )}
+
       {mapPlacementCount !== undefined && state.active && (
         <div className="mt-1.5 flex items-center gap-2 border-2 border-black bg-white p-1.5 shadow-[2px_2px_0_rgba(0,0,0,0.18)]">
           <div className="flex min-w-0 flex-1 items-center gap-2 px-1">

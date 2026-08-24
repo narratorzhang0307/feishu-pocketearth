@@ -4,6 +4,7 @@ import MoviesRunPage from './MoviesRunPage';
 import { movieRecords, movieTotal, ensureMovieData, subscribeMovieData } from '../data/movies';
 import { seenBefore } from '../lib/movie';
 import { useFrostTaskHandoff } from './FrostTaskHandoffFrame';
+import { frostSubmissionFromText } from '../feishu/frostSubmission';
 
 // 观影 agent：左「片库·我的观影」(电影票根) + 右「对话·观影」(懂你豆瓣口味的观影 agent)。
 
@@ -43,6 +44,9 @@ export default function MoviesAgentPage({ onBack }: { onBack: () => void }) {
         suggestions: ['根据我的口味推荐三部', '我看过的高分片里最像《路边野餐》的', '推荐周末适合看的'],
         intentLabels: ['推荐', '讨论', '找片', '其他'],
         checkSeen: (t) => { const r = seenBefore(t); return r ? (r.date ? r.date.slice(0, 4) + ' 看过' : '看过') : null; },
+        feishuSubmission: typeof window !== 'undefined' && window.location.pathname.startsWith('/feishu')
+          ? { createDraft: (text) => frostSubmissionFromText('movies', text) }
+          : undefined,
       }}
     />
   );

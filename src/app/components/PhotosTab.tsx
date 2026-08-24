@@ -339,7 +339,7 @@ export default function PhotosTab() {
       setSection('照片整理'); setRoot('待你决定');
       run.phase('Frost 转交照片整理', `${selected.length} 张主动选择的照片${objective ? ` · 目标：${objective.slice(0, 80)}` : ''}`);
       await analyze(selected, run);
-      setMessage(`已完成 ${selected.length} 张照片的本地查重与技术筛选。下一步点击“Qwen 精选待审照片”，确认后才会进入杂志、日历和飞书多维表格。`);
+      setMessage(`已完成 ${selected.length} 张照片的本地查重与技术筛选。下一步点击“AI 精选待审照片”，确认后才会进入杂志、日历和飞书多维表格。`);
       run.end(true);
     }
     catch (error) { setMessage(String(error)); run.end(false); }
@@ -443,17 +443,17 @@ export default function PhotosTab() {
   const reviewWithQwen = async (only?: PhotoRadarAnalysis) => {
     const candidates = only ? [only] : unreviewedCandidates;
     if (!candidates.length || busy) return;
-    const run = startAgentRun('照片精选 · Qwen 云端评审', {
+    const run = startAgentRun('照片精选 · AI 云端评审', {
       skillId: 'pocket.photos.curation', skillVersion: '1.0.0', executionPath: 'qwen-cloud',
-      visualInput: '≤448px 用户主动选择缩略图', inputSummary: `${candidates.length} 张已完成本地查重/技术检测的候选；Qwen 只建议，不自动入库`,
-      tools: ['Qwen Vision', 'Feishu Bitable'], userConfirmation: 'required',
+      visualInput: '≤448px 用户主动选择缩略图', inputSummary: `${candidates.length} 张已完成本地查重/技术检测的候选；AI 只建议，不自动入库`,
+      tools: ['AI Vision', 'Feishu Bitable'], userConfirmation: 'required',
     });
     setRunId(run.runId); setActiveTask('curation'); setBusy(true); setMessage('');
     try {
       const reviewed: PhotoRadarAnalysis[] = [];
       for (let offset = 0; offset < candidates.length; offset += 8) {
         const batch = candidates.slice(offset, offset + 8);
-        setProgress(`Qwen 正在评审 ${Math.min(offset + batch.length, candidates.length)}/${candidates.length}`);
+        setProgress(`AI 正在评审 ${Math.min(offset + batch.length, candidates.length)}/${candidates.length}`);
         const inputs = await Promise.all(batch.map(async (analysis) => {
           const asset = assetMap.get(analysis.key);
           if (!asset) throw new Error('候选照片已不可用，请重新选择。');
@@ -463,7 +463,7 @@ export default function PhotosTab() {
         const byId = new Map(result.reviews.map((review) => [review.id, review]));
         reviewed.push(...batch.map((analysis) => {
           const review = byId.get(analysis.contentHash);
-          if (!review) throw new Error('Qwen 返回缺少照片评审结果。');
+          if (!review) throw new Error('AI 返回缺少照片评审结果。');
           return {
             ...analysis,
             curation: { ...review, model: result.model, reviewedAt: Date.now() },
@@ -474,10 +474,10 @@ export default function PhotosTab() {
       }
       await putRadarAnalyses(reviewed); updateAnalyses(reviewed);
       run.phase('结构化评审完成', `${reviewed.length} 张 · keep/review/reject · 等待用户逐张确认`);
-      setMessage(`Qwen 已完成 ${reviewed.length} 张精选建议。请逐张确认；确认前不会进入杂志、日历或飞书多维表格。`);
+      setMessage(`AI 已完成 ${reviewed.length} 张精选建议。请逐张确认；确认前不会进入杂志、日历或飞书多维表格。`);
       run.end(true);
     } catch (error) {
-      setMessage(`Qwen 精选失败：${error instanceof Error ? error.message : String(error)}`); run.end(false);
+      setMessage(`AI 精选失败：${error instanceof Error ? error.message : String(error)}`); run.end(false);
     } finally { setBusy(false); setActiveTask(null); setProgress(''); }
   };
 
@@ -537,7 +537,7 @@ export default function PhotosTab() {
 
   const chooseRepresentative = async (winner: PhotoRadarAnalysis, group: PhotoRadarAnalysis[]) => {
     const loser = group.filter((item) => item.key !== winner.key).sort((a, b) => b.technicalQuality - a.technicalQuality)[0];
-    if (!loser) { setMessage('已选择代表照片。请运行 Qwen 精选并确认后，再进入杂志、日历与飞书多维表格。'); return; }
+    if (!loser) { setMessage('已选择代表照片。请运行 AI 精选并确认后，再进入杂志、日历与飞书多维表格。'); return; }
     const winnerAsset = assetMap.get(winner.key); const loserAsset = assetMap.get(loser.key);
     if (!winnerAsset || !loserAsset) return;
     const model = learnPhotoPreference(
@@ -547,7 +547,7 @@ export default function PhotosTab() {
     await applyPreferenceModel(model);
     setMessage(model.choices < MIN_PREFERENCE_CHOICES
       ? `已记住第 ${model.choices} 次明确选择；满 ${MIN_PREFERENCE_CHOICES} 次后才显示个人偏好分。`
-      : '已更新本地个人偏好。还需通过 Qwen 精选并由你确认，才会进入杂志、日历和飞书。');
+      : '已更新本地个人偏好。还需通过 AI 精选并由你确认，才会进入杂志、日历和飞书。');
   };
 
   const pinToEarth = async (analysis: PhotoRadarAnalysis) => {
@@ -606,8 +606,8 @@ export default function PhotosTab() {
       {section === '照片整理' && <div className="shrink-0 border-b-2 border-black bg-[#EAEAEA] px-3 py-2">
         {feishuMode ? (
           <div className="border-2 border-black bg-white p-2">
-            <div className="flex items-center justify-between gap-2"><b className="text-[10px]">飞书照片整理</b><span className="border border-black bg-[#7CFF6B] px-1.5 py-0.5 font-pixel text-[6px]">DEDUPE → QWEN → CONFIRM → FEISHU</span></div>
-            <p className="mt-1 text-[8px] leading-4 text-black/50">无需安装 PWA 模型。选择照片后先查重与技术检测，再由 Qwen 建议；你确认后才进入杂志、日历和飞书照片表。</p>
+            <div className="flex items-center justify-between gap-2"><b className="text-[10px]">飞书照片整理</b><span className="border border-black bg-[#7CFF6B] px-1.5 py-0.5 font-pixel text-[6px]">DEDUPE → AI → CONFIRM → FEISHU</span></div>
+            <p className="mt-1 text-[8px] leading-4 text-black/50">无需安装 PWA 模型。选择照片后先查重与技术检测，再由 AI 建议；你确认后才进入杂志、日历和飞书照片表。</p>
           </div>
         ) : (
           <>
@@ -616,7 +616,7 @@ export default function PhotosTab() {
             </div>
             <div className="mt-1.5 flex items-center justify-between gap-2 text-[7px] text-black/45">
               <span>照片雷达 · 最终决定留给你</span>
-              <span className="border border-black bg-[#7CFF6B] px-1.5 py-0.5 font-pixel text-[6px]">LOCAL DEDUPE → QWEN → HUMAN</span>
+              <span className="border border-black bg-[#7CFF6B] px-1.5 py-0.5 font-pixel text-[6px]">LOCAL DEDUPE → AI → HUMAN</span>
             </div>
           </>
         )}
@@ -650,8 +650,8 @@ export default function PhotosTab() {
           <div className="grid grid-cols-5 gap-1.5"><Metric label="连拍组" value={decisions.bursts.length} /><Metric label="疑似重复" value={decisions.duplicates.length} /><Metric label="技术问题" value={decisions.technicalIssues.length} tone="amber" /><Metric label="票据" value={decisions.documents.length} /><Metric label="可落地球" value={decisions.earthCandidates.length} tone="green" /></div>
 
           {!!reviewCandidates.length && <section className="border-2 border-black bg-[#d9ffec] p-3 shadow-[3px_3px_0_#000]">
-            <div className="flex items-start justify-between gap-3"><div><div className="font-pixel text-[9px]">QWEN 精选 → 你确认 → 飞书入库</div><div className="mt-1 text-[8px] leading-4 text-black/55">已排除确定重复、截图和票据。点击后仅将 ≤448px 缩略图发送给服务端 Qwen；它只建议故事与编辑价值，不会自动收录或删除。</div></div><span className="shrink-0 border border-black bg-white px-2 py-1 font-pixel text-[7px]">待评 {unreviewedCandidates.length}</span></div>
-            <button disabled={busy || !unreviewedCandidates.length} onClick={() => void reviewWithQwen()} className="mt-3 w-full border-2 border-black bg-[#7CFF6B] py-2 text-[9px] font-black shadow-[2px_2px_0_#000] disabled:opacity-40">{activeTask === 'curation' ? progress || 'Qwen 正在评审…' : unreviewedCandidates.length ? `Qwen 精选待审照片（${unreviewedCandidates.length}）` : '本批照片已完成 Qwen 建议'}</button>
+            <div className="flex items-start justify-between gap-3"><div><div className="font-pixel text-[9px]">AI 精选 → 你确认 → 飞书入库</div><div className="mt-1 text-[8px] leading-4 text-black/55">已排除确定重复、截图和票据。点击后仅将 ≤448px 缩略图发送给服务端 AI；它只建议故事与编辑价值，不会自动收录或删除。</div></div><span className="shrink-0 border border-black bg-white px-2 py-1 font-pixel text-[7px]">待评 {unreviewedCandidates.length}</span></div>
+            <button disabled={busy || !unreviewedCandidates.length} onClick={() => void reviewWithQwen()} className="mt-3 w-full border-2 border-black bg-[#7CFF6B] py-2 text-[9px] font-black shadow-[2px_2px_0_#000] disabled:opacity-40">{activeTask === 'curation' ? progress || 'AI 正在评审…' : unreviewedCandidates.length ? `AI 精选待审照片（${unreviewedCandidates.length}）` : '本批照片已完成 AI 建议'}</button>
           </section>}
 
           {reviewCandidates.filter((analysis) => analysis.curation).slice(0, 12).map((analysis) => {
@@ -690,7 +690,7 @@ export default function PhotosTab() {
             <div className="mt-2 flex items-center gap-1 text-[8px] text-black/45"><Cpu className="h-3 w-3" />标签、时间、GPS、OCR 与 embedding top-k 在本机合并；原片不上传</div>{semanticSearchState && <div className="mt-1 text-[8px] text-[#087a43]">{semanticSearchState}</div>}
           </div>
 
-          {!searchResults.length ? <div className="py-16 text-center text-[10px] text-black/40">{analyses.length ? '没有命中。可以增量建立语义索引。' : '先在“待你决定”连接并分析真实相册。'}</div> : <><div className="grid grid-cols-3 gap-2">{visibleSearchResults.map(({ asset, analysis }) => <div key={analysis.key}><PhotoThumb asset={asset} analysis={analysis} onOpen={() => openPhoto(asset)} /><SearchMatchReasons asset={asset} analysis={analysis} query={query} semanticScore={semanticScoreMap.get(analysis.key)} /><div className="mt-1 truncate text-[8px] text-black/55">{analysis.tags.slice(0, 3).join(' · ') || dateLabel(asset.creationTime)}</div><div className="mt-1 flex gap-1"><button disabled={busy || Boolean(analysis.duplicateOf)} onClick={() => void reviewWithQwen(analysis)} className="flex-1 border border-black bg-white py-1 text-[7px]">{analysis.curation ? '重评' : 'Qwen 评审'}</button><button disabled={busy || !analysis.curation || Boolean(analysis.duplicateOf) || analysis.chronicleIncluded} onClick={() => void confirmCurated(analysis)} className={`flex-1 border border-black py-1 text-[7px] ${analysis.chronicleIncluded ? 'bg-[#7CFF6B]' : 'bg-white'} disabled:opacity-40`}>{analysis.chronicleIncluded ? '已收录' : '确认收录'}</button></div></div>)}</div>{searchLimit < searchResults.length && <button onClick={() => setSearchLimit((value) => value + SEARCH_WINDOW)} className="w-full border-2 border-black bg-white py-2 text-[9px] font-bold">再显示 {Math.min(SEARCH_WINDOW, searchResults.length - searchLimit)} 张 · 当前 DOM {visibleSearchResults.length}/{searchResults.length}</button>}</>}
+          {!searchResults.length ? <div className="py-16 text-center text-[10px] text-black/40">{analyses.length ? '没有命中。可以增量建立语义索引。' : '先在“待你决定”连接并分析真实相册。'}</div> : <><div className="grid grid-cols-3 gap-2">{visibleSearchResults.map(({ asset, analysis }) => <div key={analysis.key}><PhotoThumb asset={asset} analysis={analysis} onOpen={() => openPhoto(asset)} /><SearchMatchReasons asset={asset} analysis={analysis} query={query} semanticScore={semanticScoreMap.get(analysis.key)} /><div className="mt-1 truncate text-[8px] text-black/55">{analysis.tags.slice(0, 3).join(' · ') || dateLabel(asset.creationTime)}</div><div className="mt-1 flex gap-1"><button disabled={busy || Boolean(analysis.duplicateOf)} onClick={() => void reviewWithQwen(analysis)} className="flex-1 border border-black bg-white py-1 text-[7px]">{analysis.curation ? '重评' : 'AI 评审'}</button><button disabled={busy || !analysis.curation || Boolean(analysis.duplicateOf) || analysis.chronicleIncluded} onClick={() => void confirmCurated(analysis)} className={`flex-1 border border-black py-1 text-[7px] ${analysis.chronicleIncluded ? 'bg-[#7CFF6B]' : 'bg-white'} disabled:opacity-40`}>{analysis.chronicleIncluded ? '已收录' : '确认收录'}</button></div></div>)}</div>{searchLimit < searchResults.length && <button onClick={() => setSearchLimit((value) => value + SEARCH_WINDOW)} className="w-full border-2 border-black bg-white py-2 text-[9px] font-bold">再显示 {Math.min(SEARCH_WINDOW, searchResults.length - searchLimit)} 张 · 当前 DOM {visibleSearchResults.length}/{searchResults.length}</button>}</>}
         </div>}
 
         {section !== '照片整理' && <div className={section === '日历' ? 'min-h-0 flex-1' : 'h-full'}>

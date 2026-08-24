@@ -20,7 +20,7 @@ function readableError(cause: unknown) {
   if (value.includes('credentials_not_configured') || value.includes('应用尚未配置')) return '飞书应用凭证尚未配置。先在服务端填写 App ID 与 App Secret。';
   if (value.includes('document_url_invalid')) return '请粘贴飞书新版文档（docx）链接。';
   if (value.includes('99991663') || value.includes('permission') || value.includes('forbidden')) return '当前飞书用户或应用没有读取这篇文档的权限。';
-  if (value.includes('qwen_api_key_not_configured')) return 'Qwen 尚未配置，任务没有生成伪结果。';
+  if (value.includes('qwen_api_key_not_configured')) return 'AI 分析服务尚未配置，任务没有生成伪结果。';
   if (value.includes('bitable_not_configured')) return '服务端还没有配置飞书多维表格空间，暂时无法新建知识库。';
   return value;
 }
@@ -131,7 +131,7 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
     try {
       if (photoFiles.length) {
         submitPhotoOrganizerRequest({ files: photoFiles, objective: text });
-        setRouteMessage(`Frost 已把 ${photoFiles.length} 张照片交给“照片整理”：先本地查重与技术检测，再由 Qwen 建议、你确认、飞书入库。`);
+        setRouteMessage(`Frost 已把 ${photoFiles.length} 张照片交给“照片整理”：先本地查重与技术检测，再由 AI 建议、你确认、飞书入库。`);
         setPhotoMessage('已转入照片整理。杂志、日历与飞书多维表格都不会在你确认前写入。');
         onOpenSkill('photo-organizer');
         return;
@@ -214,7 +214,7 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
       setLibraryUrl(result.appUrl);
       await syncFeishuLibraryNow();
       const tableCopy = result.createdTables.length
-        ? `已新建 ${result.createdTables.length} 张表并补齐 ${result.createdFields.length} 个字段。`
+        ? `${result.createdApp ? '已新建飞书多维表格，' : ''}已建立 ${result.createdTables.length} 张表并补齐 ${result.createdFields.length} 个字段。`
         : `四张表已存在，字段检查完成${result.createdFields.length ? `，补齐 ${result.createdFields.length} 个字段` : ''}。`;
       setSyncMessage(`${tableCopy} 现在可以直接在飞书填写，也可以让 Frost 提交待分析记录。`);
     } catch (cause) { setError(readableError(cause)); }
@@ -259,7 +259,7 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
                 <button type="button" onClick={start} disabled={busy || !user || !documentUrl.trim()} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-[#00ff88] py-2 text-[10px] font-black active:translate-y-px disabled:bg-black/10 disabled:opacity-50">
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}读取飞书原文并生成知识地球
                 </button>
-                <p className="mt-1.5 text-[8px] leading-4 text-black/55">飞书身份 / 原文 → Qwen 证据抽取 → 你确认 → 地球 + 源文档 / 多维表格</p>
+                <p className="mt-1.5 text-[8px] leading-4 text-black/55">飞书身份 / 原文 → AI 证据抽取 → 你确认 → 地球 + 源文档 / 多维表格</p>
               </section>
               {!!photoPreviews.length && (
                 <div className="mt-3 border-2 border-black bg-[#eefcff] p-2">
@@ -309,7 +309,7 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
               <p className="mt-1 text-[8px] leading-4 text-black/50">自动建立书籍、电影、音乐、照片四张飞书多维表格，并补齐标题、地点、坐标、审核状态、来源和数据 JSON 等字段。</p>
               {libraryUrl && <a href={libraryUrl} target="_blank" rel="noreferrer" className="mt-1.5 flex items-center justify-center gap-1 border border-black bg-white py-1.5 text-[8px] font-bold">打开飞书多维表格<ExternalLink className="h-3 w-3" /></a>}
               <p className="mt-1 text-[8px] leading-4 text-black/50">可卸下比赛示例库，转到原 Skill 装载自己的 Data Pack；自动同步不会把已卸下的数据偷偷装回来。</p>
-              <p className="mt-1 border-l-2 border-black pl-1.5 text-[8px] leading-4 text-black/65">飞书新增书籍/电影后，将“审核状态”设为“待分析”；Qwen 补全地点后变为“待确认”，你改成“已确认”才会上地球。</p>
+              <p className="mt-1 border-l-2 border-black pl-1.5 text-[8px] leading-4 text-black/65">飞书新增书籍/电影后，将“审核状态”设为“待分析”；AI 补全地点后变为“待确认”，你改成“已确认”才会上地球。</p>
               {syncMessage && <p className="mt-1 border border-black bg-[#d9ffec] px-1.5 py-1 text-[8px] font-bold">{syncMessage}</p>}
               <div className="mt-2 grid grid-cols-2 gap-1.5">
                 {(['books', 'movies', 'music', 'photos'] as const).map((domain) => {
@@ -333,7 +333,7 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
 
         {task?.status === 'awaiting_review' && (
           <div className="space-y-3">
-            <div><div className="font-pixel text-[8px] text-[#008844]">HUMAN REVIEW · {task.orchestration?.skillName || 'QWEN'}</div><h2 className="mt-1 text-sm font-black">确认这些地点，再写入地球与飞书</h2>{task.orchestration && <p className="mt-1 text-[9px] text-black/50">Frost 已路由到 {task.orchestration.skillId} · {task.orchestration.outputSchema}</p>}</div>
+            <div><div className="font-pixel text-[8px] text-[#008844]">HUMAN REVIEW · {task.orchestration?.skillName || 'AI'}</div><h2 className="mt-1 text-sm font-black">确认这些地点，再写入地球与飞书</h2>{task.orchestration && <p className="mt-1 text-[9px] text-black/50">Frost 已路由到 {task.orchestration.skillId} · {task.orchestration.outputSchema}</p>}</div>
             {reviewed.map((item, index) => (
               <article key={item.id} className={`border-2 border-black p-2.5 ${item.approved ? 'bg-white' : 'bg-black/10 opacity-60'}`}>
                 <div className="flex items-start justify-between gap-2"><div><div className="font-pixel text-[7px] text-[#008844]">原文证据 · {Math.round(item.confidence * 100)}%</div><div className="mt-1 text-sm font-black">{item.nameAsWritten}</div></div><button type="button" onClick={() => updateReview(index, 'approved', !item.approved)} className={`h-7 w-7 border-2 border-black ${item.approved ? 'bg-[#00ff88]' : 'bg-white'}`}>{item.approved && <Check className="mx-auto h-4 w-4" strokeWidth={3} />}</button></div>
