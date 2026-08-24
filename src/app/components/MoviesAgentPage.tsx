@@ -39,9 +39,9 @@ export default function MoviesAgentPage({ onBack }: { onBack: () => void }) {
         accent: '#ffb000',
         persona: '你是 Frost Agent 已装备的「观影」Skill，熟悉影史、能读懂当前 Data Pack 呈现的观影口味，据此推荐与讨论电影。',
         context: () => movieContext,
-        placeholder: '聊电影 / 想看什么…',
+        placeholder: '用 AI 记录一部电影 / 聊电影…',
         initialInput: handoffObjective,
-        suggestions: ['根据我的口味推荐三部', '我看过的高分片里最像《路边野餐》的', '推荐周末适合看的'],
+        suggestions: ['用 AI 记录《路边野餐》，四星', '根据我的口味推荐三部', '我看过的高分片里最像《路边野餐》的'],
         intentLabels: ['推荐', '讨论', '找片', '其他'],
         checkSeen: (t) => { const r = seenBefore(t); return r ? (r.date ? r.date.slice(0, 4) + ' 看过' : '看过') : null; },
         feishuSubmission: typeof window !== 'undefined' && window.location.pathname.startsWith('/feishu')

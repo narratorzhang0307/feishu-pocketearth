@@ -35,7 +35,7 @@ export function frostSubmissionFromText(domain: 'books' | 'movies', input: strin
       label: `《${title}》阅读记录`,
       record: {
         id: draftId('book'), title, author: '', country: '', type: '', year: null,
-        rating, date, synopsis: text, locations: [],
+        rating, date, synopsis: text, locations: [], aiInstruction: text, note: text,
       },
     };
   }
@@ -44,7 +44,7 @@ export function frostSubmissionFromText(domain: 'books' | 'movies', input: strin
     label: `《${title}》观影记录`,
     record: {
       id: draftId('movie'), title, original: '', type: '', director: '', country: '', year: null,
-      rating, publicRating: null, date, synopsis: text, locations: [],
+      rating, publicRating: null, date, synopsis: text, locations: [], aiInstruction: text, note: text,
     },
   };
 }

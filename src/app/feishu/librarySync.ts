@@ -165,7 +165,7 @@ export function subscribeFeishuPhotoAssets(listener: () => void): () => void {
 async function applyDomain(data: FeishuLibraryDomainData) {
   if (!feishuSourceEnabled(data.domain)) return;
   if (DATA_PACK_DOMAINS.has(data.domain)) {
-    await installDataPackRecords(data.domain as 'books' | 'movies' | 'music', data.records, {
+    await installDataPackRecords(data.domain as 'books' | 'movies' | 'music', compactFeishuRuntimeRecords(data.domain, data.records), {
       version: data.version,
       source: `feishu-bitable:${data.domain}:${data.version}`,
       name: `飞书多维表格 · ${labels[data.domain]}`,
@@ -179,6 +179,25 @@ async function applyDomain(data: FeishuLibraryDomainData) {
   const rejected = { ...state.rejected, [data.domain]: data.rejected.length };
   saveVersions(versions);
   updateState({ versions, rejected, syncedAt: data.syncedAt });
+}
+
+/**
+ * The Feishu music table stores one collaborative knowledge row per city. Some legacy rows contain
+ * a whole city playlist, which made a 100-row demo expand back into hundreds of tracks in the Web
+ * App. Keep one representative track per row in the runtime projection; the source table remains
+ * untouched and adding/removing a row changes the visible knowledge count by exactly one.
+ */
+export function compactFeishuRuntimeRecords(domain: FeishuLibraryDomain, records: unknown[]): unknown[] {
+  if (domain !== 'music') return records;
+  return records.map((value) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+    const record = value as Record<string, unknown>;
+    return {
+      ...record,
+      tracks: Array.isArray(record.tracks) ? record.tracks.slice(0, 1) : [],
+      podcast: [],
+    };
+  });
 }
 
 export async function syncFeishuLibrary({ force = false } = {}): Promise<void> {

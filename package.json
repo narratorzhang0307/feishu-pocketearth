@@ -20,6 +20,7 @@
     "feishu:preflight": "node scripts/feishu-preflight.mjs",
     "feishu:bitable:bootstrap": "node scripts/bootstrap-feishu-bitable-library.mjs",
     "feishu:bitable:sync": "node scripts/sync-feishu-bitable-library.mjs",
+    "feishu:demo-packs": "node scripts/data-packs/build-feishu-demo-packs.mjs",
     "datapack:build": "node scripts/data-packs/build-library.mjs",
     "datapack:verify": "node scripts/data-packs/verify-library.mjs",
     "datapack:validate": "node scripts/data-packs/validate-pack.mjs",

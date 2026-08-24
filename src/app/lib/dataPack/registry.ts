@@ -25,12 +25,18 @@ const DISABLED_KEY = 'pe.dataPacks.disabled.v1';
 const MAX_DOWNLOAD_BYTES = 50 * 1024 * 1024;
 
 export const DEFAULT_DATA_PACK_URLS: Record<DataPackDomain, string> = {
-  // Feishu Web App uses the same HTTPS origin for manifests and chunks. This avoids a CORS/network
-  // dependency on the legacy OSS release while preserving env overrides for dedicated deployments.
-  books: import.meta.env.VITE_BOOKS_DATA_PACK_URL || '/data-packs/pocket-earth-books/1.0.0/manifest.json',
-  movies: import.meta.env.VITE_MOVIES_DATA_PACK_URL || '/data-packs/pocket-earth-movies/1.0.0/manifest.json',
-  music: import.meta.env.VITE_MUSIC_DATA_PACK_URL || '/data-packs/pocket-earth-music/1.0.0/manifest.json',
+  // The Feishu build ships dedicated 100-record demo projections on the same HTTPS origin. Large
+  // media stays on OSS through validated playback/image references; the JSON itself stays tiny.
+  books: import.meta.env.VITE_BOOKS_DATA_PACK_URL || '/data-packs/feishu-pocket-earth-books/1.0.0/manifest.json',
+  movies: import.meta.env.VITE_MOVIES_DATA_PACK_URL || '/data-packs/feishu-pocket-earth-movies/1.0.0/manifest.json',
+  music: import.meta.env.VITE_MUSIC_DATA_PACK_URL || '/data-packs/feishu-pocket-earth-music/1.0.0/manifest.json',
   mapping: import.meta.env.VITE_MAPPING_DATA_PACK_URL || '',
+};
+
+const LEGACY_DEMO_PACK_IDS: Partial<Record<DataPackDomain, string>> = {
+  books: 'earth.pocket.demo.books',
+  movies: 'earth.pocket.demo.movies',
+  music: 'earth.pocket.demo.music',
 };
 
 const states: Record<DataPackDomain, DataPackState> = {
@@ -181,7 +187,8 @@ export const getDataPackState = (domain: DataPackDomain): DataPackState => state
 
 export async function ensureActiveDataPack(domain: DataPackDomain): Promise<InstalledDataPack | null> {
   await hydrate();
-  if (states[domain].active) return states[domain].active;
+  const active = states[domain].active;
+  if (active && active.manifest.identity.id !== LEGACY_DEMO_PACK_IDS[domain]) return active;
   if (disabledDomains()[domain]) return null;
   if (!DEFAULT_DATA_PACK_URLS[domain]) return null;
   if (pending[domain]) return pending[domain]!;

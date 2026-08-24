@@ -65,4 +65,27 @@ describe('Data Pack demo restore', () => {
       expect(mapLayer.isDataPackMapLayerEnabled(domain)).toBe(true);
     }
   });
+
+  it('replaces a cached legacy demo pack with the lightweight Feishu default without touching custom packs', async () => {
+    const legacyPack = {
+      packKey: 'earth.pocket.demo.books@1.0.0',
+      domain: 'books',
+      manifest: {
+        ...bundle('books'),
+        identity: { ...bundle('books').identity, id: 'earth.pocket.demo.books' },
+      },
+      records: [],
+      installedAt: '2026-08-10T00:00:00.000Z',
+      source: '/data-packs/pocket-earth-books/1.0.0/manifest.json',
+    } as InstalledDataPack;
+    db.set(legacyPack.packKey, legacyPack);
+    localStorage.setItem('pe.dataPacks.active.v1', JSON.stringify({ books: legacyPack.packKey }));
+
+    const registry = await import('./registry');
+    const active = await registry.ensureActiveDataPack('books');
+
+    expect(active?.manifest.identity.id).toBe('earth.pocket.test.books');
+    expect(active?.source).toContain('/data-packs/feishu-pocket-earth-books/1.0.0/manifest.json');
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/data-packs/feishu-pocket-earth-books/1.0.0/manifest.json'), expect.anything());
+  });
 });

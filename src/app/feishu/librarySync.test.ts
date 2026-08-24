@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { enableFeishuBuiltinMapLayersOnce, libraryRecordFromUserMark, photoAssetFromFeishuRecord } from './librarySync';
+import { compactFeishuRuntimeRecords, enableFeishuBuiltinMapLayersOnce, libraryRecordFromUserMark, photoAssetFromFeishuRecord } from './librarySync';
 
 describe('Feishu photo library projection', () => {
   beforeEach(() => {
@@ -44,5 +44,14 @@ describe('Feishu photo library projection', () => {
     enableFeishuBuiltinMapLayersOnce();
     expect(JSON.parse(localStorage.getItem('pe.dataPacks.mapLayers.v1') || '{}')).toEqual({ movies: true, music: true });
     expect(localStorage.getItem('pocket-earth.feishu.default-map-layers.v1:anonymous')).toBe('1');
+  });
+
+  it('keeps a Feishu music row as one lightweight runtime item without mutating the source row', () => {
+    const source = [{ id: 'music-city:test', tracks: [{ id: 'a' }, { id: 'b' }], podcast: [{ id: 'p' }] }];
+    const compact = compactFeishuRuntimeRecords('music', source) as Array<{ tracks: unknown[]; podcast: unknown[] }>;
+    expect(compact[0].tracks).toEqual([{ id: 'a' }]);
+    expect(compact[0].podcast).toEqual([]);
+    expect(source[0].tracks).toHaveLength(2);
+    expect(source[0].podcast).toHaveLength(1);
   });
 });

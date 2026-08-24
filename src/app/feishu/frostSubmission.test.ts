@@ -6,7 +6,10 @@ describe('Frost Feishu submission draft', () => {
     const draft = frostSubmissionFromText('books', '我读完了《百年孤独》，5星，请记录到飞书', new Date('2026-08-24T08:00:00Z'));
     expect(draft).toMatchObject({
       domain: 'books', label: '《百年孤独》阅读记录',
-      record: { title: '百年孤独', rating: 5, date: '2026-08-24', locations: [] },
+      record: {
+        title: '百年孤独', rating: 5, date: '2026-08-24', locations: [],
+        aiInstruction: '我读完了《百年孤独》，5星，请记录到飞书',
+      },
     });
   });
 

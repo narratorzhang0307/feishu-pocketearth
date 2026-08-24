@@ -124,8 +124,8 @@ export default function MusicLibraryView() {
     <div className="h-full flex flex-col bg-[#EAEAEA] min-h-0 relative">
       <div className="px-3 py-2.5 border-b-2 border-black bg-[#F5F2E9] text-[#168654] shrink-0">
         <div className="font-pixel text-[7px] flex justify-between items-center tracking-wider">
+          <span>知识条目 {RADIO_CITIES.length}</span><span className="text-black/20">|</span>
           <span>曲目 {songTotal}</span><span className="text-black/20">|</span>
-          <span>城市 {RADIO_CITIES.length}</span><span className="text-black/20">|</span>
           <span>Skill 可换数据</span>
         </div>
         <div className="mt-2">

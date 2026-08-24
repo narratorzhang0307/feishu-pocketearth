@@ -118,7 +118,7 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
         { role: 'user', text },
         {
           role: 'agent',
-          text: `已整理为${submissionDraft.label}。确认后，我会把它提交到飞书多维表格，状态设为“待分析”；之后仍由你审核，未确认前不会进入地球。`,
+          text: `已识别为${submissionDraft.label}。确认后，我会把原始指令交给 AI，并写入飞书多维表格的“AI 指令”列；AI 补全字段后进入“待确认”，未确认前不会进入地球。`,
           submission: { draft: submissionDraft, status: 'ready' },
         },
       ]);
@@ -195,7 +195,7 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
       setTurns((current) => current.map((turn, index) => index === turnIndex
         ? {
           ...turn,
-          text: `${draft.label}已提交到飞书多维表格，当前状态为“待分析”。你可以直接在飞书补充字段，分析后再确认是否进入地球。`,
+          text: `${draft.label}已作为“AI 指令”提交到飞书多维表格，当前状态为“待分析”。AI 会补全结构化字段和候选地点；你确认后才会进入地球。`,
           submission: { draft, status: 'done' },
         }
         : turn));
@@ -253,7 +253,7 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
                       style={{ background: config.accent }}
                     >
                       {t.submission.status === 'sending' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" strokeWidth={2.7} />}
-                      {t.submission.status === 'sending' ? '正在提交…' : t.submission.status === 'error' ? '重试提交到飞书' : '确认提交到飞书 · 待分析'}
+                      {t.submission.status === 'sending' ? '正在提交…' : t.submission.status === 'error' ? '重试 AI 写入' : '用 AI 添加到飞书表格'}
                     </button>
                   )}
                   {t.submission.status === 'error' && (

@@ -34,9 +34,9 @@ export default function BooksAgentPage({ onBack }: { onBack: () => void }) {
           const user = getUserMarksByKind('book').map((m) => `《${m.label}》`).join('、');
           return `我读过 ${bookTotal} 本书（覆盖很广，名著经典多半读过了）。${user ? `最近记录：${user}。` : ''}\n要推荐就只推我大概率没读过的冷门 / 小众，别推名著——我多半读过了。`;
         },
-        placeholder: '聊聊书 / 想读什么…',
+        placeholder: '用 AI 记录一本书 / 聊聊书…',
         initialInput: handoffObjective,
-        suggestions: ['推荐三本我没读过但对味的', '我读过的书里哪些讲孤独？', '推荐适合雨夜读的冷门书'],
+        suggestions: ['用 AI 记录《小王子》，我很喜欢', '推荐三本我没读过但对味的', '我读过的书里哪些讲孤独？'],
         intentLabels: ['推荐', '讨论', '找书', '其他'],
         checkSeen: (t) => { const r = seenBefore(t); return r ? (r.date ? r.date.slice(0, 4) + ' 读过' : '读过') : null; },
         feishuSubmission: typeof window !== 'undefined' && window.location.pathname.startsWith('/feishu')

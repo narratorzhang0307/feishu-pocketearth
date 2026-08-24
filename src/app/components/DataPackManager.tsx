@@ -19,7 +19,6 @@ import {
   subscribeDataPackMapLayers,
   type DataPackDomain,
   type InstalledDataPack,
-  type MusicCityPackRecord,
 } from '../lib/dataPack';
 import { selectPersonalDataSource } from '../feishu/librarySync';
 import { bootstrapFeishuLibrary, ensureFeishuSession, requestFeishuLibrarySync } from '../feishu/api';
@@ -42,7 +41,7 @@ const sourceLabel = (source?: string) => {
 const DOMAIN_COPY: Record<DataPackDomain, { label: string; memory: string; unit: string; mapUnit: string }> = {
   books: { label: '书籍', memory: '书籍记忆', unit: '条', mapUnit: '个地点' },
   movies: { label: '电影', memory: '电影记忆', unit: '条', mapUnit: '个地点' },
-  music: { label: '音乐', memory: '音乐记忆', unit: '首', mapUnit: '首音乐' },
+  music: { label: '音乐', memory: '音乐记忆', unit: '条', mapUnit: '首音乐' },
   mapping: { label: '内容 Mapping', memory: '书籍地点证据', unit: '份', mapUnit: '个地点' },
 };
 
@@ -55,8 +54,7 @@ const AI_REQUEST_EXAMPLE: Record<DataPackDomain, string> = {
 
 const displayCount = (pack: InstalledDataPack | null) => {
   if (!pack) return 0;
-  if (pack.domain !== 'music') return pack.manifest.schema.record_count;
-  return (pack.records as MusicCityPackRecord[]).reduce((sum, city) => sum + city.tracks.length, 0);
+  return pack.manifest.schema.record_count;
 };
 
 export default function DataPackManager({ domain, accent, compactLabel, mapPlacementCount }: Props) {
@@ -151,7 +149,7 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   const mappedCount = mapPlacementCount ?? activeCount;
   const countUnit = DOMAIN_COPY[domain].unit;
   const activeSource = sourceLabel(state.active?.source);
-  const defaultActive = state.active?.source === DEFAULT_DATA_PACK_URLS[domain];
+  const defaultActive = Boolean(state.active?.source.endsWith(DEFAULT_DATA_PACK_URLS[domain]));
   const mappedToEarth = isDataPackMapLayerEnabled(domain);
   const adapter = dataPackAdapterForDomain(domain);
   const appMain = typeof document !== 'undefined'
