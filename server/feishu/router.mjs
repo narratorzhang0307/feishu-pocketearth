@@ -186,11 +186,10 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
           ? body.domains.map(String)
           : library.configuredDomains()
         if (domains.some((domain) => !BITABLE_LIBRARY_DOMAINS.includes(domain))) throw new Error('bitable_library_domain_invalid')
-        // Manual sync is the user's review-to-earth action. Never make it wait for a queue of
-        // Qwen jobs: confirmed rows must appear immediately, while pending rows can continue in
-        // the background. Agent submissions and Feishu events already trigger this same worker.
-        const processing = domains.map((domain) => ({ domain, queued: true }))
-        void processLibraryInbox(domains, { limit: 3 }).catch(() => {})
+        // Manual sync is the user's review-to-earth action. It only reads confirmed rows. Agent
+        // submissions, Feishu events and normal polling already run the AI inbox worker; starting
+        // another table scan here doubles Feishu API traffic and makes a Demo sync take ~1 minute.
+        const processing = []
         domains.forEach((domain) => library.invalidate(domain))
         const refreshed = await Promise.all(domains.map((domain) => library.readDomain(domain, { force: true })))
         const snapshot = {

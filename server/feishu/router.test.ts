@@ -125,7 +125,7 @@ describe('Feishu event callback route', () => {
     expect(response).toMatchObject({ status: 200, body: { ok: true, domains: { books: { count: 1, rejected: 0 } } } });
   });
 
-  it('processes a pending Bitable book through Qwen before the user confirms it', async () => {
+  it('keeps manual sync fast by leaving pending AI work to the inbox worker', async () => {
     const rootDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-inbox-'));
     let rawBody = '';
     let response: { body?: any; status?: number } = {};
@@ -164,9 +164,7 @@ describe('Feishu event callback route', () => {
     rawBody = JSON.stringify({ domains: ['books'] }); response = {};
     await router.handle({ method: 'POST', headers: { authorization: `Bearer ${sessionToken}` } }, {}, new URL('http://localhost/api/feishu/library/sync'));
 
-    expect(response).toMatchObject({ status: 200, body: { ok: true, processing: [{ domain: 'books', queued: true }] } });
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(updateBodies[0].records[0]).toMatchObject({ record_id: 'rec-pending', fields: { 审核状态: '分析中' } });
-    expect(updateBodies[1].records[0]).toMatchObject({ record_id: 'rec-pending', fields: { 审核状态: '待确认', 'Pocket ID': 'book:feishu:rec-pending' } });
+    expect(response).toMatchObject({ status: 200, body: { ok: true, processing: [], snapshot: { domains: { books: { records: [], pending: [{ recordId: 'rec-pending', status: '待分析' }] } } } } });
+    expect(updateBodies).toEqual([]);
   });
 });
