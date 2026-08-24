@@ -229,8 +229,21 @@ export async function syncFeishuLibrary({ force = false } = {}): Promise<void> {
 }
 
 export async function syncFeishuLibraryNow(domains?: FeishuLibraryDomain[]): Promise<void> {
-  await requestFeishuLibrarySync(domains);
-  await syncFeishuLibrary({ force: true });
+  if (running) await running;
+  updateState({ status: 'syncing', error: '' });
+  try {
+    const result = await requestFeishuLibrarySync(domains);
+    updateState({ configuredDomains: result.snapshot.configuredDomains });
+    const requested = domains?.length ? domains : result.snapshot.configuredDomains;
+    for (const domain of requested) {
+      const data = result.snapshot.domains[domain];
+      if (data) await applyDomain(data);
+    }
+    updateState({ status: 'ready', syncedAt: result.snapshot.syncedAt });
+  } catch (error) {
+    updateState({ status: 'error', error: error instanceof Error ? error.message : String(error) });
+    throw error;
+  }
 }
 
 export async function setFeishuLibraryDomainEnabled(domain: FeishuLibraryDomain, enabled: boolean): Promise<void> {

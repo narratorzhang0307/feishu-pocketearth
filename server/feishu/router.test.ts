@@ -164,7 +164,8 @@ describe('Feishu event callback route', () => {
     rawBody = JSON.stringify({ domains: ['books'] }); response = {};
     await router.handle({ method: 'POST', headers: { authorization: `Bearer ${sessionToken}` } }, {}, new URL('http://localhost/api/feishu/library/sync'));
 
-    expect(response).toMatchObject({ status: 200, body: { ok: true, processing: [{ domain: 'books', processed: 1, failed: 0 }] } });
+    expect(response).toMatchObject({ status: 200, body: { ok: true, processing: [{ domain: 'books', queued: true }] } });
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(updateBodies[0].records[0]).toMatchObject({ record_id: 'rec-pending', fields: { 审核状态: '分析中' } });
     expect(updateBodies[1].records[0]).toMatchObject({ record_id: 'rec-pending', fields: { 审核状态: '待确认', 'Pocket ID': 'book:feishu:rec-pending' } });
   });
