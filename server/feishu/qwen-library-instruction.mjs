@@ -70,6 +70,13 @@ function schemaFor(domain) {
   return '{"record":{"title":"照片标题","city":"拍摄城市或地点","date":"YYYY-MM-DD","lat":30.2,"lng":120.1,"note":"用户笔记","description":"照片说明"}}'
 }
 
+const domainPrompt = (domain) => ({
+  books: '书籍阅读记录',
+  movies: '电影观影记录',
+  music: '音乐收听记录',
+  photos: '照片知识记录',
+}[domain] || '知识记录')
+
 export function createQwenLibraryInstructionParser(provider, fetchImpl = fetch) {
   return {
     async parse({ domain, recordId, instruction }) {
@@ -83,7 +90,7 @@ export function createQwenLibraryInstructionParser(provider, fetchImpl = fetch) 
           response_format: { type: 'json_object' },
           messages: [
             { role: 'system', content: '你是飞书多维表格的知识记录整理器。把用户的一句话整理为指定数据结构；不得执行写入。地点与坐标只是待用户确认的候选，不能伪装成已核验事实。只输出严格 JSON。' },
-            { role: 'user', content: `当前数据表：${domain}\n用户指令：${text(instruction, 5000)}\n请整理并适度补全常识性书目信息。用户没有提供评分时 rating 必须为 null；无法判断的字段用空字符串或 null。候选地点允许基于作品常识提出，但 confidence 不得高于 0.75，最终必须由用户确认。严格返回：${schemaFor(domain)}` },
+            { role: 'user', content: `当前数据表：${domain}\n用户指令：${text(instruction, 5000)}\n请整理为${domainPrompt(domain)}并适度补全常识性信息。用户没有提供评分时 rating 必须为 null；无法判断的字段用空字符串或 null。候选地点允许基于作品常识提出，但置信度不得高于 0.75，最终必须由用户确认。严格返回：${schemaFor(domain)}` },
           ],
         }),
         signal: AbortSignal.timeout(90_000),

@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
-import { ChevronLeft, ArrowUp, Radio, Play, Pause, SkipBack, SkipForward } from 'lucide-react';
+import { ChevronLeft, ArrowUp, Check, Database, Loader2, Radio, Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { runFrost } from '../../../frost-agent/harness/router';
 import type { PlaylistEntry } from '../../../frost-agent/harness/types';
 import { buildDayProgram, type DayProgram } from '../../../frost-agent/agents/radio-24h-director';
@@ -9,6 +9,10 @@ import AgentLuIcon from './AgentLuIcon';
 import UserZhaIcon from './UserZhaIcon';
 import YouTubePlaybackFrame from './music/YouTubePlaybackFrame';
 import { canPlayMusicSource, directAudioUrl, musicSourceLabel, youtubeVideoId } from '../lib/music/playback';
+import { frostSubmissionFromText, type FrostSubmissionDraft } from '../feishu/frostSubmission';
+import { upsertFeishuLibraryRecords } from '../feishu/api';
+
+const FEISHU_LIBRARY_OPEN_PATH = '/api/feishu/library/open';
 
 // 音乐 Skill 运行页：FROST 编排歌单，播放器按 Data Pack 声明走 OSS/外部直链或 YouTube 真实来源。
 
@@ -19,6 +23,7 @@ interface Turn {
   playlist?: PlaylistEntry[];
   program?: DayProgram;
   recs?: MusicRecs;
+  submission?: { draft: FrostSubmissionDraft; status: 'ready' | 'sending' | 'done' | 'error'; error?: string };
 }
 
 interface Props {
@@ -93,6 +98,20 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
     const text = input.trim();
     if (!text || busy) return;
     setInput('');
+    const submission = typeof window !== 'undefined' && window.location.pathname.startsWith('/feishu')
+      ? frostSubmissionFromText('music', text)
+      : null;
+    if (submission) {
+      setTurns((turns) => [...turns,
+        { role: 'user', text },
+        {
+          role: 'frost',
+          text: `已识别为${submission.label}。确认后，AI 会补全曲目、艺人和关联城市，写入飞书多维表格；你在飞书改成“已确认”后才会进入音乐层。`,
+          submission: { draft: submission, status: 'ready' },
+        },
+      ]);
+      return;
+    }
     const history = turns.map((t) => ({ role: t.role, text: t.text }));
     setTurns((t) => [...t, { role: 'user', text }]);
     setBusy(true);
@@ -103,6 +122,27 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
     } catch {
       setTurns((t) => [...t, { role: 'frost', text: '我这边断了一下，再说一遍？' }]);
     } finally { setBusy(false); }
+  };
+
+  const submitToFeishu = async (turnIndex: number, draft: FrostSubmissionDraft) => {
+    setTurns((turns) => turns.map((turn, index) => index === turnIndex
+      ? { ...turn, submission: { draft, status: 'sending' } }
+      : turn));
+    try {
+      await upsertFeishuLibraryRecords('music', [draft.record], { status: '待分析', source: 'Frost Agent' });
+      setTurns((turns) => turns.map((turn, index) => index === turnIndex
+        ? {
+          ...turn,
+          text: `${draft.label}已作为“AI 指令”写入飞书音乐表，当前状态为“待分析”。AI 补全后进入“待确认”；你确认后才会上地球。`,
+          submission: { draft, status: 'done' },
+        }
+        : turn));
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : '提交失败';
+      setTurns((turns) => turns.map((turn, index) => index === turnIndex
+        ? { ...turn, submission: { draft, status: 'error', error: detail } }
+        : turn));
+    }
   };
 
   const generateDay = () => {
@@ -183,6 +223,26 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
             <div className="font-pixel text-[7px] tracking-[0.2em] text-black/50">FROST</div>
             {turn.text && (
               <div className="bg-white border-2 border-black px-3 py-2 text-[12px] leading-relaxed whitespace-pre-wrap shadow-[2px_2px_0_rgba(0,0,0,0.85)]">{turn.text}</div>
+            )}
+
+            {turn.submission && (
+              <div className="border-2 border-black bg-[#F5F2E9] p-2 text-[10px] leading-relaxed">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <Database className="h-3.5 w-3.5 text-[#168654]" strokeWidth={2.7} />
+                  飞书多维表格草稿 · {turn.submission.draft.label}
+                </div>
+                {turn.submission.status === 'done' ? (
+                  <a href={FEISHU_LIBRARY_OPEN_PATH} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px">
+                    <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 打开飞书多维表格 ↗
+                  </a>
+                ) : (
+                  <button type="button" disabled={turn.submission.status === 'sending'} onClick={() => void submitToFeishu(i, turn.submission!.draft)} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-[#00ff88] px-2 py-2 font-bold shadow-[1px_1px_0_#000] active:translate-y-px disabled:opacity-45">
+                    {turn.submission.status === 'sending' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" strokeWidth={2.7} />}
+                    {turn.submission.status === 'sending' ? '正在提交…' : turn.submission.status === 'error' ? '重试 AI 写入' : '用 AI 添加到飞书表格'}
+                  </button>
+                )}
+                {turn.submission.status === 'error' && <div className="mt-1.5 text-[#b3261e]">提交失败：{turn.submission.error}</div>}
+              </div>
             )}
 
             {/* thinking trace */}

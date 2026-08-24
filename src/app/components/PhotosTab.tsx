@@ -489,8 +489,16 @@ export default function PhotosTab() {
       const next = { ...analysis, chronicleIncluded: true, analyzedAt: Date.now() };
       const record = await curatedPhotoRecord(asset, next);
       await upsertFeishuLibraryRecords('photos', [record]);
+      const hasLocation = asset.latitude != null && asset.longitude != null;
+      if (hasLocation) {
+        await addPhotoPins([{
+          id: photoPinIdentity(asset.key, analysis.contentHash), assetKey: asset.key,
+          contentHash: analysis.contentHash, lat: asset.latitude!, lng: asset.longitude!,
+          thumb: imageUrl(asset), name: asset.fileName, source: 'exif', ts: Date.now(),
+        }]);
+      }
       await putRadarAnalyses([next]); updateAnalyses([next]);
-      setMessage('已确认：照片进入杂志与日历，并按稳定 Pocket Photo ID 写入飞书照片多维表格；重复记录会更新而不是新增。');
+      setMessage(`已确认：照片进入杂志与日历，按稳定 Pocket Photo ID 写入飞书照片多维表格${hasLocation ? '，并定位到地球' : '；补充地点后可定位到地球'}。重复记录会更新而不是新增。`);
     } catch (error) {
       setMessage(`确认未完成：${error instanceof Error ? error.message : String(error)}。本地与飞书都没有写入半成品。`);
     } finally { setBusy(false); }

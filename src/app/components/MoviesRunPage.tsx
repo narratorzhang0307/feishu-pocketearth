@@ -1,6 +1,6 @@
 import { useMemo, useReducer, useRef, useState, useEffect } from 'react';
 import { ChevronLeft, Film, Camera, Star, MapPin, Loader2, Check } from 'lucide-react';
-import { movieDataVersion, movieRecords, movieTotal, movieMappedTotal, movieCountries, movieCountry, doubanRating, ensureMovieData, subscribeMovieData, type MovieRecord } from '../data/movies';
+import { movieDataVersion, movieRecords, moviePoints, movieTotal, movieMappedTotal, movieCountries, movieCountry, doubanRating, ensureMovieData, subscribeMovieData, type MovieRecord } from '../data/movies';
 import { getUserMarksByKind, subscribeUserMarks } from '../data/userMarks';
 import { runMovieAgent, confirmPin, recordRatingFix, recordPlaceFix, GEO_LABEL, GEO_COLOR, type MovieDraft, type MoviePhase } from '../lib/movie';
 import { AnimatePresence } from 'motion/react';
@@ -8,6 +8,7 @@ import MarkerDetail, { type MarkerDetailData } from './MarkerDetail';
 import RunTrace from './RunTrace';
 import { startAgentRun } from '../lib/observe/bus';
 import DataPackManager from './DataPackManager';
+import { requestMapFocus } from '../data/mapFocus';
 
 // movies-agent 运行页 —— 观影 agent。
 // 1) 把豆瓣观影记录做成「电影票根」流；2) 用户记一笔/截图 → 端侧识别 → 实时钉到中间的地球（与 tab1 联动）。
@@ -19,7 +20,7 @@ const AMBER = '#ffb000';
 interface Ticket {
   key: string; title: string; original?: string; director?: string;
   country: string; year?: number | null; rating?: number | null; type?: string; date?: string;
-  synopsis?: string; douban?: number; pinned: boolean; user?: boolean;
+  synopsis?: string; douban?: number; pinned: boolean; user?: boolean; lng?: number; lat?: number;
 }
 
 const stars = (r?: number | null) => {
@@ -28,9 +29,13 @@ const stars = (r?: number | null) => {
 };
 
 function fromRecord(m: MovieRecord): Ticket {
+  const point = moviePoints.find((item) => item.id === m.id);
   return { key: 'd' + m.id, title: m.title, original: m.original, director: m.director, country: m.country,
-    year: m.year, rating: m.rating, type: m.type, date: m.date, synopsis: m.synopsis, douban: doubanRating(m.id), pinned: !!movieCountry(m.country) };
+    year: m.year, rating: m.rating, type: m.type, date: m.date, synopsis: m.synopsis, douban: doubanRating(m.id),
+    pinned: Boolean(point), lng: point?.lng, lat: point?.lat };
 }
+
+const isFeishuRecord = (record: MovieRecord) => /(?:^|:)feishu(?::|$)/i.test(record.id);
 
 export default function MoviesRunPage({ onBack, embedded }: Props) {
   const [, force] = useReducer((x) => x + 1, 0);
@@ -55,12 +60,17 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
     const meta = (m.meta || {}) as Record<string, unknown>;
     return { key: m.id, title: m.label || String(meta.title || ''), original: String(meta.original || ''),
       director: String(meta.director || ''), country: String(meta.country || ''), year: meta.year as number,
-      rating: meta.rating as number, type: String(meta.type || '电影'), date: String(meta.date || ''), synopsis: String(meta.synopsis || ''), pinned: true, user: true };
+      rating: meta.rating as number, type: String(meta.type || '电影'), date: String(meta.date || ''), synopsis: String(meta.synopsis || ''),
+      pinned: true, user: true, lng: m.lng, lat: m.lat };
   });
 
   // 豆瓣记录：按观看日期倒序，取近 60 条做票根流
   const recent: Ticket[] = useMemo(
-    () => [...movieRecords].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 60).map(fromRecord),
+    () => [...movieRecords].sort((a, b) => (
+      (b.date || '').localeCompare(a.date || '')
+      || Number(isFeishuRecord(b)) - Number(isFeishuRecord(a))
+      || b.id.localeCompare(a.id)
+    )).slice(0, 60).map(fromRecord),
     [movieDataVersion]
   );
   const feed = [...userTickets, ...recent];
@@ -73,6 +83,14 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
   const onGlobe = movieMappedTotal + userTickets.length;
 
   const showToast = (s: string) => { setToast(s); window.setTimeout(() => setToast(null), 2400); };
+
+  const openTicket = (ticket: Ticket) => {
+    if (ticket.pinned && Number.isFinite(ticket.lng) && Number.isFinite(ticket.lat)) {
+      requestMapFocus(ticket.lng!, ticket.lat!, 7.8);
+      return;
+    }
+    setSelected({ kind: 'movie', title: ticket.title, original: ticket.original, director: ticket.director, country: ticket.country, year: ticket.year, rating: ticket.rating, date: ticket.date, synopsis: ticket.synopsis });
+  };
 
   // 跑电影 agent：一句话 / 截图 → 解析→本地库→云脑补全子agent→地理子agent→校验 → 出草稿卡
   const analyze = async (inp: Parameters<typeof runMovieAgent>[0]) => {
@@ -250,7 +268,7 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
           </div>
         )}
         {feed.map((t) => (
-          <button key={t.key} onClick={() => setSelected({ kind: 'movie', title: t.title, original: t.original, director: t.director, country: t.country, year: t.year, rating: t.rating, date: t.date, synopsis: t.synopsis })} className="w-full text-left border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.85)] bg-white relative overflow-hidden active:translate-y-px">
+          <button key={t.key} onClick={() => openTicket(t)} className="w-full text-left border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.85)] bg-white relative overflow-hidden active:translate-y-px">
             {/* 票根顶部 amber 条 */}
             <div className="flex items-center justify-between px-2.5 py-1" style={{ background: AMBER }}>
               <span className="font-pixel text-[7px] tracking-widest text-black">ADMIT ONE · 观影票根{t.user ? ' · NEW' : ''}</span>

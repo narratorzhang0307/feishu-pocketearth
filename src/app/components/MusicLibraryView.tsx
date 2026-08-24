@@ -9,6 +9,7 @@ import { RadioStage } from './radio/RadioStage';
 import DataPackManager from './DataPackManager';
 import YouTubePlaybackFrame from './music/YouTubePlaybackFrame';
 import { canPlayMusicSource, directAudioUrl, musicSourceLabel, youtubeVideoId } from '../lib/music/playback';
+import { requestMapFocus } from '../data/mapFocus';
 
 // 音乐 Skill 的「曲库」视图：数据包声明 OSS/外部直链时用 audio，声明 YouTube 时用官方嵌入播放。
 // 音源失效时明确报错，绝不替换成与曲目无关的演示音频。
@@ -33,6 +34,10 @@ export default function MusicLibraryView() {
 
   const groups = useMemo(() => groupSongs(by), [by, songTotal]);
   const artistFlat = useMemo(() => [...songs].sort((a, b) => a.artist.localeCompare(b.artist, 'zh') || a.title.localeCompare(b.title, 'zh')), [songTotal]);
+  const recentFeishuSongs = useMemo(
+    () => songs.filter((song) => song.id.includes(':feishu-ai:')).slice(-3).reverse(),
+    [songTotal],
+  );
 
   // 切分组维度时，默认展开第一组
   useEffect(() => { setOpen(new Set(groups[0] ? [groups[0].key] : [])); }, [by, groups]);
@@ -82,7 +87,11 @@ export default function MusicLibraryView() {
     setPlaying(canPlayMusicSource(resolved?.playback));
     setSourceError(canPlayMusicSource(resolved?.playback) ? null : '这条数据没有可用的原曲来源');
     const s = songs.find((x) => x.id === id);   // 记一次收听 → 听歌记忆库 + 回流口味画像（含 genre/city）
-    if (s) recordPlay({ id: s.id, title: s.title, artist: s.artist, genre: s.genre, city: s.city });
+    if (s) {
+      recordPlay({ id: s.id, title: s.title, artist: s.artist, genre: s.genre, city: s.city });
+      const city = RADIO_CITIES.find((item) => item.cityNameZh === s.city || item.cityName === s.city);
+      if (Number.isFinite(city?.lng) && Number.isFinite(city?.lat)) requestMapFocus(city!.lng!, city!.lat!, 7.8);
+    }
   };
 
   // 把当前歌曲钉到它所属城市（稳定 id 幂等去重 + 喂长期画像）。城市无坐标则提示。
@@ -146,6 +155,13 @@ export default function MusicLibraryView() {
 
       {/* 列表 */}
       <div className="flex-1 overflow-y-auto min-h-0">
+        {recentFeishuSongs.length > 0 && (
+          <div className="border-b-2 border-black bg-[#F5F2E9]">
+            <div className="px-3 pt-2 font-pixel text-[8px] tracking-wider text-[#168654]">飞书确认音乐标记</div>
+            <div className="mt-1 border-t border-black/15 bg-white">{recentFeishuSongs.map((song) => Row(song))}</div>
+            <div className="px-3 py-1.5 text-[9px] text-black/45">点击条目会播放原曲并定位到中间地球的对应城市。</div>
+          </div>
+        )}
         {songTotal === 0 ? (
           <div className="m-3 border-2 border-black bg-white px-4 py-5 text-center shadow-[2px_2px_0_rgba(0,0,0,0.85)]">
             <div className="text-[12px] font-bold">示例音乐库已卸载</div>

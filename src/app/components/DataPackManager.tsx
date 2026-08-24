@@ -255,11 +255,7 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
             {syncingFeishuLibrary ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
             {syncingFeishuLibrary ? '正在读取飞书…' : `同步飞书${DOMAIN_COPY[domain].label}到此页`}
           </button>
-          {feishuLibraryUrl ? (
-            <a href={feishuLibraryUrl} target="_blank" rel="noreferrer" className="mt-1.5 block border border-black bg-white px-2 py-1.5 text-center text-[9px] font-bold">打开飞书多维表格 ↗</a>
-          ) : (
-            <button type="button" disabled className="mt-1.5 block w-full border border-black bg-white px-2 py-1.5 text-center text-[9px] font-bold opacity-45">打开飞书多维表格 ↗</button>
-          )}
+          <a href={feishuLibraryUrl || '/api/feishu/library/open'} target="_blank" rel="noreferrer" className="mt-1.5 block border border-black bg-white px-2 py-1.5 text-center text-[9px] font-bold">打开飞书多维表格 ↗</a>
         </div>
       )}
 
