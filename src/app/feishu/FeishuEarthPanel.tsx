@@ -12,6 +12,9 @@ import { runFrostOrchestrator, type FrostPlan, type FrostPlanStep } from '../../
 import { stageTaskHandoff } from '../../../frost-agent/harness/taskHandoff';
 import { getFeishuLibrarySyncState, setFeishuLibraryDomainEnabled, startFeishuLibraryAutoSync, subscribeFeishuLibrarySync, syncFeishuLibraryNow } from './librarySync';
 import { submitPhotoOrganizerRequest } from '../lib/photo';
+import { bookRecords } from '../data/books';
+import { movieRecords } from '../data/movies';
+import { inferWorkTitleRoute } from './workTitleRoute';
 
 const RUNNING = new Set<FeishuTask['status']>(['queued', 'ocr_running', 'qwen_running', 'writing_back']);
 
@@ -139,7 +142,16 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
         return;
       }
       ensureBuiltinSkills();
-      const result = await runFrostOrchestrator({ now: new Date(), surface: 'frost', userText: text, skillIds: BUILTIN_SKILLS.map((skill) => skill.identity.id) });
+      const workRoute = inferWorkTitleRoute(text, bookRecords, movieRecords);
+      if (workRoute?.ambiguous) {
+        setRouteMessage(`“${workRoute.title}”同时存在书籍和电影版本。请补充“读了这本书”或“看了这部电影”，我会交给正确的 Skill。`);
+        return;
+      }
+      const result = await runFrostOrchestrator({
+        now: new Date(), surface: 'frost', userText: text,
+        skillIds: BUILTIN_SKILLS.map((skill) => skill.identity.id),
+        preferredSkillIds: workRoute?.skillId ? [workRoute.skillId] : undefined,
+      });
       setPlan(result.plan);
       setRouteMessage(result.plan ? result.reply : 'Frost 没有发现必须调用的专用 Skill。请把任务说得更具体，例如书单、电影、旅行、展签或碑拓。');
     } catch (cause) {

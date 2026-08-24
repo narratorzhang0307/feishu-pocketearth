@@ -75,9 +75,9 @@ interface RouteHint { triggers: string[]; notFor?: string[] }
 // 这里不放工作流正文、提示词、知识库或模型资产，符合渐进式披露。
 const ROUTE_HINTS: Record<string, RouteHint> = {
   'pocket.earth-answer': { triggers: ['地球答案', '今日行动', '今天做什么', '晨间行动'], notFor: ['问答', '百科'] },
-  'pocket.music': { triggers: ['音乐', '歌曲', '歌单', '点歌', '听歌', '电台', '艺人', '歌手', '专辑'] },
-  'pocket.books': { triggers: ['书籍', '书单', '读书', '阅读记录', '作者', '故事地', '藏书票'], notFor: ['古籍mapping', '古籍 mapping', '整本书落地图', 'pdf地点'] },
-  'pocket.movies': { triggers: ['电影', '影片', '观影', '导演', '演员', '取景地', '片单'] },
+  'pocket.music': { triggers: ['音乐', '歌曲', '歌单', '点歌', '听歌', '听了', '听完', '电台', '艺人', '歌手', '专辑'] },
+  'pocket.books': { triggers: ['书籍', '书单', '读书', '读了', '读完', '读过', '阅读记录', '这本书', '作者', '故事地', '藏书票'], notFor: ['古籍mapping', '古籍 mapping', '整本书落地图', 'pdf地点'] },
+  'pocket.movies': { triggers: ['电影', '影片', '观影', '看了电影', '看完电影', '看过电影', '这部电影', '导演', '演员', '取景地', '片单'] },
   'pocket.council': { triggers: ['圆桌', '多视角', '不同角度', '辩论', '法庭', '权衡', '利弊', '综合判断'] },
   'pocket.reading-jot': { triggers: ['阅读摘录', '书页', '划线', '读书笔记', '摘抄', '识读这页', '拍书页'] },
   'pocket.travel': { triggers: ['旅行', '旅游', '行程', '路线', '几日游', '一日游', '去哪玩', '景点', '散步路线'] },
@@ -139,11 +139,11 @@ export function listRoutableSkills(): RoutableSkill[] {
   return result;
 }
 
-function scoreSkill(text: string, skill: RoutableSkill): number {
+function scoreSkill(text: string, skill: RoutableSkill, preferred: ReadonlySet<string>): number {
   const input = norm(text);
   if (!input) return 0;
   if (skill.notFor.some((term) => input.includes(norm(term)))) return -100;
-  let score = 0;
+  let score = preferred.has(skill.id) ? 18 : 0;
   for (const trigger of skill.triggers) {
     const t = norm(trigger);
     if (!t || !input.includes(t)) continue;
@@ -219,8 +219,9 @@ function createPlan(text: string, skills: RoutableSkill[], source: FrostPlanSour
   };
 }
 
-function localPlan(text: string, catalog: RoutableSkill[]): { plan: FrostPlan | null; highConfidence: boolean } {
-  const ranked = catalog.map((skill) => ({ skill, score: scoreSkill(text, skill) }))
+function localPlan(text: string, catalog: RoutableSkill[], preferredSkillIds: readonly string[] = []): { plan: FrostPlan | null; highConfidence: boolean } {
+  const preferred = new Set(preferredSkillIds);
+  const ranked = catalog.map((skill) => ({ skill, score: scoreSkill(text, skill, preferred) }))
     .filter((item) => item.score > 0)
     .sort((left, right) => right.score - left.score || left.skill.id.localeCompare(right.skill.id));
   if (!ranked.length) return { plan: null, highConfidence: false };
@@ -347,7 +348,7 @@ export async function planFrostTask(ctx: FrostContext): Promise<{ plan: FrostPla
   const catalog = allowed ? allSkills.filter((skill) => allowed.has(skill.id)) : allSkills;
   const catalogMs = elapsed(started);
   const localStart = nowMs();
-  const local = localPlan(text, catalog);
+  const local = localPlan(text, catalog, ctx.preferredSkillIds);
   const localMs = elapsed(localStart);
   const equipped = catalog.filter((skill) => skill.availability === 'equipped').length;
   const trace = [

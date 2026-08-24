@@ -19,6 +19,16 @@ describe('Frost cross-skill router', () => {
     expect(result.plan?.source).toBe('local-rule');
   });
 
+  it('uses a deterministic Data Pack title hint without changing the user objective', async () => {
+    const result = await runFrostOrchestrator({
+      now: new Date('2026-08-11T00:00:00Z'), surface: 'frost',
+      userText: '我看了霍乱时期的爱情', preferredSkillIds: ['pocket.books'],
+    });
+    expect(result.plan?.steps[0].skillId).toBe('pocket.books');
+    expect(result.plan?.steps[0].objective).toBe('我看了霍乱时期的爱情');
+    expect(result.plan?.source).toBe('local-rule');
+  });
+
   it('keeps one domain inside one skill even when the sentence contains a sequence word', async () => {
     let calls = 0;
     setFrostBrain({ complete: async () => { calls += 1; return '{}'; } });
@@ -110,6 +120,9 @@ describe('Frost cross-skill router', () => {
     ['请用不同角度权衡两个方案', 'pocket.council'],
     ['给我今天的地球答案行动', 'pocket.earth-answer'],
     ['把书单整理成阅读记录', 'pocket.books'],
+    ['我读完了《霍乱时期的爱情》', 'pocket.books'],
+    ['我看完电影《花样年华》', 'pocket.movies'],
+    ['我听完了这张专辑', 'pocket.music'],
   ])('routes trigger corpus %s to %s', async (userText, skillId) => {
     const { plan } = await planFrostTask({ now: new Date(), surface: 'frost', userText });
     expect(plan?.steps[0].skillId).toBe(skillId);

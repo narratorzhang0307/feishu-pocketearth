@@ -37,6 +37,8 @@ export interface FrostContext {
   history?: ChatTurn[];  // 最近对话（会话记忆，给大脑做上下文）
   /** 调用面允许暴露的 Skill 白名单；缺省时 Frost 可看全部已登记 Skill。 */
   skillIds?: string[];
+  /** 调用面从本地确定性上下文（如已装 Data Pack 的作品标题）得到的可信候选。 */
+  preferredSkillIds?: string[];
 }
 
 /** 歌单条目（open-dj 等产出，FrostPanel 展示）。 */
