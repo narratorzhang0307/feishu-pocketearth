@@ -56,6 +56,22 @@ npm run dev
 配置 `FEISHU_DEV_BYPASS_AUTH=true` 后，本地访问 `http://localhost:5173/feishu` 可验收界面；
 正式比赛部署必须关闭该开关，并从飞书工作台 Web App 入口访问公网 HTTPS 地址。
 
+### 飞书凭证配置
+
+仓库不会包含真实飞书凭证。本地开发请把 `.env.example` 复制为 `.env.local`，公网或 Docker
+部署请复制为 `.env`，再在服务端填写：
+
+```dotenv
+FEISHU_APP_ID=你的企业自建应用_App_ID
+FEISHU_APP_SECRET=你的企业自建应用_App_Secret
+FEISHU_WEB_BASE_URL=https://你的公网域名
+FEISHU_DEV_BYPASS_AUTH=false
+```
+
+`App Secret` 不能使用 `VITE_` 前缀，也不能写入前端代码、截图或 GitHub。缺少凭证时，应用仍可进行
+本地界面验收和 Frost 路由演示，但会明确禁用飞书身份、文档读取、新建多维表格和写回操作。
+完整权限、事件回调和上线步骤见 [`docs/feishu/部署与上手指南.md`](docs/feishu/部署与上手指南.md)。
+
 常用验收：
 
 ```bash

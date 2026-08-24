@@ -17,7 +17,7 @@ const RUNNING = new Set<FeishuTask['status']>(['queued', 'ocr_running', 'qwen_ru
 
 function readableError(cause: unknown) {
   const value = cause instanceof Error ? cause.message : String(cause);
-  if (value.includes('credentials_not_configured') || value.includes('应用尚未配置')) return '飞书应用凭证尚未配置。先在服务端填写 App ID 与 App Secret。';
+  if (value.includes('credentials_not_configured') || value.includes('应用尚未配置')) return '飞书凭证待配置：请在服务端设置 FEISHU_APP_ID 与 FEISHU_APP_SECRET。';
   if (value.includes('document_url_invalid')) return '请粘贴飞书新版文档（docx）链接。';
   if (value.includes('99991663') || value.includes('permission') || value.includes('forbidden')) return '当前飞书用户或应用没有读取这篇文档的权限。';
   if (value.includes('qwen_api_key_not_configured')) return 'AI 分析服务尚未配置，任务没有生成伪结果。';
@@ -54,6 +54,8 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
   const selectedSkill = config?.skills?.find((skill) => skill.id === 'pocket.book-to-earth') || null;
   const librarySync = useSyncExternalStore(subscribeFeishuLibrarySync, getFeishuLibrarySyncState, getFeishuLibrarySyncState);
   const photoPreviews = useMemo(() => photoFiles.map((file) => ({ file, url: URL.createObjectURL(file) })), [photoFiles]);
+  const credentialsReady = Boolean(config?.configured);
+  const configurationError = error === '飞书应用尚未配置' || error.includes('飞书凭证待配置');
 
   useEffect(() => () => photoPreviews.forEach(({ url }) => URL.revokeObjectURL(url)), [photoPreviews]);
 
@@ -303,8 +305,14 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
             <p className="font-pixel text-[6px] leading-4 text-black/45">飞书负责身份 / 原文 / 协作 / 写回 · Frost 只路由 · 原 Skill 负责执行 · 用户掌握最终确认</p>
             <section className="border-2 border-black bg-white p-2.5" aria-label="数据源插槽">
               <div className="flex items-center justify-between"><h3 className="text-[11px] font-black">我的知识库</h3><button type="button" onClick={syncLibraryNow} disabled={syncingLibrary || !librarySync.configuredDomains.length} className="flex items-center gap-1 border border-black bg-[#00ff88] px-2 py-1 text-[7px] font-black disabled:bg-black/10 disabled:opacity-50"><RefreshCw className={`h-3 w-3 ${syncingLibrary ? 'animate-spin' : ''}`} />{syncingLibrary ? '同步中' : '立即同步'}</button></div>
-              <button type="button" onClick={createKnowledgeLibrary} disabled={creatingLibrary || !user} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-[#00ff88] py-2 text-[10px] font-black shadow-[2px_2px_0_#000] active:translate-y-px disabled:opacity-40">
-                {creatingLibrary ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers3 className="h-4 w-4" />}{creatingLibrary ? '正在建立四张数据表…' : '新建你的知识库'}
+              {!credentialsReady && (
+                <div className="mt-2 border-2 border-black bg-[#fff1c7] p-2 text-[8px] leading-4" role="status">
+                  <b>飞书凭证待配置</b><br />
+                  请由部署者在服务端设置 <span className="font-pixel text-[6px]">FEISHU_APP_ID</span> 和 <span className="font-pixel text-[6px]">FEISHU_APP_SECRET</span>。凭证不会进入浏览器或公开 GitHub 仓库。
+                </div>
+              )}
+              <button type="button" onClick={createKnowledgeLibrary} disabled={creatingLibrary || !user || !credentialsReady} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-[#00ff88] py-2 text-[10px] font-black shadow-[2px_2px_0_#000] active:translate-y-px disabled:bg-black/10 disabled:opacity-50">
+                {creatingLibrary ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers3 className="h-4 w-4" />}{creatingLibrary ? '正在建立四张数据表…' : credentialsReady ? '新建你的知识库' : '配置飞书凭证后可新建'}
               </button>
               <p className="mt-1 text-[8px] leading-4 text-black/50">自动建立书籍、电影、音乐、照片四张飞书多维表格，并补齐标题、地点、坐标、审核状态、来源和数据 JSON 等字段。</p>
               {libraryUrl && <a href={libraryUrl} target="_blank" rel="noreferrer" className="mt-1.5 flex items-center justify-center gap-1 border border-black bg-white py-1.5 text-[8px] font-bold">打开飞书多维表格<ExternalLink className="h-3 w-3" /></a>}
@@ -360,7 +368,7 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
           <div className="border-2 border-black bg-[#ffd8d8] p-3"><div className="text-sm font-black">任务已停止，没有生成伪结果</div><p className="mt-2 break-words text-[10px] leading-4">{task.error}</p><button type="button" onClick={task.sourceRequired ? reset : retry} className="mt-3 flex items-center gap-1 border-2 border-black bg-white px-3 py-2 text-[10px] font-bold"><RotateCcw className="h-3.5 w-3.5" />{task.sourceRequired ? '重新选择文档' : '修正后重试'}</button></div>
         )}
 
-        {error && <div className={`mt-3 border-2 border-black p-2 text-[10px] font-bold leading-4 ${error === '飞书应用尚未配置' ? 'bg-[#ffe6a6]' : 'bg-[#ffd8d8]'}`}>{error === '飞书应用尚未配置' ? '当前可体验 Frost 路由；配置飞书 App ID / Secret 后，才会开放身份、文档读取与写回。' : error}</div>}
+        {error && <div className={`mt-3 border-2 border-black p-2 text-[10px] font-bold leading-4 ${configurationError ? 'bg-[#ffe6a6]' : 'bg-[#ffd8d8]'}`}>{error === '飞书应用尚未配置' ? '飞书凭证待配置：当前可体验 Frost 路由；服务端配置 App ID / App Secret 后，才会开放真实身份、文档读取和写回。' : error}</div>}
       </div>
     </div>
   );
