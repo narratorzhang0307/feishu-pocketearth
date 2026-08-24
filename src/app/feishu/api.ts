@@ -1,9 +1,13 @@
 import type { FeishuConfig, FeishuLibraryDomain, FeishuLibraryDomainData, FeishuLibrarySnapshot, FeishuLibraryVersions, FeishuTask, FeishuUser, ReviewedLocation } from './types';
+import { requestFeishuAuthCode } from './bridge';
 
 const SESSION_KEY = 'pocket-earth.feishu.session.v1';
 let sessionToken = typeof sessionStorage === 'undefined' ? '' : sessionStorage.getItem(SESSION_KEY) || '';
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  if (typeof sessionStorage !== 'undefined') {
+    sessionToken = sessionStorage.getItem(SESSION_KEY) || sessionToken;
+  }
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 45_000);
   const signal = init.signal ? AbortSignal.any([init.signal, controller.signal]) : controller.signal;
@@ -50,6 +54,16 @@ export async function resumeFeishuSession() {
   return request<{ user: FeishuUser; expiresAt: number }>('/api/feishu/session');
 }
 
+export async function ensureFeishuSession() {
+  try { return await resumeFeishuSession(); }
+  catch {
+    const config = await getFeishuConfig();
+    return config.devBypassAuth
+      ? authenticateFeishu({ devBypass: true })
+      : authenticateFeishu({ code: await requestFeishuAuthCode(config.appId) });
+  }
+}
+
 export async function getFeishuLibrary() {
   return request<FeishuLibrarySnapshot>('/api/feishu/library');
 }
@@ -76,6 +90,7 @@ export type FeishuLibraryBootstrapResult = {
   tables: Record<FeishuLibraryDomain, { tableId: string; name: string }>;
   createdTables: FeishuLibraryDomain[];
   createdFields: Array<{ domain: FeishuLibraryDomain; fieldName: string }>;
+  guideDocument?: { documentId: string; url: string } | null;
 };
 
 export async function bootstrapFeishuLibrary() {

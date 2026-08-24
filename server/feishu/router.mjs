@@ -183,7 +183,7 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
 
       if (path === '/api/feishu/library/bootstrap' && req.method === 'POST') {
         const session = requireSession(req)
-        const result = await library.ensureSchema()
+        const result = await library.ensureSchema({ userAccessToken: session.privateData?.userAccessToken || '' })
         await store.audit('bitable_library_schema_ready', null, {
           user: session.identity.openId,
           createdTables: result.createdTables,

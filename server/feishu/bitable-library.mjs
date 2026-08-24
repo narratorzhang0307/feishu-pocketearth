@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { textBlock } from './client.mjs'
 
 export const BITABLE_LIBRARY_DOMAINS = ['books', 'movies', 'music', 'photos']
 
@@ -60,6 +61,9 @@ export async function hydrateBitableLibraryConfig(config) {
     const saved = JSON.parse(await readFile(file, 'utf8'))
     if (!config.bitableAppToken && saved?.bitableAppToken) config.bitableAppToken = String(saved.bitableAppToken)
     config.bitableLibraryTables = { ...(saved?.bitableLibraryTables || {}), ...(config.bitableLibraryTables || {}) }
+    if (!config.bitableGuideDocument && saved?.bitableGuideDocument?.documentId) {
+      config.bitableGuideDocument = saved.bitableGuideDocument
+    }
   } catch (error) {
     if (error?.code !== 'ENOENT') console.warn('[feishu-bitable] ignored invalid schema config:', error?.message || error)
   }
@@ -74,6 +78,7 @@ async function persistBitableLibraryConfig(config) {
   await writeFile(temporary, JSON.stringify({
     bitableAppToken: config.bitableAppToken,
     bitableLibraryTables: config.bitableLibraryTables,
+    bitableGuideDocument: config.bitableGuideDocument || null,
     updatedAt: new Date().toISOString(),
   }, null, 2), { mode: 0o600 })
   await rename(temporary, file)
@@ -413,7 +418,7 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
     return { created: toCreate.length, updated: toUpdate.length, previousVersion: current.version }
   }
 
-  async function ensureSchema() {
+  async function ensureSchema({ userAccessToken = '' } = {}) {
     let createdApp = false
     if (!config.bitableAppToken) {
       const created = await client.createBitableApp('Pocket Earth · 我的知识库')
@@ -449,6 +454,18 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
         createdFields.push({ domain, fieldName })
       }
     }
+    if (!config.bitableGuideDocument?.documentId && userAccessToken) {
+      const guideDocument = await client.createDocument('Pocket Earth · 我的知识库整理入口', userAccessToken)
+      await client.appendDocumentBlocks(guideDocument.documentId, [
+        textBlock('在飞书里，整理你的知识星球', 3),
+        textBlock('把书籍、电影、音乐或照片的原始笔记写在这篇飞书文档中，也可以邀请同伴共同补充。'),
+        textBlock('整理流程：飞书身份与原文 → AI 提取地点和证据 → 你审核确认 → 上地球并写回飞书。'),
+        textBlock('推荐写法：类别｜标题｜作者 / 主创｜你的笔记｜相关地点。信息不完整也可以，AI 会先整理为待确认结果。'),
+        textBlock(`结构化知识库：https://feishu.cn/base/${encodeURIComponent(config.bitableAppToken)}`),
+        textBlock('完成记录后，回到口袋地球的飞书入口，粘贴本文档链接并启动 AI 整理。'),
+      ], userAccessToken)
+      config.bitableGuideDocument = guideDocument
+    }
     await persistBitableLibraryConfig(config)
     invalidate()
     return {
@@ -458,6 +475,7 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
       tables,
       createdTables,
       createdFields,
+      guideDocument: config.bitableGuideDocument || null,
     }
   }
 

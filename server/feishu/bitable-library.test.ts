@@ -128,6 +128,7 @@ describe('Feishu Bitable library adapter', () => {
     const dataDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-schema-'));
     const createdTables: string[] = [];
     const createdFields: Array<{ tableId: string; fieldName: string; type: number }> = [];
+    const documentCalls: Array<{ kind: string; token: string; value: unknown }> = [];
     const config: any = { dataDir, bitableAppToken: '', bitableLibraryTables: {} };
     const client = {
       createBitableApp: async () => ({ appToken: 'base-created' }),
@@ -135,13 +136,20 @@ describe('Feishu Bitable library adapter', () => {
       createBitableTable: async (name: string) => { createdTables.push(name); return { tableId: `tbl-${createdTables.length}` }; },
       listBitableFields: async () => [],
       createBitableField: async (tableId: string, fieldName: string, type: number) => { createdFields.push({ tableId, fieldName, type }); },
+      createDocument: async (title: string, token: string) => {
+        documentCalls.push({ kind: 'create', token, value: title });
+        return { documentId: 'doc-guide', url: 'https://feishu.cn/docx/doc-guide' };
+      },
+      appendDocumentBlocks: async (documentId: string, blocks: unknown[], token: string) => {
+        documentCalls.push({ kind: 'append', token, value: { documentId, blocks } });
+      },
       listBitableRecords: async () => [],
       createBitableRecords: async () => ({}),
       updateBitableRecords: async () => ({}),
     };
     const library = createBitableLibrary({ client, config });
 
-    const result = await library.ensureSchema();
+    const result = await library.ensureSchema({ userAccessToken: 'user-token' });
 
     expect(result).toMatchObject({
       appToken: 'base-created', createdApp: true,
@@ -150,10 +158,13 @@ describe('Feishu Bitable library adapter', () => {
         books: { tableId: 'tbl-1', name: 'Pocket Earth · 书籍' },
         photos: { tableId: 'tbl-4', name: 'Pocket Earth · 照片' },
       },
+      guideDocument: { documentId: 'doc-guide', url: 'https://feishu.cn/docx/doc-guide' },
     });
     expect(createdTables).toEqual(['Pocket Earth · 书籍', 'Pocket Earth · 电影', 'Pocket Earth · 音乐', 'Pocket Earth · 照片']);
     expect(createdFields.some((field) => field.fieldName === '审核状态')).toBe(true);
     expect(createdFields.some((field) => field.fieldName === '数据 JSON')).toBe(true);
     expect(config.bitableLibraryTables).toEqual({ books: 'tbl-1', movies: 'tbl-2', music: 'tbl-3', photos: 'tbl-4' });
+    expect(documentCalls).toHaveLength(2);
+    expect(documentCalls.every((call) => call.token === 'user-token')).toBe(true);
   });
 });

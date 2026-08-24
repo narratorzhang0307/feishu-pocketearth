@@ -22,7 +22,7 @@ import {
   type MusicCityPackRecord,
 } from '../lib/dataPack';
 import { selectPersonalDataSource } from '../feishu/librarySync';
-import { bootstrapFeishuLibrary, requestFeishuLibrarySync } from '../feishu/api';
+import { bootstrapFeishuLibrary, ensureFeishuSession, requestFeishuLibrarySync } from '../feishu/api';
 
 interface Props {
   domain: DataPackDomain;
@@ -113,13 +113,15 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
     setCreatingFeishuLibrary(true);
     setMessage('');
     try {
+      await ensureFeishuSession();
       const result = await bootstrapFeishuLibrary();
       setFeishuLibraryUrl(result.appUrl);
       await requestFeishuLibrarySync();
       const created = result.createdTables.length
         ? `已建立 ${result.createdTables.length} 张数据表，并补齐 ${result.createdFields.length} 个字段`
         : `四张数据表已存在，字段检查完成${result.createdFields.length ? `，补齐 ${result.createdFields.length} 个字段` : ''}`;
-      setMessage(`${created}。现在可以直接在飞书填写，已确认的数据会同步到口袋地球。`);
+      setMessage(`${created}。正在打开飞书整理文档；已确认的数据会同步到口袋地球。`);
+      window.location.assign(result.guideDocument?.url || result.appUrl);
     } catch (error) {
       setMessage(`新建知识库失败：${dataPackErrorMessage(error)}`);
     } finally {
