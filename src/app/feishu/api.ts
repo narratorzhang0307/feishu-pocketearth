@@ -146,6 +146,15 @@ export type FeishuPhotoReview = {
   storyScore: number;
   summary: string;
   reasons: string[];
+  location?: {
+    placeName: string;
+    city: string;
+    country: string;
+    latitude: number;
+    longitude: number;
+    confidence: number;
+    evidence: string;
+  };
 };
 
 export async function reviewFeishuPhotos(photos: Array<{
@@ -153,6 +162,7 @@ export async function reviewFeishuPhotos(photos: Array<{
   image: string;
   technicalQuality: number;
   tags: string[];
+  fileName: string;
 }>) {
   return request<{ model: string; reviews: FeishuPhotoReview[] }>('/api/feishu/photos/review', {
     method: 'POST', body: JSON.stringify({ photos }),

@@ -12,6 +12,31 @@ const score = (value) => {
   return Number.isFinite(number) ? Math.max(0, Math.min(100, Math.round(number))) : 0
 }
 const text = (value, max) => boundedText(String(value || '').trim(), max)
+const finite = (value) => {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
+const location = (value) => {
+  if (!value || typeof value !== 'object') return undefined
+  const latitude = finite(value.latitude)
+  const longitude = finite(value.longitude)
+  const confidence = finite(value.confidence)
+  if (latitude == null || longitude == null || confidence == null
+    || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return undefined
+  const placeName = text(value.placeName, 100)
+  const evidence = text(value.evidence, 180)
+  if (!placeName || !evidence) return undefined
+  return {
+    placeName,
+    city: text(value.city, 80),
+    country: text(value.country, 80),
+    latitude,
+    longitude,
+    confidence: Math.max(0, Math.min(1, confidence)),
+    evidence,
+  }
+}
 
 export function parseQwenPhotoCuration(rawText, expectedIds) {
   let payload
@@ -25,6 +50,7 @@ export function parseQwenPhotoCuration(rawText, expectedIds) {
     const recommendation = text(item?.recommendation, 16)
     if (!RECOMMENDATIONS.has(recommendation)) throw new Error('qwen_photo_curation_recommendation_invalid')
     seen.add(id)
+    const parsedLocation = location(item?.location)
     return {
       id,
       recommendation,
@@ -32,6 +58,7 @@ export function parseQwenPhotoCuration(rawText, expectedIds) {
       storyScore: score(item?.storyScore),
       summary: text(item?.summary, 240),
       reasons: Array.isArray(item?.reasons) ? item.reasons.map((reason) => text(reason, 120)).filter(Boolean).slice(0, 4) : [],
+      ...(parsedLocation ? { location: parsedLocation } : {}),
     }
   })
   if (seen.size !== expected.size || [...expected].some((id) => !seen.has(id))) throw new Error('qwen_photo_curation_incomplete')
@@ -52,6 +79,7 @@ export function createQwenPhotoCurator(provider, fetchImpl = fetch) {
           image: item.image,
           technicalQuality: score(item?.technicalQuality),
           tags: Array.isArray(item?.tags) ? item.tags.map((tag) => text(tag, 40)).filter(Boolean).slice(0, 8) : [],
+          fileName: text(item?.fileName, 160),
         }
       })
       if (new Set(photos.map((photo) => photo.id)).size !== photos.length) throw new Error('photo_curation_id_duplicate')
@@ -59,13 +87,15 @@ export function createQwenPhotoCurator(provider, fetchImpl = fetch) {
       const instructions = [
         '你是 Pocket Earth 的照片精选编辑。确定性程序已经完成哈希去重、连拍聚类、清晰度和曝光测量。',
         '你只评估画面是否值得进入个人杂志与日历：主体明确、构图可读、具有生活或地点叙事价值。',
-        '不要猜人物身份、关系、精确地点或敏感信息。技术分低不等于必须淘汰，有记忆价值可给 review。',
-        '必须只返回 JSON：{"reviews":[{"id":"原ID","recommendation":"keep|review|reject","qualityScore":0,"storyScore":0,"summary":"一句中文","reasons":["理由"]}]}。',
+        '不要猜人物身份、关系或敏感信息。技术分低不等于必须淘汰，有记忆价值可给 review。',
+        '若画面中的明确地标、文件名或已有标签足以支持地点，可给一个待用户确认的 location；证据不足就省略 location，严禁编造。',
+        'location 格式为 {"placeName":"地点","city":"城市","country":"国家或地区","latitude":0,"longitude":0,"confidence":0.0,"evidence":"可核对依据"}。坐标允许是地标中心点，但必须与地点一致。',
+        '必须只返回 JSON：{"reviews":[{"id":"原ID","recommendation":"keep|review|reject","qualityScore":0,"storyScore":0,"summary":"一句中文","reasons":["理由"],"location":可选对象}]}。',
         '每个输入 ID 必须且只能返回一次。',
       ].join('\n')
       const content = [{ type: 'text', text: instructions }]
       for (const photo of photos) {
-        content.push({ type: 'text', text: `PHOTO_ID=${photo.id}\n本地技术分=${photo.technicalQuality}\n本地标签=${photo.tags.join('、') || '无'}` })
+        content.push({ type: 'text', text: `PHOTO_ID=${photo.id}\n文件名=${photo.fileName || '未提供'}\n本地技术分=${photo.technicalQuality}\n本地标签=${photo.tags.join('、') || '无'}` })
         content.push({ type: 'image_url', image_url: { url: photo.image } })
       }
       const response = await fetchImpl(provider.url, {

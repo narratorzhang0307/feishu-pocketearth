@@ -489,12 +489,17 @@ export default function PhotosTab() {
       const next = { ...analysis, chronicleIncluded: true, analyzedAt: Date.now() };
       const record = await curatedPhotoRecord(asset, next);
       await upsertFeishuLibraryRecords('photos', [record]);
-      const hasLocation = asset.latitude != null && asset.longitude != null;
+      const suggested = analysis.curation.location;
+      const useSuggestion = asset.latitude == null && asset.longitude == null && suggested && suggested.confidence >= 0.6;
+      const latitude = asset.latitude ?? (useSuggestion ? suggested.latitude : null);
+      const longitude = asset.longitude ?? (useSuggestion ? suggested.longitude : null);
+      const hasLocation = latitude != null && longitude != null;
       if (hasLocation) {
         await addPhotoPins([{
           id: photoPinIdentity(asset.key, analysis.contentHash), assetKey: asset.key,
-          contentHash: analysis.contentHash, lat: asset.latitude!, lng: asset.longitude!,
-          thumb: imageUrl(asset), name: asset.fileName, source: 'exif', ts: Date.now(),
+          contentHash: analysis.contentHash, lat: latitude!, lng: longitude!,
+          thumb: imageUrl(asset), name: suggested?.placeName || asset.fileName,
+          source: asset.latitude != null ? 'exif' : 'user', ts: Date.now(),
         }]);
       }
       await putRadarAnalyses([next]); updateAnalyses([next]);
@@ -665,7 +670,7 @@ export default function PhotosTab() {
           {reviewCandidates.filter((analysis) => analysis.curation).slice(0, 12).map((analysis) => {
             const review = analysis.curation!;
             const tone = review.recommendation === 'keep' ? 'bg-[#d9ffec]' : review.recommendation === 'reject' ? 'bg-[#ffe5e2]' : 'bg-[#fff8dc]';
-            return <section key={`curation:${analysis.key}`} className={`border-2 border-black p-3 ${tone}`}><div className="flex gap-3"><div className="w-[92px] shrink-0"><PhotoThumb asset={assetMap.get(analysis.key)} analysis={analysis} onOpen={() => { const asset = assetMap.get(analysis.key); if (asset) openPhoto(asset); }} /></div><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="font-pixel text-[8px]">{review.recommendation === 'keep' ? '建议精选' : review.recommendation === 'reject' ? '建议不收录' : '建议人工复核'}</span><span className="border border-black bg-white px-1 text-[7px]">质量 {review.qualityScore} · 故事 {review.storyScore}</span></div><p className="mt-1 text-[9px] font-bold leading-4">{review.summary}</p><p className="mt-1 text-[8px] leading-4 text-black/55">{review.reasons.join('；')}</p><div className="mt-2 flex gap-1.5"><button disabled={busy || analysis.chronicleIncluded} onClick={() => void confirmCurated(analysis)} className="flex-1 border-2 border-black bg-[#7CFF6B] py-1.5 text-[8px] font-black disabled:opacity-50">{analysis.chronicleIncluded ? '已进入杂志 / 日历 / 飞书' : '确认收录并同步飞书'}</button><button disabled={busy} onClick={() => void reviewWithQwen(analysis)} className="border-2 border-black bg-white px-2 text-[8px]">重新评审</button></div></div></div></section>;
+            return <section key={`curation:${analysis.key}`} className={`border-2 border-black p-3 ${tone}`}><div className="flex gap-3"><div className="w-[92px] shrink-0"><PhotoThumb asset={assetMap.get(analysis.key)} analysis={analysis} onOpen={() => { const asset = assetMap.get(analysis.key); if (asset) openPhoto(asset); }} /></div><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="font-pixel text-[8px]">{review.recommendation === 'keep' ? '建议精选' : review.recommendation === 'reject' ? '建议不收录' : '建议人工复核'}</span><span className="border border-black bg-white px-1 text-[7px]">质量 {review.qualityScore} · 故事 {review.storyScore}</span></div><p className="mt-1 text-[9px] font-bold leading-4">{review.summary}</p><p className="mt-1 text-[8px] leading-4 text-black/55">{review.reasons.join('；')}</p>{review.location && <div className="mt-2 border border-black bg-white p-2 text-[8px] leading-4"><b>地点候选：{review.location.placeName}</b> · 置信度 {Math.round(review.location.confidence * 100)}%<br /><span className="text-black/55">{review.location.evidence} · 确认后才采用坐标</span></div>}<div className="mt-2 flex gap-1.5"><button disabled={busy || analysis.chronicleIncluded} onClick={() => void confirmCurated(analysis)} className="flex-1 border-2 border-black bg-[#7CFF6B] py-1.5 text-[8px] font-black disabled:opacity-50">{analysis.chronicleIncluded ? '已进入杂志 / 日历 / 飞书' : '确认收录并同步飞书'}</button><button disabled={busy} onClick={() => void reviewWithQwen(analysis)} className="border-2 border-black bg-white px-2 text-[8px]">重新评审</button></div></div></div></section>;
           })}
 
           {coldStartPair && preferenceModel.choices < MIN_PREFERENCE_CHOICES && <section className="border-2 border-black bg-[#f5f0ff] p-3 shadow-[3px_3px_0_#000]"><div className="flex items-center justify-between gap-2"><div><div className="font-pixel text-[9px]">个人偏好冷启动 · {preferenceModel.choices}/{MIN_PREFERENCE_CHOICES}</div><div className="mt-1 text-[8px] text-black/50">哪张更值得你留下？只在本机学习；跳过不算负样本。</div></div><button onClick={() => setPreferenceCursor((value) => value + 1)} className="shrink-0 border border-black bg-white px-2 py-1 text-[8px]">跳过</button></div><div className="mt-3 grid grid-cols-2 gap-3">{([coldStartPair.left, coldStartPair.right] as const).map((item, index) => <div key={item.key}><PhotoThumb asset={assetMap.get(item.key)} analysis={item} onOpen={() => { const asset = assetMap.get(item.key); if (asset) openPhoto(asset); }} /><button onClick={() => void chooseColdStart(item, index === 0 ? coldStartPair.right : coldStartPair.left)} className="mt-2 w-full border-2 border-black bg-white py-1.5 text-[8px] font-bold shadow-[2px_2px_0_#000]">更想留这张</button></div>)}</div></section>}

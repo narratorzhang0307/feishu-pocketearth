@@ -24,6 +24,16 @@ export interface PhotoCurationEvidence {
   storyScore: number;
   summary: string;
   reasons: string[];
+  /** Optional, auditable location candidate. It is never applied until the user confirms the photo. */
+  location?: {
+    placeName: string;
+    city: string;
+    country: string;
+    latitude: number;
+    longitude: number;
+    confidence: number;
+    evidence: string;
+  };
   model: string;
   reviewedAt: number;
 }

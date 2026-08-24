@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCuratedPhotoAssets, canonicalPhotoId } from './curation';
+import { buildCuratedPhotoAssets, canonicalPhotoId, curatedPhotoRecord } from './curation';
 import type { PhotoLibraryAsset } from './libraryTypes';
 import type { PhotoRadarAnalysis } from './radarTypes';
 
@@ -28,5 +28,11 @@ describe('photo curation gate', () => {
 
   it('builds a stable Pocket ID from the canonical dHash', () => {
     expect(canonicalPhotoId({ contentHash: 'dh', perceptualHash: 'ph' })).toBe('photo:dh');
+  });
+
+  it('uses a human-confirmed AI location candidate when EXIF GPS is absent', async () => {
+    const item = analysis('a', 'hash-a', true);
+    item.curation!.location = { placeName: '杭州西湖', city: '杭州', country: '中国', latitude: 30.25, longitude: 120.15, confidence: 0.91, evidence: '文件名与画面地标一致' };
+    await expect(curatedPhotoRecord(asset('a'), item)).resolves.toMatchObject({ city: '杭州', place: '杭州西湖', lat: 30.25, lng: 120.15 });
   });
 });

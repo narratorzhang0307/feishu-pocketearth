@@ -7,11 +7,11 @@ const image = `data:image/jpeg;base64,${'A'.repeat(16)}`;
 describe('Feishu Qwen photo curation', () => {
   it('accepts one complete, bounded review per requested photo', () => {
     const reviews = parseQwenPhotoCuration(JSON.stringify({ reviews: [
-      { id: 'photo-a', recommendation: 'keep', qualityScore: 88.7, storyScore: 92, summary: '主体明确', reasons: ['构图稳定'] },
+      { id: 'photo-a', recommendation: 'keep', qualityScore: 88.7, storyScore: 92, summary: '主体明确', reasons: ['构图稳定'], location: { placeName: '杭州西湖', city: '杭州', country: '中国', latitude: 30.25, longitude: 120.15, confidence: 0.92, evidence: '文件名与画面地标一致' } },
       { id: 'photo-b', recommendation: 'review', qualityScore: 54, storyScore: 80, summary: '记忆价值高', reasons: [] },
     ] }), ['photo-a', 'photo-b']);
     expect(reviews).toEqual([
-      { id: 'photo-a', recommendation: 'keep', qualityScore: 89, storyScore: 92, summary: '主体明确', reasons: ['构图稳定'] },
+      { id: 'photo-a', recommendation: 'keep', qualityScore: 89, storyScore: 92, summary: '主体明确', reasons: ['构图稳定'], location: { placeName: '杭州西湖', city: '杭州', country: '中国', latitude: 30.25, longitude: 120.15, confidence: 0.92, evidence: '文件名与画面地标一致' } },
       { id: 'photo-b', recommendation: 'review', qualityScore: 54, storyScore: 80, summary: '记忆价值高', reasons: [] },
     ]);
   });
@@ -27,7 +27,7 @@ describe('Feishu Qwen photo curation', () => {
       body = JSON.parse(String(init.body));
       return Response.json({ choices: [{ message: { content: '{"reviews":[{"id":"photo-a","recommendation":"reject","qualityScore":20,"storyScore":10,"summary":"失焦","reasons":["主体不可辨"]}]}' } }] });
     });
-    const result = await curator.review([{ id: 'photo-a', image, technicalQuality: 12, tags: ['模糊'] }]);
+    const result = await curator.review([{ id: 'photo-a', image, technicalQuality: 12, tags: ['模糊'], fileName: '照片.jpg' }]);
     expect(body).toMatchObject({ model: 'qwen-vl-test', response_format: { type: 'json_object' } });
     expect(body.messages[0].content.filter((item: any) => item.type === 'image_url')).toHaveLength(1);
     expect(result).toMatchObject({ model: 'qwen-vl-test', reviews: [{ id: 'photo-a', recommendation: 'reject' }] });

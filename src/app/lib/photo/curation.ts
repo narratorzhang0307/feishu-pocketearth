@@ -56,6 +56,7 @@ export async function photoCurationInput(asset: PhotoLibraryAsset, analysis: Pho
     image,
     technicalQuality: analysis.technicalQuality,
     tags: analysis.tags,
+    fileName: asset.fileName,
   };
 }
 
@@ -66,13 +67,17 @@ export async function curatedPhotoRecord(asset: PhotoLibraryAsset, analysis: Pho
   // 飞书照片表只保存用户确认后的元数据与公开 HTTPS 缩略图。
   // blob:/data: 指向本机选择结果或内存副本，不能作为协作数据写出设备。
   const thumb = shareablePhotoUrl(asset.thumbnailUrl) || shareablePhotoUrl(asset.thumbnailRef);
+  const suggested = analysis.curation?.location;
+  const useSuggestion = asset.latitude == null && asset.longitude == null && suggested && suggested.confidence >= 0.6;
   return {
     id: canonicalPhotoId(analysis),
     title: asset.fileName || '精选照片',
-    city: '',
+    city: useSuggestion ? suggested.city || suggested.placeName : '',
+    country: useSuggestion ? suggested.country : '',
+    place: useSuggestion ? suggested.placeName : '',
     date: dateText(asset.creationTime || asset.modificationTime || asset.indexedAt),
-    lat: asset.latitude ?? null,
-    lng: asset.longitude ?? null,
+    lat: asset.latitude ?? (useSuggestion ? suggested.latitude : null),
+    lng: asset.longitude ?? (useSuggestion ? suggested.longitude : null),
     thumb,
     assetKey: asset.key,
     contentHash: analysis.contentHash,
