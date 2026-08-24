@@ -76,9 +76,9 @@ export async function getFeishuLibraryDomain(domain: FeishuLibraryDomain) {
   return request<FeishuLibraryDomainData>(`/api/feishu/library/${domain}`);
 }
 
-export async function requestFeishuLibrarySync() {
+export async function requestFeishuLibrarySync(domains?: FeishuLibraryDomain[]) {
   return request<{ ok: boolean; snapshot: FeishuLibrarySnapshot }>('/api/feishu/library/sync', {
-    method: 'POST', body: JSON.stringify({}),
+    method: 'POST', body: JSON.stringify(domains?.length ? { domains } : {}),
   });
 }
 

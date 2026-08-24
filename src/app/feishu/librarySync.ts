@@ -226,8 +226,8 @@ export async function syncFeishuLibrary({ force = false } = {}): Promise<void> {
   return running;
 }
 
-export async function syncFeishuLibraryNow(): Promise<void> {
-  await requestFeishuLibrarySync();
+export async function syncFeishuLibraryNow(domains?: FeishuLibraryDomain[]): Promise<void> {
+  await requestFeishuLibrarySync(domains);
   await syncFeishuLibrary({ force: true });
 }
 
@@ -265,14 +265,14 @@ export function startFeishuLibraryAutoSync(userScope = 'anonymous'): void {
     versions: storedVersions(),
     enabledDomains: (['books', 'movies', 'music', 'photos'] as FeishuLibraryDomain[]).filter(feishuSourceEnabled),
   };
-  refreshHandler = () => { if (document.visibilityState !== 'hidden') void syncFeishuLibraryNow().catch(() => {}); };
+  refreshHandler = () => { if (document.visibilityState !== 'hidden') void syncFeishuLibrary().catch(() => {}); };
   window.addEventListener('focus', refreshHandler);
   document.addEventListener('visibilitychange', refreshHandler);
   window.addEventListener(USER_MARK_EVENT, mirrorUserMark as EventListener);
   timer = window.setInterval(() => {
     if (document.visibilityState !== 'hidden') void syncFeishuLibrary().catch(() => {});
   }, POLL_MS);
-  void syncFeishuLibraryNow().catch(() => {});
+  void syncFeishuLibrary({ force: true }).catch(() => {});
 }
 
 function mirrorUserMark(event: CustomEvent<UserMark>) {

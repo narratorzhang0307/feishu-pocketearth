@@ -116,7 +116,7 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
       const result = await bootstrapFeishuLibrary();
       setFeishuLibraryUrl(result.appUrl);
       await setFeishuLibraryDomainEnabled(domain, true);
-      await syncFeishuLibraryNow();
+      await syncFeishuLibraryNow([domain]);
       const created = result.createdTables.length
         ? `已建立 ${result.createdTables.length} 张数据表，并补齐 ${result.createdFields.length} 个字段`
         : `四张数据表已存在，字段检查完成${result.createdFields.length ? `，补齐 ${result.createdFields.length} 个字段` : ''}`;
@@ -136,7 +136,7 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
     try {
       await ensureFeishuSession();
       await setFeishuLibraryDomainEnabled(domain, true);
-      await syncFeishuLibraryNow();
+      await syncFeishuLibraryNow([domain]);
       setMessage(`飞书${DOMAIN_COPY[domain].label}已同步到此页；已确认记录现在会显示在当前 Skill。`);
       await refresh();
     } catch (error) {

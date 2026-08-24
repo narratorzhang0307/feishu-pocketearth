@@ -180,7 +180,12 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
         if (domains.some((domain) => !BITABLE_LIBRARY_DOMAINS.includes(domain))) throw new Error('bitable_library_domain_invalid')
         const processing = await processLibraryInbox(domains, { limit: 10 })
         domains.forEach((domain) => library.invalidate(domain))
-        const snapshot = await library.readAll({ force: true })
+        const refreshed = await Promise.all(domains.map((domain) => library.readDomain(domain, { force: true })))
+        const snapshot = {
+          domains: Object.fromEntries(refreshed.map((domain) => [domain.domain, domain])),
+          configuredDomains: library.configuredDomains(),
+          syncedAt: new Date().toISOString(),
+        }
         await store.audit('bitable_library_synced', null, { domains, trigger: 'user', processing })
         sendJSON(res, { ok: true, processing, snapshot }); return true
       }

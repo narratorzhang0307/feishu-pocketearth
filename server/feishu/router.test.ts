@@ -133,7 +133,7 @@ describe('Feishu event callback route', () => {
     await router.handle({ method: 'POST', headers: {} }, {}, new URL('http://localhost/api/feishu/auth'));
     const sessionToken = response.body.sessionToken;
 
-    rawBody = '{}'; response = {};
+    rawBody = JSON.stringify({ domains: ['books'] }); response = {};
     await router.handle({ method: 'POST', headers: { authorization: `Bearer ${sessionToken}` } }, {}, new URL('http://localhost/api/feishu/library/sync'));
 
     expect(response).toMatchObject({ status: 200, body: { ok: true, processing: [{ domain: 'books', processed: 1, failed: 0 }] } });
