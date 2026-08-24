@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { compactFeishuRuntimeRecords, enableFeishuBuiltinMapLayersOnce, libraryRecordFromUserMark, photoAssetFromFeishuRecord } from './librarySync';
+import { compactFeishuRuntimeRecords, enableFeishuBuiltinMapLayersOnce, libraryRecordFromUserMark, photoAssetFromFeishuRecord, setFeishuLibraryDomainEnabled } from './librarySync';
 
 describe('Feishu photo library projection', () => {
   beforeEach(() => {
@@ -53,5 +53,11 @@ describe('Feishu photo library projection', () => {
     expect(compact[0].podcast).toEqual([]);
     expect(source[0].tracks).toHaveLength(2);
     expect(source[0].podcast).toHaveLength(1);
+  });
+
+  it('can switch a sample slot back to its Feishu table source before syncing confirmed rows', async () => {
+    localStorage.setItem('pocket-earth.feishu.library-sources.v1:anonymous', JSON.stringify({ books: 'personal' }));
+    await setFeishuLibraryDomainEnabled('books', true);
+    expect(JSON.parse(localStorage.getItem('pocket-earth.feishu.library-sources.v1:anonymous') || '{}')).toEqual({ books: 'feishu' });
   });
 });

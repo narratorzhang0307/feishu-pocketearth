@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Braces, Check, ChevronLeft, ChevronRight, Cloud, Copy, Database, Download, HardDriveDownload, Link, Loader2, MapPinned, PackageOpen, ShieldCheck, Trash2, Upload } from 'lucide-react';
+import { Braces, Check, ChevronLeft, ChevronRight, Cloud, Copy, Database, Download, HardDriveDownload, Link, Loader2, MapPinned, PackageOpen, RefreshCw, ShieldCheck, Trash2, Upload } from 'lucide-react';
 import {
   activateDataPack,
   createDataPackAiInstruction,
@@ -20,8 +20,8 @@ import {
   type DataPackDomain,
   type InstalledDataPack,
 } from '../lib/dataPack';
-import { selectPersonalDataSource } from '../feishu/librarySync';
-import { bootstrapFeishuLibrary, ensureFeishuSession, requestFeishuLibrarySync } from '../feishu/api';
+import { selectPersonalDataSource, setFeishuLibraryDomainEnabled, syncFeishuLibraryNow } from '../feishu/librarySync';
+import { bootstrapFeishuLibrary, ensureFeishuSession } from '../feishu/api';
 
 interface Props {
   domain: DataPackDomain;
@@ -65,6 +65,7 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   const [packs, setPacks] = useState<InstalledDataPack[]>([]);
   const [message, setMessage] = useState('');
   const [creatingFeishuLibrary, setCreatingFeishuLibrary] = useState(false);
+  const [syncingFeishuLibrary, setSyncingFeishuLibrary] = useState(false);
   const [feishuLibraryUrl, setFeishuLibraryUrl] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const state = getDataPackState(domain);
@@ -107,14 +108,15 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   };
 
   const createFeishuKnowledgeLibrary = async () => {
-    if (creatingFeishuLibrary) return;
+    if (creatingFeishuLibrary || domain === 'mapping') return;
     setCreatingFeishuLibrary(true);
     setMessage('');
     try {
       await ensureFeishuSession();
       const result = await bootstrapFeishuLibrary();
       setFeishuLibraryUrl(result.appUrl);
-      await requestFeishuLibrarySync();
+      await setFeishuLibraryDomainEnabled(domain, true);
+      await syncFeishuLibraryNow();
       const created = result.createdTables.length
         ? `已建立 ${result.createdTables.length} 张数据表，并补齐 ${result.createdFields.length} 个字段`
         : `四张数据表已存在，字段检查完成${result.createdFields.length ? `，补齐 ${result.createdFields.length} 个字段` : ''}`;
@@ -124,6 +126,23 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
       setMessage(`新建知识库失败：${dataPackErrorMessage(error)}`);
     } finally {
       setCreatingFeishuLibrary(false);
+    }
+  };
+
+  const syncFeishuKnowledgeLibrary = async () => {
+    if (syncingFeishuLibrary || domain === 'mapping') return;
+    setSyncingFeishuLibrary(true);
+    setMessage('');
+    try {
+      await ensureFeishuSession();
+      await setFeishuLibraryDomainEnabled(domain, true);
+      await syncFeishuLibraryNow();
+      setMessage(`飞书${DOMAIN_COPY[domain].label}已同步到此页；已确认记录现在会显示在当前 Skill。`);
+      await refresh();
+    } catch (error) {
+      setMessage(`同步飞书${DOMAIN_COPY[domain].label}失败：${dataPackErrorMessage(error)}`);
+    } finally {
+      setSyncingFeishuLibrary(false);
     }
   };
 
@@ -205,6 +224,15 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
             {creatingFeishuLibrary ? '正在建立飞书知识库…' : '新建你的知识库'}
           </button>
           <p className="mt-1.5 text-[8px] leading-4 text-black/55">直接创建书籍、电影、音乐、照片四张飞书多维表格，并预设标题、地点、坐标、审核状态、来源和数据 JSON 等字段。</p>
+          <button
+            type="button"
+            onClick={() => void syncFeishuKnowledgeLibrary()}
+            disabled={syncingFeishuLibrary || creatingFeishuLibrary}
+            className="mt-1.5 flex w-full items-center justify-center gap-1.5 border border-black bg-white px-2 py-1.5 text-[9px] font-black active:bg-black active:text-white disabled:opacity-45"
+          >
+            {syncingFeishuLibrary ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            {syncingFeishuLibrary ? '正在读取飞书…' : `同步飞书${DOMAIN_COPY[domain].label}到此页`}
+          </button>
           {feishuLibraryUrl && (
             <a href={feishuLibraryUrl} target="_blank" rel="noreferrer" className="mt-1.5 block border border-black bg-white px-2 py-1.5 text-center text-[9px] font-bold">打开飞书多维表格 ↗</a>
           )}

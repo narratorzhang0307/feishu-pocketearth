@@ -265,12 +265,14 @@ export function startFeishuLibraryAutoSync(userScope = 'anonymous'): void {
     versions: storedVersions(),
     enabledDomains: (['books', 'movies', 'music', 'photos'] as FeishuLibraryDomain[]).filter(feishuSourceEnabled),
   };
-  refreshHandler = () => { if (document.visibilityState !== 'hidden') void syncFeishuLibrary().catch(() => {}); };
+  refreshHandler = () => { if (document.visibilityState !== 'hidden') void syncFeishuLibraryNow().catch(() => {}); };
   window.addEventListener('focus', refreshHandler);
   document.addEventListener('visibilitychange', refreshHandler);
   window.addEventListener(USER_MARK_EVENT, mirrorUserMark as EventListener);
-  timer = window.setInterval(refreshHandler, POLL_MS);
-  void syncFeishuLibrary({ force: true }).catch(() => {});
+  timer = window.setInterval(() => {
+    if (document.visibilityState !== 'hidden') void syncFeishuLibrary().catch(() => {});
+  }, POLL_MS);
+  void syncFeishuLibraryNow().catch(() => {});
 }
 
 function mirrorUserMark(event: CustomEvent<UserMark>) {
