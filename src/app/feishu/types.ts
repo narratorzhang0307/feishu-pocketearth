@@ -1,5 +1,6 @@
 export type FeishuConfig = {
   appId: string;
+  bitableAppUrl: string;
   configured: boolean;
   devBypassAuth: boolean;
   maxUploadBytes: number;

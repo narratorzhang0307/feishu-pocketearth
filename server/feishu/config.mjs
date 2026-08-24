@@ -38,6 +38,7 @@ export function publicFeishuConfig(config) {
   const bitableDomains = Object.fromEntries(Object.entries(config.bitableLibraryTables || {}).map(([domain, tableId]) => [domain, Boolean(config.bitableAppToken && tableId)]))
   return {
     appId: config.appId,
+    bitableAppUrl: config.bitableAppToken ? `https://feishu.cn/base/${encodeURIComponent(config.bitableAppToken)}` : '',
     configured: Boolean(config.appId && config.appSecret),
     devBypassAuth: config.devBypassAuth,
     maxUploadBytes: config.maxUploadBytes,

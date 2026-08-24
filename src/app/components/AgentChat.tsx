@@ -7,7 +7,7 @@ import { streamText } from '../../../frost-agent/sync/stream';
 import { streamComplete } from '../lib/streamComplete';
 import AgentLuIcon from './AgentLuIcon';
 import UserZhaIcon from './UserZhaIcon';
-import { upsertFeishuLibraryRecords } from '../feishu/api';
+import { getFeishuConfig, upsertFeishuLibraryRecords } from '../feishu/api';
 import type { FrostSubmissionDraft } from '../feishu/frostSubmission';
 
 // 通用「对话层」：各 Skill（读书 / 观影 / 城市播客）共用的对话框。
@@ -63,12 +63,17 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState(config.initialInput || '');
   const [busy, setBusy] = useState(false);
+  const [feishuLibraryUrl, setFeishuLibraryUrl] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(true);
   const lastAskRef = useRef('');
   const streamRef = useRef<{ cancel: () => void; done: Promise<void> } | null>(null);
   useEffect(() => () => { mountedRef.current = false; streamRef.current?.cancel(); }, []);   // 卸载时取消在飞的逐字流，清掉 streamText 内部 interval（否则它会对死组件空跑约 90 次）
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [turns.length, busy]);
+  useEffect(() => {
+    if (!config.feishuSubmission) return;
+    void getFeishuConfig().then((feishu) => setFeishuLibraryUrl(feishu.bitableAppUrl || '')).catch(() => {});
+  }, [config.feishuSubmission]);
 
   // 云脑 JSON 调用（给推荐候选用）：自己 parse + 兜底
   const cloudJSON = async (system: string, prompt: string): Promise<Record<string, unknown> | null> => {
@@ -241,9 +246,15 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
                     飞书多维表格草稿 · {t.submission.draft.label}
                   </div>
                   {t.submission.status === 'done' ? (
-                    <div className="mt-2 flex items-center gap-1.5 border-2 border-black bg-white px-2 py-1.5 font-bold text-[#168654]">
-                      <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 待分析
-                    </div>
+                    feishuLibraryUrl ? (
+                      <a href={feishuLibraryUrl} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px">
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 打开飞书多维表格 ↗
+                      </a>
+                    ) : (
+                      <div className="mt-2 flex items-center gap-1.5 border-2 border-black bg-white px-2 py-1.5 font-bold text-[#168654]">
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 待分析
+                      </div>
+                    )
                   ) : (
                     <button
                       type="button"

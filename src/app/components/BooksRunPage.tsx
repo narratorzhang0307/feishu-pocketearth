@@ -1,7 +1,8 @@
 import { useMemo, useReducer, useRef, useState, useEffect } from 'react';
 import { ChevronLeft, BookOpen, Camera, Star, MapPin, Loader2, Check, NotebookPen, X, Quote } from 'lucide-react';
-import { bookDataVersion, bookRecords, bookTotal, bookMappedTotal, hasBookMapPoint, BOOK_PLACES, bookPlace, ensureBookData, subscribeBookData, type BookRecord } from '../data/books';
+import { bookDataVersion, bookRecords, bookTotal, bookMappedTotal, bookMapPoint, recentBookRecords, BOOK_PLACES, bookPlace, ensureBookData, subscribeBookData, type BookRecord } from '../data/books';
 import { getUserMarksByKind, subscribeUserMarks } from '../data/userMarks';
+import { requestMapFocus } from '../data/mapFocus';
 import { runBookAgent, confirmPin, recordRatingFix, recordPlaceFix, GEO_LABEL, GEO_COLOR, type BookDraft, type BookPhase,
   structureNotes, getNotes, addNote, removeNote, subscribeNotes, type StructuredNote } from '../lib/book';
 import { AnimatePresence } from 'motion/react';
@@ -21,6 +22,7 @@ const VIOLET = '#b388ff';
 interface Plate {
   key: string; title: string; author: string; place: string;
   year?: number | null; rating?: number | null; note?: string; synopsis?: string; date?: string; pinned?: boolean; user?: boolean;
+  lng?: number; lat?: number;
 }
 
 const stars = (r?: number | null) => {
@@ -38,8 +40,9 @@ const oneLine = (p: Plate) => {
 };
 
 function fromRecord(b: BookRecord): Plate {
+  const point = bookMapPoint(b);
   return { key: 'bk' + b.id, title: b.title, author: b.author, place: b.country,
-    year: b.year, rating: b.rating, synopsis: b.synopsis, date: b.date, pinned: hasBookMapPoint(b) };
+    year: b.year, rating: b.rating, synopsis: b.synopsis, date: b.date, pinned: !!point, lng: point?.lng, lat: point?.lat };
 }
 
 export default function BooksRunPage({ onBack, embedded }: Props) {
@@ -72,12 +75,12 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
     const meta = (m.meta || {}) as Record<string, unknown>;
     return { key: m.id, title: m.label || String(meta.title || ''), author: String(meta.author || ''),
       place: String(meta.place || ''), year: meta.year as number, rating: meta.rating as number,
-      note: String(meta.note || ''), synopsis: String(meta.synopsis || ''), date: String(meta.date || ''), pinned: true, user: true };
+      note: String(meta.note || ''), synopsis: String(meta.synopsis || ''), date: String(meta.date || ''), pinned: true, user: true, lng: m.lng, lat: m.lat };
   });
 
-  // 豆瓣记录：按读完日期倒序，取近 60 本做藏书票流
+  // 按读完日期倒序；同一天以飞书新写入的记录优先，避免新确认藏书票被挤到 60 条之外。
   const recent: Plate[] = useMemo(
-    () => [...bookRecords].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 60).map(fromRecord),
+    () => recentBookRecords(bookRecords, 60).map(fromRecord),
     [bookDataVersion]
   );
   const feed = [...userPlates, ...recent];
@@ -87,8 +90,14 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
 
   const showToast = (s: string) => { setToast(s); window.setTimeout(() => setToast(null), 2400); };
 
-  const openPlate = (p: Plate) => setSelected({ kind: 'book', title: p.title, author: p.author, place: p.place,
-    year: p.year, rating: p.rating, synopsis: p.synopsis, date: p.date, note: p.note });
+  const openPlate = (p: Plate) => {
+    if (p.pinned && Number.isFinite(p.lng) && Number.isFinite(p.lat)) {
+      requestMapFocus(p.lng!, p.lat!, 7.8);
+      return;
+    }
+    setSelected({ kind: 'book', title: p.title, author: p.author, place: p.place,
+      year: p.year, rating: p.rating, synopsis: p.synopsis, date: p.date, note: p.note });
+  };
 
   // 跑读书 agent：一句话 / 书封截图 → 解析→本地库→云脑补全子agent→地理子agent→校验 → 草稿藏书票
   const analyze = async (inp: Parameters<typeof runBookAgent>[0]) => {
@@ -359,7 +368,7 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
         {feed.map((p) => {
           const line = oneLine(p);
           return (
-            <button key={p.key} onClick={() => openPlate(p)} className="w-full text-left border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.85)] bg-white active:translate-y-px">
+            <button key={p.key} onClick={() => openPlate(p)} title={p.pinned ? '回到地球并定位这条知识' : '查看藏书票详情'} className="w-full text-left border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.85)] bg-white active:translate-y-px">
               {/* EX LIBRIS 顶条 */}
               <div className="flex items-center justify-between px-2.5 py-1 border-b-2" style={{ borderColor: VIOLET }}>
                 <span className="font-pixel text-[7px] tracking-widest" style={{ color: '#7a4dd6' }}>EX LIBRIS · 藏书票{p.user ? ' · NEW' : ''}</span>

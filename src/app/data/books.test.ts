@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasBookMapPoint, type BookRecord } from './books';
+import { bookMapPoint, hasBookMapPoint, recentBookRecords, type BookRecord } from './books';
 
 const baseBook: BookRecord = {
   id: 'book:city-and-dogs',
@@ -24,5 +24,17 @@ describe('book map state', () => {
 
   it('does not claim a map pin when neither coordinates nor a country fallback exist', () => {
     expect(hasBookMapPoint(baseBook)).toBe(false);
+  });
+
+  it('shows a later same-day Feishu record before older rows', () => {
+    const earlier = { ...baseBook, id: 'book:earlier', title: '城市与狗' };
+    const later = { ...baseBook, id: 'book:later', title: '酒吧长谈' };
+    expect(recentBookRecords([earlier, later], 1)).toEqual([later]);
+  });
+
+  it('uses the same deterministic coordinates for a card and its map marker', () => {
+    const located = { ...baseBook, locations: [{ kind: 'story' as const, place: '利马', lng: -77.0369, lat: -12.0464, confidence: 0.9 }] };
+    expect(bookMapPoint(located)).toMatchObject({ id: located.id });
+    expect(bookMapPoint(located)).toEqual(bookMapPoint(located));
   });
 });

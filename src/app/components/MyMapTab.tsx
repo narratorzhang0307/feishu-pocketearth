@@ -147,6 +147,7 @@ interface MyMapTabProps {
 }
 
 const FeishuEarthPanel = lazy(() => import('../feishu/FeishuEarthPanel'));
+let feishuPanelAutoOpened = false;
 
 // 标定点：固定到西湖周边真实经纬度（WGS84，源自 OpenStreetMap / Wikidata）。
 // 其中的「文字卡片」现已解耦为可拖动便贴（见 seedStickers）；此处保留绿点 + 照片 + 连线。
@@ -228,9 +229,13 @@ export default function MyMapTab(_props: MyMapTabProps) {
   const [moodText, setMoodText] = useState('');
   const [moodBusy, setMoodBusy] = useState(false);
   const [moodStyle, setMoodStyle] = useState<'color' | 'card'>('color'); // 「+」可产出两种便贴：彩色 / 白卡片
-  const [feishuOpen, setFeishuOpen] = useState(() => _props.feishuMode === true && (
+  const requestedFeishuPanel = _props.feishuMode === true && (
     new URLSearchParams(location.search).get('feishuPanel') === '1' || new URLSearchParams(location.search).has('taskId')
-  ));
+  );
+  const [feishuOpen, setFeishuOpen] = useState(() => requestedFeishuPanel && !feishuPanelAutoOpened);
+  useEffect(() => {
+    if (requestedFeishuPanel) feishuPanelAutoOpened = true;
+  }, [requestedFeishuPanel]);
   // 点击标记后的详情弹层
   const [selected, setSelected] = useState<MarkerDetailData | null>(null);
   const [view3D, setView3D] = useState<{ url: string; format: string } | null>(null);   // 地球点开展品 → 全屏 3D（mesh/高斯泼溅由 Viewer3D 按 format 分发）

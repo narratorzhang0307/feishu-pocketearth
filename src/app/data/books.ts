@@ -52,12 +52,20 @@ function spread(id: string, lng: number, lat: number): [number, number] {
   return [lng + ((hash & 0xffff) / 0xffff - 0.5) * 2.5, lat + (((hash >>> 16) & 0xffff) / 0xffff - 0.5) * 2.5];
 }
 
-function pointFor(record: BookRecord): BookPoint | null {
+export function bookMapPoint(record: BookRecord): BookPoint | null {
   const explicit = record.locations?.find((location) => Number.isFinite(location.lng) && Number.isFinite(location.lat));
   const base = explicit ? [explicit.lng, explicit.lat] as [number, number] : bookCountry(record.country);
   if (!base) return null;
   const [lng, lat] = spread(record.id, base[0], base[1]);
   return { ...record, lng, lat };
+}
+
+export function recentBookRecords(records: BookRecord[], limit = 60): BookRecord[] {
+  return records
+    .map((record, index) => ({ record, index }))
+    .sort((a, b) => (b.record.date || '').localeCompare(a.record.date || '') || b.index - a.index)
+    .slice(0, limit)
+    .map(({ record }) => record);
 }
 
 function applyActivePack() {
@@ -66,7 +74,7 @@ function applyActivePack() {
   lastRecords = records;
   bookRecords = records as BookRecord[];
   bookTotal = bookRecords.length;
-  bookPoints = bookRecords.map(pointFor).filter((record): record is BookPoint => !!record);
+  bookPoints = bookRecords.map(bookMapPoint).filter((record): record is BookPoint => !!record);
   bookMappedTotal = bookPoints.length;
   bookDataVersion += 1;
   listeners.forEach((listener) => listener());
