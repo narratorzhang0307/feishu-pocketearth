@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { validateBookRecord } from '../lib/dataPack';
 import { compactFeishuRuntimeRecords, enableFeishuBuiltinMapLayersOnce, libraryRecordFromUserMark, photoAssetFromFeishuRecord, setFeishuLibraryDomainEnabled } from './librarySync';
 
 describe('Feishu photo library projection', () => {
@@ -47,12 +48,26 @@ describe('Feishu photo library projection', () => {
   });
 
   it('keeps a Feishu music row as one lightweight runtime item without mutating the source row', () => {
-    const source = [{ id: 'music-city:test', tracks: [{ id: 'a' }, { id: 'b' }], podcast: [{ id: 'p' }] }];
-    const compact = compactFeishuRuntimeRecords('music', source) as Array<{ tracks: unknown[]; podcast: unknown[] }>;
+    const source = [{ id: 'music-city:test', tracks: [{ id: 'a' }, { id: 'b' }], podcast: [{ id: 'p' }], aiInstruction: '整理杭州音乐', note: '飞书协作备注' }];
+    const compact = compactFeishuRuntimeRecords('music', source) as Array<{ tracks: unknown[]; podcast: unknown[]; aiInstruction?: string; note?: string }>;
     expect(compact[0].tracks).toEqual([{ id: 'a' }]);
     expect(compact[0].podcast).toEqual([]);
+    expect(compact[0].aiInstruction).toBeUndefined();
+    expect(compact[0].note).toBeUndefined();
     expect(source[0].tracks).toHaveLength(2);
     expect(source[0].podcast).toHaveLength(1);
+  });
+
+  it('removes Feishu collaboration-only fields before strict book Data Pack validation', () => {
+    const [book] = compactFeishuRuntimeRecords('books', [{
+      id: 'book:city-and-dogs', title: '城市与狗', author: '马里奥·巴尔加斯·略萨', country: '秘鲁',
+      type: '小说', year: 1963, rating: null, date: '2026-08-24', synopsis: '利马的军校故事', locations: [],
+      aiInstruction: '用 AI 记录《城市与狗》', note: '我很喜欢',
+    }]) as Array<Record<string, unknown>>;
+    expect(book).not.toHaveProperty('aiInstruction');
+    expect(book).not.toHaveProperty('note');
+    expect(book).toMatchObject({ title: '城市与狗', author: '马里奥·巴尔加斯·略萨', country: '秘鲁' });
+    expect(() => validateBookRecord(book)).not.toThrow();
   });
 
   it('can switch a sample slot back to its Feishu table source before syncing confirmed rows', async () => {

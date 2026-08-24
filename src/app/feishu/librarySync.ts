@@ -188,10 +188,12 @@ async function applyDomain(data: FeishuLibraryDomainData) {
  * untouched and adding/removing a row changes the visible knowledge count by exactly one.
  */
 export function compactFeishuRuntimeRecords(domain: FeishuLibraryDomain, records: unknown[]): unknown[] {
-  if (domain !== 'music') return records;
+  if (!DATA_PACK_DOMAINS.has(domain)) return records;
   return records.map((value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
-    const record = value as Record<string, unknown>;
+    const record = Object.fromEntries(Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => key !== 'aiInstruction' && key !== 'note'));
+    if (domain !== 'music') return record;
     return {
       ...record,
       tracks: Array.isArray(record.tracks) ? record.tracks.slice(0, 1) : [],
