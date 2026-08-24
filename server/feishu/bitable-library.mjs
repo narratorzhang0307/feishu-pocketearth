@@ -26,6 +26,8 @@ export const BITABLE_LIBRARY_FIELDS = Object.freeze({
   latitude: '纬度',
   longitude: '经度',
   description: '简介',
+  instruction: 'AI 指令',
+  note: '我的笔记',
   status: '审核状态',
   source: '来源',
   schema: 'Schema',
@@ -41,10 +43,10 @@ const schemaName = {
 }
 
 export const BITABLE_LIBRARY_DEFINITIONS = Object.freeze({
-  books: { name: 'Pocket Earth · 书籍', fields: ['title', 'author', 'country', 'type', 'year', 'rating', 'date', 'description'] },
-  movies: { name: 'Pocket Earth · 电影', fields: ['title', 'author', 'country', 'type', 'year', 'rating', 'date', 'description'] },
-  music: { name: 'Pocket Earth · 音乐', fields: ['title', 'city', 'latitude', 'longitude', 'description'] },
-  photos: { name: 'Pocket Earth · 照片', fields: ['title', 'city', 'date', 'latitude', 'longitude', 'description'] },
+  books: { name: 'Pocket Earth · 书籍', fields: ['instruction', 'note', 'title', 'author', 'country', 'type', 'year', 'rating', 'date', 'description'] },
+  movies: { name: 'Pocket Earth · 电影', fields: ['instruction', 'note', 'title', 'author', 'country', 'type', 'year', 'rating', 'date', 'description'] },
+  music: { name: 'Pocket Earth · 音乐', fields: ['instruction', 'note', 'title', 'city', 'latitude', 'longitude', 'description'] },
+  photos: { name: 'Pocket Earth · 照片', fields: ['instruction', 'note', 'title', 'city', 'date', 'latitude', 'longitude', 'description'] },
 })
 
 const BITABLE_LIBRARY_COMMON_FIELDS = ['id', 'status', 'source', 'schema', 'payload', 'updatedAt']
@@ -64,6 +66,7 @@ export async function hydrateBitableLibraryConfig(config) {
     if (!config.bitableGuideDocument && saved?.bitableGuideDocument?.documentId) {
       config.bitableGuideDocument = saved.bitableGuideDocument
     }
+    if (!config.bitableGuideVersion && saved?.bitableGuideVersion) config.bitableGuideVersion = Number(saved.bitableGuideVersion)
   } catch (error) {
     if (error?.code !== 'ENOENT') console.warn('[feishu-bitable] ignored invalid schema config:', error?.message || error)
   }
@@ -79,6 +82,7 @@ async function persistBitableLibraryConfig(config) {
     bitableAppToken: config.bitableAppToken,
     bitableLibraryTables: config.bitableLibraryTables,
     bitableGuideDocument: config.bitableGuideDocument || null,
+    bitableGuideVersion: Number(config.bitableGuideVersion || 0),
     updatedAt: new Date().toISOString(),
   }, null, 2), { mode: 0o600 })
   await rename(temporary, file)
@@ -135,6 +139,12 @@ function payloadFromFields(fields) {
   }
 }
 
+function collaborationFields(fields, payload) {
+  const note = stringField(fields, BITABLE_LIBRARY_FIELDS.note, text(payload.note))
+  const aiInstruction = stringField(fields, BITABLE_LIBRARY_FIELDS.instruction, text(payload.aiInstruction))
+  return { ...(note ? { note } : {}), ...(aiInstruction ? { aiInstruction } : {}) }
+}
+
 function applyColumns(domain, fields, payload) {
   const id = stringField(fields, BITABLE_LIBRARY_FIELDS.id, text(payload.id, 256))
   if (domain === 'books') return {
@@ -148,6 +158,7 @@ function applyColumns(domain, fields, payload) {
     rating: numberField(fields, BITABLE_LIBRARY_FIELDS.rating, payload.rating ?? null),
     date: dateField(fields, BITABLE_LIBRARY_FIELDS.date, text(payload.date)),
     synopsis: stringField(fields, BITABLE_LIBRARY_FIELDS.description, text(payload.synopsis)),
+    ...collaborationFields(fields, payload),
   }
   if (domain === 'movies') return {
     ...payload,
@@ -160,6 +171,7 @@ function applyColumns(domain, fields, payload) {
     rating: numberField(fields, BITABLE_LIBRARY_FIELDS.rating, payload.rating ?? null),
     date: dateField(fields, BITABLE_LIBRARY_FIELDS.date, text(payload.date)),
     synopsis: stringField(fields, BITABLE_LIBRARY_FIELDS.description, text(payload.synopsis)),
+    ...collaborationFields(fields, payload),
   }
   if (domain === 'music') return {
     ...payload,
@@ -169,6 +181,7 @@ function applyColumns(domain, fields, payload) {
     lat: numberField(fields, BITABLE_LIBRARY_FIELDS.latitude, payload.lat ?? null),
     lng: numberField(fields, BITABLE_LIBRARY_FIELDS.longitude, payload.lng ?? null),
     description: stringField(fields, BITABLE_LIBRARY_FIELDS.description, text(payload.description)),
+    ...collaborationFields(fields, payload),
   }
   return {
     ...payload,
@@ -178,6 +191,7 @@ function applyColumns(domain, fields, payload) {
     lat: numberField(fields, BITABLE_LIBRARY_FIELDS.latitude, payload.lat ?? null),
     lng: numberField(fields, BITABLE_LIBRARY_FIELDS.longitude, payload.lng ?? null),
     title: stringField(fields, BITABLE_LIBRARY_FIELDS.title, text(payload.title || payload.city)),
+    ...collaborationFields(fields, payload),
   }
 }
 
@@ -240,6 +254,8 @@ export function draftFromBitableItem(domain, item) {
 
 function humanFields(domain, record) {
   if (domain === 'books') return {
+    [BITABLE_LIBRARY_FIELDS.instruction]: record.aiInstruction,
+    [BITABLE_LIBRARY_FIELDS.note]: record.note,
     [BITABLE_LIBRARY_FIELDS.title]: record.title,
     [BITABLE_LIBRARY_FIELDS.author]: record.author,
     [BITABLE_LIBRARY_FIELDS.country]: record.country,
@@ -250,6 +266,8 @@ function humanFields(domain, record) {
     [BITABLE_LIBRARY_FIELDS.description]: record.synopsis,
   }
   if (domain === 'movies') return {
+    [BITABLE_LIBRARY_FIELDS.instruction]: record.aiInstruction,
+    [BITABLE_LIBRARY_FIELDS.note]: record.note,
     [BITABLE_LIBRARY_FIELDS.title]: record.title,
     [BITABLE_LIBRARY_FIELDS.author]: record.director,
     [BITABLE_LIBRARY_FIELDS.country]: record.country,
@@ -260,6 +278,8 @@ function humanFields(domain, record) {
     [BITABLE_LIBRARY_FIELDS.description]: record.synopsis,
   }
   if (domain === 'music') return {
+    [BITABLE_LIBRARY_FIELDS.instruction]: record.aiInstruction,
+    [BITABLE_LIBRARY_FIELDS.note]: record.note,
     [BITABLE_LIBRARY_FIELDS.title]: record.cityNameZh || record.cityName,
     [BITABLE_LIBRARY_FIELDS.city]: record.cityName,
     [BITABLE_LIBRARY_FIELDS.latitude]: record.lat,
@@ -267,6 +287,8 @@ function humanFields(domain, record) {
     [BITABLE_LIBRARY_FIELDS.description]: record.description,
   }
   return {
+    [BITABLE_LIBRARY_FIELDS.instruction]: record.aiInstruction,
+    [BITABLE_LIBRARY_FIELDS.note]: record.note,
     [BITABLE_LIBRARY_FIELDS.title]: record.title || record.city,
     [BITABLE_LIBRARY_FIELDS.city]: record.city,
     [BITABLE_LIBRARY_FIELDS.date]: record.date,
@@ -454,17 +476,29 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
         createdFields.push({ domain, fieldName })
       }
     }
+    const guideBlocks = []
     if (!config.bitableGuideDocument?.documentId && userAccessToken) {
-      const guideDocument = await client.createDocument('Pocket Earth · 我的知识库整理入口', userAccessToken)
-      await client.appendDocumentBlocks(guideDocument.documentId, [
+      config.bitableGuideDocument = await client.createDocument('Pocket Earth · 我的知识库整理入口', userAccessToken)
+      guideBlocks.push(
         textBlock('在飞书里，整理你的知识星球', 3),
         textBlock('把书籍、电影、音乐或照片的原始笔记写在这篇飞书文档中，也可以邀请同伴共同补充。'),
         textBlock('整理流程：飞书身份与原文 → AI 提取地点和证据 → 你审核确认 → 上地球并写回飞书。'),
         textBlock('推荐写法：类别｜标题｜作者 / 主创｜你的笔记｜相关地点。信息不完整也可以，AI 会先整理为待确认结果。'),
         textBlock(`结构化知识库：https://feishu.cn/base/${encodeURIComponent(config.bitableAppToken)}`),
         textBlock('完成记录后，回到口袋地球的飞书入口，粘贴本文档链接并启动 AI 整理。'),
-      ], userAccessToken)
-      config.bitableGuideDocument = guideDocument
+      )
+    }
+    if (config.bitableGuideDocument?.documentId && userAccessToken && Number(config.bitableGuideVersion || 0) < 2) {
+      guideBlocks.push(
+        textBlock('直接在多维表格里让 AI 记录', 4),
+        textBlock('在书籍、电影、音乐或照片表新增一行，只填写“AI 指令”，例如：帮我记录一条《百年孤独》的笔记，我很喜欢。'),
+        textBlock('把“审核状态”设为“待分析”。口袋地球 AI 会补齐结构化字段和候选地点，并写回为“待确认”；只有你改成“已确认”才会上地球。'),
+        textBlock(`返回口袋地球：${config.webBaseUrl}/feishu?feishuPanel=1`),
+      )
+      config.bitableGuideVersion = 2
+    }
+    if (guideBlocks.length) {
+      await client.appendDocumentBlocks(config.bitableGuideDocument.documentId, guideBlocks, userAccessToken)
     }
     await persistBitableLibraryConfig(config)
     invalidate()
@@ -479,8 +513,7 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
     }
   }
 
-  async function processPending(domain, analyze, { limit = 3 } = {}) {
-    if (!['books', 'movies'].includes(domain)) return { domain, processed: 0, failed: 0, results: [] }
+  async function processPending(domain, analyze, { limit = 3, analyzeInstruction } = {}) {
     if (typeof analyze !== 'function') throw new Error('bitable_analysis_provider_missing')
     if (processing.has(domain)) return processing.get(domain)
     const task = (async () => {
@@ -493,6 +526,20 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
         const recordId = text(item?.record_id, 256)
         try {
           await client.updateBitableRecords([{ record_id: recordId, fields: { [BITABLE_LIBRARY_FIELDS.status]: BITABLE_LIBRARY_STATUS.analyzing } }], table)
+          const instruction = stringField(item?.fields || {}, BITABLE_LIBRARY_FIELDS.instruction)
+          if (instruction) {
+            if (typeof analyzeInstruction !== 'function') throw new Error('bitable_ai_instruction_provider_missing')
+            const generated = await analyzeInstruction({ domain, recordId, instruction })
+            const record = validateBitableLibraryRecord(domain, generated.record)
+            const fields = fieldsFromLibraryRecord(domain, record, {
+              source: `飞书多维表格 · ${text(generated.model, 100) || 'AI'} · 自然语言写入`,
+              status: BITABLE_LIBRARY_STATUS.review,
+            })
+            await client.updateBitableRecords([{ record_id: recordId, fields }], table)
+            results.push({ recordId, ok: true, locationCount: Array.isArray(record.locations) ? record.locations.length : Number(Number.isFinite(record.lat) && Number.isFinite(record.lng)), instruction: true })
+            continue
+          }
+          if (!['books', 'movies'].includes(domain)) throw new Error('bitable_ai_instruction_required')
           const draft = draftFromBitableItem(domain, item)
           const analysis = await analyze({ domain, record: draft.record, sourceText: draft.sourceText })
           const locations = (analysis?.locations || []).filter((location) => location && typeof location === 'object').map((location) => ({
@@ -513,7 +560,7 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
         } catch (error) {
           await client.updateBitableRecords([{ record_id: recordId, fields: {
             [BITABLE_LIBRARY_FIELDS.status]: BITABLE_LIBRARY_STATUS.failed,
-            [BITABLE_LIBRARY_FIELDS.source]: `Qwen 分析失败：${text(error?.message || error, 160)}`,
+            [BITABLE_LIBRARY_FIELDS.source]: `AI 分析失败：${text(error?.message || error, 160)}`,
           } }], table).catch(() => {})
           results.push({ recordId, ok: false, error: text(error?.message || error, 500) })
         }

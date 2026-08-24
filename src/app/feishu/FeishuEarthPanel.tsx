@@ -230,7 +230,7 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
       const tableCopy = result.createdTables.length
         ? `${result.createdApp ? '已新建飞书多维表格，' : ''}已建立 ${result.createdTables.length} 张表并补齐 ${result.createdFields.length} 个字段。`
         : `四张表已存在，字段检查完成${result.createdFields.length ? `，补齐 ${result.createdFields.length} 个字段` : ''}。`;
-      setSyncMessage(`${tableCopy} 现在可以直接在飞书填写，也可以让 Frost 提交待分析记录。`);
+      setSyncMessage(`${tableCopy} 在表格新增一行，只填“AI 指令”并设为“待分析”，AI 会整理并写回“待确认”。`);
     } catch (cause) { setError(readableError(cause)); }
     finally { setCreatingLibrary(false); }
   };
@@ -326,10 +326,10 @@ export default function FeishuEarthPanel({ onClose, onPinned, onOpenSkill }: Fei
               <button type="button" onClick={createKnowledgeLibrary} disabled={creatingLibrary || !user || !credentialsReady} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-[#00ff88] py-2 text-[10px] font-black shadow-[2px_2px_0_#000] active:translate-y-px disabled:bg-black/10 disabled:opacity-50">
                 {creatingLibrary ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers3 className="h-4 w-4" />}{creatingLibrary ? '正在建立四张数据表…' : credentialsReady ? '新建你的知识库' : '配置飞书凭证后可新建'}
               </button>
-              <p className="mt-1 text-[8px] leading-4 text-black/50">自动建立书籍、电影、音乐、照片四张飞书多维表格，并补齐标题、地点、坐标、审核状态、来源和数据 JSON 等字段。</p>
+              <p className="mt-1 text-[8px] leading-4 text-black/50">自动建立书籍、电影、音乐、照片四张飞书多维表格，并补齐 AI 指令、我的笔记、地点、坐标、审核状态、来源和数据 JSON 等字段。</p>
               {libraryUrl && <a href={libraryUrl} target="_blank" rel="noreferrer" className="mt-1.5 flex items-center justify-center gap-1 border border-black bg-white py-1.5 text-[8px] font-bold">打开飞书多维表格<ExternalLink className="h-3 w-3" /></a>}
               <p className="mt-1 text-[8px] leading-4 text-black/50">可卸下比赛示例库，转到原 Skill 装载自己的 Data Pack；自动同步不会把已卸下的数据偷偷装回来。</p>
-              <p className="mt-1 border-l-2 border-black pl-1.5 text-[8px] leading-4 text-black/65">飞书新增书籍/电影后，将“审核状态”设为“待分析”；AI 补全地点后变为“待确认”，你改成“已确认”才会上地球。</p>
+              <p className="mt-1 border-l-2 border-black pl-1.5 text-[8px] leading-4 text-black/65">在任一表新增一行，只填“AI 指令”并将“审核状态”设为“待分析”；AI 会补齐结构化字段与候选地点，写回“待确认”。你改成“已确认”后才会上地球。</p>
               {syncMessage && <p className="mt-1 border border-black bg-[#d9ffec] px-1.5 py-1 text-[8px] font-bold">{syncMessage}</p>}
               <div className="mt-2 grid grid-cols-2 gap-1.5">
                 {(['books', 'movies', 'music', 'photos'] as const).map((domain) => {

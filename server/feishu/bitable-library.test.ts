@@ -124,6 +124,35 @@ describe('Feishu Bitable library adapter', () => {
     expect(payload.locations).toEqual([{ kind: 'story', place: '巴黎', lng: 2.35, lat: 48.85, confidence: 0.9 }]);
   });
 
+  it('lets an AI instruction fill a Bitable row but stops at human review', async () => {
+    const pendingItem = {
+      record_id: 'rec-ai', fields: {
+        [BITABLE_LIBRARY_FIELDS.instruction]: '帮我记录一条《百年孤独》的笔记，我很喜欢',
+        [BITABLE_LIBRARY_FIELDS.status]: BITABLE_LIBRARY_STATUS.pending,
+      },
+    };
+    const updates: any[] = [];
+    const client = {
+      listBitableRecords: async () => [pendingItem],
+      createBitableRecords: async () => ({}),
+      updateBitableRecords: async (records: unknown[], table: string) => { updates.push({ records, table }); },
+    };
+    const library = createBitableLibrary({ client, config: { bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-books' } } });
+
+    const processed = await library.processPending('books', async () => { throw new Error('legacy_analyzer_should_not_run'); }, {
+      analyzeInstruction: async ({ instruction, recordId }: { instruction: string; recordId: string }) => ({
+        model: 'qwen-test',
+        record: { ...book, id: `book:feishu-ai:${recordId}`, title: '百年孤独', note: '我很喜欢', aiInstruction: instruction },
+      }),
+    });
+
+    expect(processed).toMatchObject({ processed: 1, failed: 0, results: [{ recordId: 'rec-ai', ok: true, instruction: true }] });
+    expect(updates[0].records[0]).toMatchObject({ record_id: 'rec-ai', fields: { 审核状态: '分析中' } });
+    expect(updates[1].records[0]).toMatchObject({ record_id: 'rec-ai', fields: {
+      标题: '百年孤独', '我的笔记': '我很喜欢', 'AI 指令': '帮我记录一条《百年孤独》的笔记，我很喜欢', 审核状态: '待确认',
+    } });
+  });
+
   it('creates the four knowledge tables and their collaborative fields in one action', async () => {
     const dataDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-schema-'));
     const createdTables: string[] = [];

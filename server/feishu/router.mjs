@@ -7,6 +7,7 @@ import { FeishuTaskStore } from './task-store.mjs'
 import { createOcrProvider } from './ocr-provider.mjs'
 import { createQwenLocationExtractor } from './qwen-extractor.mjs'
 import { createQwenPhotoCurator } from './photo-curation.mjs'
+import { createQwenLibraryInstructionParser } from './qwen-library-instruction.mjs'
 import { createFeishuWriteback } from './writeback.mjs'
 import { createFeishuWorkflow } from './workflow.mjs'
 import { listFeishuSkillAdapters, planFeishuSkillTask } from './frost-skill-router.mjs'
@@ -70,6 +71,7 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
   await store.init()
   const extractor = createQwenLocationExtractor(qwenProvider, fetchImpl)
   const photoCurator = createQwenPhotoCurator(qwenProvider, fetchImpl)
+  const instructionParser = createQwenLibraryInstructionParser(qwenProvider, fetchImpl)
   const photoCurationLimiter = createSlidingWindowLimiter({ limit: 8, windowMs: 60_000 })
   const workflow = createFeishuWorkflow({
     store,
@@ -83,8 +85,10 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
     domain === 'books' ? { skillId: 'pocket.book-to-earth' } : null,
   )
   const processLibraryInbox = async (domains, options) => Promise.all(
-    domains.filter((domain) => ['books', 'movies'].includes(domain))
-      .map((domain) => library.processPending(domain, analyzeLibraryDraft, options)),
+    domains.map((domain) => library.processPending(domain, analyzeLibraryDraft, {
+      ...options,
+      analyzeInstruction: (input) => instructionParser.parse(input),
+    })),
   )
 
   const requireSession = (req) => {
@@ -263,7 +267,7 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
           queueMicrotask(() => {
             void store.audit('feishu_event_received', null, { eventId, eventType: eventBody?.header?.event_type || eventBody?.type || 'unknown', changedDomains })
             changedDomains.forEach((domain) => {
-              void library.processPending(domain, analyzeLibraryDraft, { limit: 10 })
+              void processLibraryInbox([domain], { limit: 10 })
                 .then(() => library.readDomain(domain, { force: true }))
                 .catch(() => {})
             })
