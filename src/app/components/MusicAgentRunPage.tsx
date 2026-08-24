@@ -10,7 +10,7 @@ import UserZhaIcon from './UserZhaIcon';
 import YouTubePlaybackFrame from './music/YouTubePlaybackFrame';
 import { canPlayMusicSource, directAudioUrl, musicSourceLabel, youtubeVideoId } from '../lib/music/playback';
 import { frostSubmissionFromText, type FrostSubmissionDraft } from '../feishu/frostSubmission';
-import { upsertFeishuLibraryRecords } from '../feishu/api';
+import { getFeishuConfig, upsertFeishuLibraryRecords } from '../feishu/api';
 
 const FEISHU_LIBRARY_OPEN_PATH = '/api/feishu/library/open';
 
@@ -38,6 +38,7 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
   const [input, setInput] = useState(initialInput);
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState('');
+  const [feishuLibraryUrl, setFeishuLibraryUrl] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
   // 播放器不伪造音源：声明的原曲不可用时直接告知用户。
@@ -52,6 +53,10 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
   useEffect(() => {
     void ensureMusicData();
     return subscribeMusicData(refreshMusic);
+  }, []);
+
+  useEffect(() => {
+    void getFeishuConfig().then((config) => setFeishuLibraryUrl(config.bitableAppUrl || '')).catch(() => {});
   }, []);
 
   useEffect(() => { playingRef.current = playing; }, [playing]);
@@ -232,7 +237,7 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
                   飞书多维表格草稿 · {turn.submission.draft.label}
                 </div>
                 {turn.submission.status === 'done' ? (
-                  <a href={FEISHU_LIBRARY_OPEN_PATH} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px">
+                  <a href={feishuLibraryUrl || FEISHU_LIBRARY_OPEN_PATH} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px">
                     <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 打开飞书多维表格 ↗
                   </a>
                 ) : (

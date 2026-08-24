@@ -238,7 +238,7 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
             <div className="flex flex-col gap-1 min-w-0">
               <div className="font-pixel text-[7px] tracking-[0.2em] flex items-center gap-1.5" style={{ color: t.error ? '#d23b3b' : config.accent }}>
                 {t.error ? '✕ 连接失败' : 'AGENT'}
-                {t.intent && !t.error && <span className="not-italic" style={{ color: config.accent }}>· 端侧识别意图：{t.intent}</span>}
+                {t.intent && !t.error && <span className="not-italic" style={{ color: config.accent }}>· Skill 路由：{t.intent}</span>}
               </div>
               <div className={`bg-white border-2 px-3 py-2 text-[12px] leading-relaxed whitespace-pre-wrap shadow-[2px_2px_0_rgba(0,0,0,0.85)] ${t.error ? 'border-[#d23b3b]' : 'border-black'}`}>{t.text}</div>
               {t.submission && (
@@ -286,7 +286,7 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
             </div>
           </div>
         ))}
-        {busy && <div className="font-pixel text-[8px] text-black/45 tracking-widest animate-pulse">⋯ 端侧识别 + 云端作答 ⋯</div>}
+        {busy && <div className="font-pixel text-[8px] text-black/45 tracking-widest animate-pulse">⋯ AI 正在理解与作答 ⋯</div>}
         <div ref={endRef} />
       </div>
 

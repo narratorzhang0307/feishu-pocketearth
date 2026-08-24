@@ -71,6 +71,7 @@ import RunTrace from './RunTrace';
 import PhotosChronicle from './PhotosChronicle';
 import { getFeishuPhotoAssets, subscribeFeishuPhotoAssets } from '../feishu/librarySync';
 import { reviewFeishuPhotos, upsertFeishuLibraryRecords } from '../feishu/api';
+import { requestMapFocus } from '../data/mapFocus';
 
 const PHOTO_SECTIONS = ['照片整理', '杂志', '日历'] as const;
 const ORGANIZE_TABS = ['待你决定', '找照片'] as const;
@@ -590,6 +591,24 @@ export default function PhotosTab() {
     setLightbox(null);
   };
 
+  const locateLightboxOnEarth = () => {
+    if (!lightbox) return;
+    const analysis = analyses.find((item) => item.key === lightbox.asset.key);
+    const suggestion = analysis?.chronicleIncluded
+      && analysis.curation?.location
+      && analysis.curation.location.confidence >= 0.6
+      ? analysis.curation.location
+      : null;
+    const latitude = lightbox.asset.latitude ?? suggestion?.latitude;
+    const longitude = lightbox.asset.longitude ?? suggestion?.longitude;
+    if (latitude == null || longitude == null) {
+      setMessage('这张照片还没有经你确认的地点，暂时不能定位到地球。');
+      return;
+    }
+    closeLightbox();
+    requestMapFocus(longitude, latitude, 10);
+  };
+
   const firstBurst = decisions.bursts[0] || [];
   const technicalBest = firstBurst.slice().sort((a, b) => b.technicalQuality - a.technicalQuality)[0];
   const preferenceBest = firstBurst.filter((item) => item.personalAffinity != null).sort((a, b) => (b.personalAffinity || 0) - (a.personalAffinity || 0))[0];
@@ -721,7 +740,7 @@ export default function PhotosTab() {
 
       {section === '照片整理' && runId && <div className="absolute bottom-2 left-2 right-2 z-40"><RunTrace runId={runId} collapseWhenDone /></div>}
 
-      <AnimatePresence>{lightbox && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[100] flex items-center justify-center bg-black/75 p-5" onClick={closeLightbox}><motion.div initial={{ scale: 0.94 }} animate={{ scale: 1 }} exit={{ scale: 0.94 }} className="w-full max-w-[340px] border-[3px] border-black bg-white p-2 shadow-[6px_6px_0_#7CFF6B]" onClick={(event) => event.stopPropagation()}><div className="flex items-center justify-between pb-2"><div className="truncate font-pixel text-[8px]">{lightbox.asset.fileName}</div><button onClick={closeLightbox}><X className="h-4 w-4" /></button></div><div className="aspect-square overflow-hidden border-2 border-black bg-[#d8d8d6]"><img src={lightbox.url} alt={lightbox.asset.fileName} className="h-full w-full object-contain" /></div><div className="mt-2 flex items-center justify-between text-[8px] text-black/50"><span>{dateLabel(lightbox.asset.creationTime)}</span><span>{lightbox.original ? '本次会话原片' : '≤320px 本地缩略图'}</span></div>{!lightbox.original && <button onClick={() => void openOriginal()} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-[#7CFF6B] py-2 text-[9px] font-bold"><Copy className="h-3.5 w-3.5" />{lightbox.asset.source === 'native-library' ? '在系统相册打开原片' : '查看本次选择的原片'}</button>}</motion.div></motion.div>}</AnimatePresence>
+      <AnimatePresence>{lightbox && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[100] flex items-center justify-center bg-black/75 p-5" onClick={closeLightbox}><motion.div initial={{ scale: 0.94 }} animate={{ scale: 1 }} exit={{ scale: 0.94 }} className="w-full max-w-[340px] border-[3px] border-black bg-white p-2 shadow-[6px_6px_0_#7CFF6B]" onClick={(event) => event.stopPropagation()}><div className="flex items-center justify-between pb-2"><div className="truncate font-pixel text-[8px]">{lightbox.asset.fileName}</div><button onClick={closeLightbox}><X className="h-4 w-4" /></button></div><div className="aspect-square overflow-hidden border-2 border-black bg-[#d8d8d6]"><img src={lightbox.url} alt={lightbox.asset.fileName} className="h-full w-full object-contain" /></div><div className="mt-2 flex items-center justify-between text-[8px] text-black/50"><span>{dateLabel(lightbox.asset.creationTime)}</span><span>{lightbox.original ? '本次会话原片' : '≤320px 本地缩略图'}</span></div><button onClick={locateLightboxOnEarth} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-black py-2 text-[9px] font-bold text-[#7CFF6B]"><MapPin className="h-3.5 w-3.5" />在地球定位</button>{!lightbox.original && <button onClick={() => void openOriginal()} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-[#7CFF6B] py-2 text-[9px] font-bold"><Copy className="h-3.5 w-3.5" />{lightbox.asset.source === 'native-library' ? '在系统相册打开原片' : '查看本次选择的原片'}</button>}</motion.div></motion.div>}</AnimatePresence>
     </div>
   );
 }
