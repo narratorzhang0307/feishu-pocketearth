@@ -22,6 +22,7 @@ import {
   type MusicCityPackRecord,
 } from '../lib/dataPack';
 import { selectPersonalDataSource } from '../feishu/librarySync';
+import { bootstrapFeishuLibrary, requestFeishuLibrarySync } from '../feishu/api';
 
 interface Props {
   domain: DataPackDomain;
@@ -65,8 +66,11 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   const [url, setUrl] = useState('');
   const [packs, setPacks] = useState<InstalledDataPack[]>([]);
   const [message, setMessage] = useState('');
+  const [creatingFeishuLibrary, setCreatingFeishuLibrary] = useState(false);
+  const [feishuLibraryUrl, setFeishuLibraryUrl] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const state = getDataPackState(domain);
+  const isFeishuSurface = typeof window !== 'undefined' && window.location.pathname.startsWith('/feishu');
 
   const refresh = async () => setPacks(await installedDataPacks(domain));
   useEffect(() => subscribeDataPacks(() => { render(); void refresh(); }), [domain]);
@@ -102,6 +106,25 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
     if (state.active) { remove(state.active); return; }
     if (domain !== 'mapping') selectPersonalDataSource(domain);
     void run(() => installDefaultDataPack(domain), '示例库已加载，页面数据已恢复');
+  };
+
+  const createFeishuKnowledgeLibrary = async () => {
+    if (creatingFeishuLibrary) return;
+    setCreatingFeishuLibrary(true);
+    setMessage('');
+    try {
+      const result = await bootstrapFeishuLibrary();
+      setFeishuLibraryUrl(result.appUrl);
+      await requestFeishuLibrarySync();
+      const created = result.createdTables.length
+        ? `已建立 ${result.createdTables.length} 张数据表，并补齐 ${result.createdFields.length} 个字段`
+        : `四张数据表已存在，字段检查完成${result.createdFields.length ? `，补齐 ${result.createdFields.length} 个字段` : ''}`;
+      setMessage(`${created}。现在可以直接在飞书填写，已确认的数据会同步到口袋地球。`);
+    } catch (error) {
+      setMessage(`新建知识库失败：${dataPackErrorMessage(error)}`);
+    } finally {
+      setCreatingFeishuLibrary(false);
+    }
   };
 
   const downloadAuthoringSkill = () => {
@@ -168,6 +191,25 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
           {state.status === 'loading' ? '处理中' : state.active ? `卸载${defaultActive ? '示例库' : '当前库'}` : '加载示例库'}
         </button>
       </div>
+
+      {isFeishuSurface && domain !== 'mapping' && (
+        <div className="mt-1.5 border-2 border-black bg-[#F4F0DF] p-2">
+          <button
+            type="button"
+            onClick={() => void createFeishuKnowledgeLibrary()}
+            disabled={creatingFeishuLibrary}
+            className="flex w-full items-center justify-center gap-1.5 border-2 border-black px-2 py-2 text-[10px] font-black shadow-[2px_2px_0_#000] active:translate-y-px disabled:opacity-45"
+            style={{ background: accent }}
+          >
+            {creatingFeishuLibrary ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" strokeWidth={2.7} />}
+            {creatingFeishuLibrary ? '正在建立飞书知识库…' : '新建你的知识库'}
+          </button>
+          <p className="mt-1.5 text-[8px] leading-4 text-black/55">直接创建书籍、电影、音乐、照片四张飞书多维表格，并预设标题、地点、坐标、审核状态、来源和数据 JSON 等字段。</p>
+          {feishuLibraryUrl && (
+            <a href={feishuLibraryUrl} target="_blank" rel="noreferrer" className="mt-1.5 block border border-black bg-white px-2 py-1.5 text-center text-[9px] font-bold">打开飞书多维表格 ↗</a>
+          )}
+        </div>
+      )}
 
       {(message || state.error) && !open && (
         <div
