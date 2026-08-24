@@ -105,6 +105,14 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
         sendJSON(res, publicConfig()); return true
       }
 
+      if (path === '/api/feishu/library/open' && req.method === 'GET') {
+        const appUrl = publicConfig().bitableAppUrl
+        if (!appUrl) throw new Error('bitable_library_incomplete')
+        res.writeHead(302, { Location: appUrl, 'Cache-Control': 'no-store' })
+        res.end()
+        return true
+      }
+
       if (path === '/api/feishu/auth' && req.method === 'GET') {
         sendJSON(res, publicConfig()); return true
       }

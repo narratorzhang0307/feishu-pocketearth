@@ -10,6 +10,8 @@ import UserZhaIcon from './UserZhaIcon';
 import { getFeishuConfig, upsertFeishuLibraryRecords } from '../feishu/api';
 import type { FrostSubmissionDraft } from '../feishu/frostSubmission';
 
+const FEISHU_LIBRARY_OPEN_PATH = '/api/feishu/library/open';
+
 // 通用「对话层」：各 Skill（读书 / 观影 / 城市播客）共用的对话框。
 // Qwen/MNN 端侧先做意图分类（端侧「挑」），Qwen 云脑结合脱敏上下文作答（云「写」）。
 // 数据接地：每次发送把用户该领域的记录(context)注入 system，让回答基于「你的书/你的观影/你的城市」。
@@ -246,15 +248,14 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
                     飞书多维表格草稿 · {t.submission.draft.label}
                   </div>
                   {t.submission.status === 'done' ? (
-                    feishuLibraryUrl ? (
-                      <a href={feishuLibraryUrl} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px">
-                        <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 打开飞书多维表格 ↗
-                      </a>
-                    ) : (
-                      <div className="mt-2 flex items-center gap-1.5 border-2 border-black bg-white px-2 py-1.5 font-bold text-[#168654]">
-                        <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 待分析
-                      </div>
-                    )
+                    <a
+                      href={feishuLibraryUrl || FEISHU_LIBRARY_OPEN_PATH}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px"
+                    >
+                      <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 打开飞书多维表格 ↗
+                    </a>
                   ) : (
                     <button
                       type="button"

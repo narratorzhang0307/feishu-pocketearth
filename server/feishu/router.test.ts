@@ -34,6 +34,34 @@ describe('Feishu event callback route', () => {
     expect(() => parseFeishuDocumentToken('https://example.feishu.cn/wiki/FdVzdxnSpoWp8GxiKlscJAqonvh')).toThrow('feishu_document_url_invalid');
   });
 
+  it('keeps the Bitable success card clickable even before public config reaches the client', async () => {
+    const rootDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-library-open-'));
+    const response: { status?: number; headers?: Record<string, string>; ended?: boolean } = {};
+    const router = await createFeishuRouter({
+      env: {
+        FEISHU_DATA_DIR: path.join(rootDir, 'data'),
+        FEISHU_BITABLE_APP_TOKEN: 'base-token',
+        FEISHU_BITABLE_BOOKS_TABLE_ID: 'tbl-books',
+      },
+      rootDir,
+      qwenProvider: { key: '' },
+      readBody: async () => '',
+      sendJSON: () => {},
+    });
+    const res = {
+      writeHead: (status: number, headers: Record<string, string>) => { response.status = status; response.headers = headers; },
+      end: () => { response.ended = true; },
+    };
+
+    await router.handle({ method: 'GET', headers: {} }, res, new URL('http://localhost/api/feishu/library/open'));
+
+    expect(response).toEqual({
+      status: 302,
+      headers: { Location: 'https://feishu.cn/base/base-token', 'Cache-Control': 'no-store' },
+      ended: true,
+    });
+  });
+
   it('returns an encrypted URL verification challenge after signature, decrypt and token checks', async () => {
     const rootDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-router-'));
     const encryptKey = 'event-encrypt-key';
