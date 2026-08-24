@@ -3,8 +3,18 @@ import { requestFeishuAuthCode } from './bridge';
 
 const SESSION_KEY = 'pocket-earth.feishu.session.v1';
 let sessionToken = typeof sessionStorage === 'undefined' ? '' : sessionStorage.getItem(SESSION_KEY) || '';
+let reauthentication: Promise<void> | null = null;
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+function clearFeishuSession() {
+  sessionToken = '';
+  if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(SESSION_KEY);
+}
+
+function notifyFeishuSessionExpired() {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('pocket-earth:feishu-session-expired'));
+}
+
+async function request<T>(path: string, init: RequestInit = {}, allowReauthentication = true): Promise<T> {
   if (typeof sessionStorage !== 'undefined') {
     sessionToken = sessionStorage.getItem(SESSION_KEY) || sessionToken;
   }
@@ -28,13 +38,33 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const data = await response.json().catch(() => ({})) as { error?: string } & T;
   if (!response.ok) {
     if (response.status === 401 && path !== '/api/feishu/session' && path !== '/api/feishu/auth') {
-      sessionToken = '';
-      if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(SESSION_KEY);
-      if (typeof window !== 'undefined') window.dispatchEvent(new Event('pocket-earth:feishu-session-expired'));
+      clearFeishuSession();
+      if (allowReauthentication) {
+        try {
+          await reauthenticateFeishuSession();
+          return request<T>(path, init, false);
+        } catch (error) {
+          notifyFeishuSessionExpired();
+          if (error instanceof Error) throw error;
+          throw new Error('feishu_reauthentication_failed');
+        }
+      }
+      notifyFeishuSessionExpired();
     }
     throw new Error(data.error || `HTTP ${response.status}`);
   }
   return data;
+}
+
+async function reauthenticateFeishuSession() {
+  if (!reauthentication) {
+    reauthentication = (async () => {
+      const config = await getFeishuConfig();
+      if (config.devBypassAuth) await authenticateFeishu({ devBypass: true });
+      else await authenticateFeishu({ code: await requestFeishuAuthCode(config.appId) });
+    })().finally(() => { reauthentication = null; });
+  }
+  return reauthentication;
 }
 
 export async function getFeishuConfig() {
