@@ -36,6 +36,11 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
 };
 export const bookCountry = (country: string): [number, number] | undefined => COUNTRY_COORDS[country];
 
+export function hasBookMapPoint(record: BookRecord): boolean {
+  return !!record.locations?.some((location) => Number.isFinite(location.lng) && Number.isFinite(location.lat))
+    || !!bookCountry(record.country);
+}
+
 function hashStr(value: string): number {
   let hash = 2166136261;
   for (let index = 0; index < value.length; index += 1) { hash ^= value.charCodeAt(index); hash = Math.imul(hash, 16777619); }

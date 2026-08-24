@@ -1,6 +1,6 @@
 import { useMemo, useReducer, useRef, useState, useEffect } from 'react';
 import { ChevronLeft, BookOpen, Camera, Star, MapPin, Loader2, Check, NotebookPen, X, Quote } from 'lucide-react';
-import { bookDataVersion, bookRecords, bookTotal, bookMappedTotal, bookCountry, BOOK_PLACES, bookPlace, ensureBookData, subscribeBookData, type BookRecord } from '../data/books';
+import { bookDataVersion, bookRecords, bookTotal, bookMappedTotal, hasBookMapPoint, BOOK_PLACES, bookPlace, ensureBookData, subscribeBookData, type BookRecord } from '../data/books';
 import { getUserMarksByKind, subscribeUserMarks } from '../data/userMarks';
 import { runBookAgent, confirmPin, recordRatingFix, recordPlaceFix, GEO_LABEL, GEO_COLOR, type BookDraft, type BookPhase,
   structureNotes, getNotes, addNote, removeNote, subscribeNotes, type StructuredNote } from '../lib/book';
@@ -39,7 +39,7 @@ const oneLine = (p: Plate) => {
 
 function fromRecord(b: BookRecord): Plate {
   return { key: 'bk' + b.id, title: b.title, author: b.author, place: b.country,
-    year: b.year, rating: b.rating, synopsis: b.synopsis, date: b.date, pinned: !!bookCountry(b.country) };
+    year: b.year, rating: b.rating, synopsis: b.synopsis, date: b.date, pinned: hasBookMapPoint(b) };
 }
 
 export default function BooksRunPage({ onBack, embedded }: Props) {
