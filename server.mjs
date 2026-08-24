@@ -747,7 +747,7 @@ function compressFor(accept, buf, abs, mtimeMs) {
 }
 
 async function serveStatic(req, res, pathname) {
-  applySecurityHeaders(res)
+  applySecurityHeaders(res, { allowFeishuEmbed: pathname === '/feishu' || pathname.startsWith('/feishu/') })
   let rel = decodeURIComponent(pathname).replace(/^\/+/, '')
   if (rel === '') rel = 'index.html'
   let abs = path.join(DIST, rel)

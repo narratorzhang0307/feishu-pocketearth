@@ -32,6 +32,19 @@ describe('Feishu callback security', () => {
     expect(verifyEventCallback({ ...base, now: now + 700_000, headers: { 'x-lark-request-timestamp': '1700000000', 'x-lark-request-nonce': 'nonce', 'x-lark-signature': signature } }).ok).toBe(false);
   });
 
+  it('accepts the unsigned URL verification challenge only with the configured token', () => {
+    const config = { verificationToken: 'verification-token', encryptKey: 'encrypt-key' };
+    const body = { type: 'url_verification', challenge: 'challenge-value', token: 'verification-token' };
+    expect(verifyEventCallback({ rawBody: JSON.stringify(body), body, config })).toEqual({ ok: true });
+    expect(verifyEventCallback({ rawBody: JSON.stringify({ ...body, token: 'wrong' }), body: { ...body, token: 'wrong' }, config })).toEqual({ ok: false, error: 'feishu_verification_token_invalid' });
+  });
+
+  it('defers an unsigned encrypted verification payload until after decryption', () => {
+    const config = { verificationToken: 'verification-token', encryptKey: 'encrypt-key' };
+    const body = { encrypt: encryptEvent({ challenge: 'challenge-value', token: 'verification-token' }) };
+    expect(verifyEventCallback({ rawBody: JSON.stringify(body), body, config })).toEqual({ ok: true, unsignedEncryptedVerification: true });
+  });
+
   it('decrypts an encrypted event before checking its verification token', () => {
     const body = { challenge: 'challenge-value', token: 'verification-token' };
     expect(decryptEventText('P37w+VZImNgPEO1RBhJ6RtKl7n6zymIbEG1pReEzghk=', 'test key')).toBe('hello world');

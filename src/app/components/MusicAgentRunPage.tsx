@@ -24,12 +24,13 @@ interface Turn {
 interface Props {
   onBack: () => void;
   embedded?: boolean;   // 嵌入「曲库/对话」双 tab 时隐藏自身大头，仅留 24H 动作
+  initialInput?: string;
 }
 
-export default function MusicAgentRunPage({ onBack, embedded }: Props) {
+export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' }: Props) {
   const [, refreshMusic] = useReducer((value) => value + 1, 0);
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(initialInput);
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState('');
   const endRef = useRef<HTMLDivElement>(null);

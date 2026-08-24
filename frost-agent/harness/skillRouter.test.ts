@@ -59,6 +59,14 @@ describe('Frost cross-skill router', () => {
     expect(trace.join('\n')).toContain('禁止把原文升级到云端');
   });
 
+  it('limits a surface to its explicitly exposed Skill catalog', async () => {
+    const { plan, trace } = await planFrostTask({
+      now: new Date(), surface: 'frost', userText: '把歌单按城市整理', skillIds: ['pocket.books'],
+    });
+    expect(plan).toBeNull();
+    expect(trace[0]).toContain('1 个 Skill');
+  });
+
   it('accepts a bounded Qwen plan only when every target exists', async () => {
     setFrostBrain({
       complete: async () => JSON.stringify({

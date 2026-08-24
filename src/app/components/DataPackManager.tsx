@@ -21,6 +21,7 @@ import {
   type InstalledDataPack,
   type MusicCityPackRecord,
 } from '../lib/dataPack';
+import { selectPersonalDataSource } from '../feishu/librarySync';
 
 interface Props {
   domain: DataPackDomain;
@@ -81,21 +82,25 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   const installUrl = () => {
     const value = url.trim();
     if (!value) return;
+    if (domain !== 'mapping') selectPersonalDataSource(domain);
     void run(() => installDataPackFromUrl(domain, value), '数据包已校验、安装并启用');
   };
 
   const installFile = (file?: File) => {
     if (!file) return;
+    if (domain !== 'mapping') selectPersonalDataSource(domain);
     void run(() => installDataPackFromFile(domain, file), '本地 Bundle 已校验、安装并启用');
   };
 
   const remove = (pack: InstalledDataPack) => {
+    if (domain !== 'mapping') selectPersonalDataSource(domain);
     void run(() => removeDataPack(pack.packKey), '数据包已卸载；页面数据已清空，Skill 仍然保留');
   };
 
   const toggleExamplePack = () => {
     if (state.status === 'loading') return;
     if (state.active) { remove(state.active); return; }
+    if (domain !== 'mapping') selectPersonalDataSource(domain);
     void run(() => installDefaultDataPack(domain), '示例库已加载，页面数据已恢复');
   };
 

@@ -2,12 +2,16 @@ import { createHash, randomUUID } from 'node:crypto'
 import { appendFile, mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-function sourceDigest(source) {
+function sourceDigest(source, orchestration) {
   const hash = createHash('sha256')
   hash.update(String(source.mimeType || ''))
   hash.update('\0')
   hash.update(String(source.sourceBase64 || ''))
   if (Array.isArray(source.pages)) hash.update(JSON.stringify(source.pages))
+  hash.update('\0')
+  hash.update(String(orchestration?.skillId || 'generic'))
+  hash.update('\0')
+  hash.update(String(orchestration?.adapterVersion || ''))
   return hash.digest('hex')
 }
 
@@ -82,8 +86,8 @@ export class FeishuTaskStore {
     await appendFile(path.join(this.dataDir, 'audit.jsonl'), `${JSON.stringify(record)}\n`, { encoding: 'utf8', mode: 0o600 })
   }
 
-  async create({ identity, source, userAccessToken = '' }) {
-    const sha256 = sourceDigest(source)
+  async create({ identity, source, userAccessToken = '', orchestration = null }) {
+    const sha256 = sourceDigest(source, orchestration)
     const key = `${identity.tenantKey}\0${sha256}\0${this.workflowVersion}`
     const existingId = this.idempotency.get(key)
     if (existingId) {
@@ -110,9 +114,11 @@ export class FeishuTaskStore {
       tenantId: identity.tenantKey,
       openId: identity.openId,
       createdByName: identity.name,
-      sourceType: source.mimeType === 'application/pdf' ? 'pdf' : 'image',
+      sourceType: source.mimeType === 'application/x-feishu-document' ? 'feishu_document' : source.mimeType === 'application/pdf' ? 'pdf' : 'image',
       fileName: String(source.fileName || '未命名资料').slice(0, 300),
       mimeType: source.mimeType,
+      ...(source.documentId ? { sourceDocumentId: String(source.documentId).slice(0, 128) } : {}),
+      ...(source.sourceUrl ? { sourceDocumentUrl: String(source.sourceUrl).slice(0, 2048) } : {}),
       sha256,
       workflowVersion: this.workflowVersion,
       createdAt,
@@ -125,12 +131,13 @@ export class FeishuTaskStore {
       attempt: 0,
       retryStage: null,
       sourceRequired: false,
+      ...(orchestration ? { orchestration: structuredClone(orchestration) } : {}),
       _private: { source, userAccessToken },
     }
     this.tasks.set(task.taskId, task)
     this.idempotency.set(key, task.taskId)
     await this.persist(task)
-    await this.audit('task_created', task, { sha256, workflowVersion: this.workflowVersion })
+    await this.audit('task_created', task, { sha256, workflowVersion: this.workflowVersion, skillId: orchestration?.skillId || '' })
     return { task: publicTask(task), reused: false }
   }
 

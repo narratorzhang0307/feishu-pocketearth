@@ -42,4 +42,14 @@ describe('Feishu task persistence', () => {
     expect(resumed).toMatchObject({ reused: true, resumed: true, task: { taskId: created.task.taskId, status: 'queued', sourceRequired: false } });
     expect(restored.getInternal(created.task.taskId)._private.userAccessToken).toBe('fresh-token');
   });
+
+  it('keeps Skill routes in the audit snapshot and idempotency key', async () => {
+    const dataDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-skill-'));
+    const store = new FeishuTaskStore({ dataDir, workflowVersion: 'persist-skill-v1' });
+    await store.init();
+    const book = await store.create({ identity, source, orchestration: { engine: 'frost', skillId: 'pocket.book-to-earth', skillName: 'Book-to-Earth', outputSchema: 'pocket.mapping/v1', adapterVersion: 'v1' } });
+    const generic = await store.create({ identity, source });
+    expect(book.task.taskId).not.toBe(generic.task.taskId);
+    expect(book.task).toMatchObject({ orchestration: { engine: 'frost', skillId: 'pocket.book-to-earth' } });
+  });
 });

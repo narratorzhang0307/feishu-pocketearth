@@ -32,6 +32,7 @@ describe('Data Pack demo restore', () => {
   beforeEach(() => {
     vi.resetModules();
     db.clear();
+    vi.stubGlobal('location', { href: 'https://feishu-pocketearth.test/feishu' });
     const storage = new Map<string, string>();
     vi.stubGlobal('localStorage', {
       getItem: (key: string) => storage.get(key) ?? null,

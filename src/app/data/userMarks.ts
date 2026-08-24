@@ -39,6 +39,7 @@ export function addUserMark(m: Omit<UserMark, 'createdAt'> & { createdAt?: strin
   const full: UserMark = { ...m, createdAt: m.createdAt || new Date().toISOString() };
   marks = [full, ...marks];
   persist(); emit();
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('pocket-earth:user-mark-added', { detail: full }));
   return full;
 }
 

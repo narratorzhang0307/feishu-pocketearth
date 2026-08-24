@@ -1,3 +1,5 @@
+import { normalizePages } from './ocr-provider.mjs'
+
 function reviewedLocations(input, current) {
   if (!Array.isArray(input) || input.length !== current.length) throw new Error('review_locations_incomplete')
   const byId = new Map(current.map((item) => [item.id, item]))
@@ -37,23 +39,26 @@ export function createFeishuWorkflow({ store, ocr, extractor, writeback }) {
       return
     }
     try {
+      const isFeishuDocument = task.sourceType === 'feishu_document'
       await store.update(taskId, {
         status: 'ocr_running', attempt: task.attempt + 1,
-        progress: { current: 1, total: 4, label: '飞书任务已触发 PaddleOCR / PP-Structure' },
+        progress: { current: 1, total: 4, label: isFeishuDocument ? '正在读取飞书文档原文' : '飞书任务已触发 PaddleOCR / PP-Structure' },
         error: null, retryStage: 'analysis', sourceRequired: false,
       }, 'ocr_started')
-      const ocrResult = await ocr.recognize(task._private.source)
+      const ocrResult = isFeishuDocument
+        ? { engine: 'feishu-docx-raw-content', pages: normalizePages(task._private.source.pages) }
+        : await ocr.recognize(task._private.source)
       await store.update(taskId, {
         status: 'qwen_running', ocr: { engine: ocrResult.engine, pages: ocrResult.pages.map((page) => ({ page: page.page, confidence: page.confidence, textLength: page.text.length })) },
-        progress: { current: 2, total: 4, label: 'Qwen 正在提取地点并核对页码证据' },
+        progress: { current: 2, total: 4, label: task.orchestration?.skillName ? `Frost 已调用 ${task.orchestration.skillName}，Qwen 正在核对原文证据` : 'Qwen 正在提取地点并核对页码证据' },
       }, 'qwen_started')
-      const extracted = await extractor.extract(ocrResult.pages)
+      const extracted = await extractor.extract(ocrResult.pages, task.orchestration || null)
       // 原始 Base64 只服务于 OCR。抽取完成后立即从内存释放，审核与写回只保留证据文本。
       const privateData = store.getInternal(taskId)?._private
       if (privateData) privateData.source = null
       const updated = await store.update(taskId, {
         status: 'awaiting_review', locations: extracted.locations,
-        inference: { model: extracted.model, grounded: true },
+        inference: { model: extracted.model, grounded: true, ...(task.orchestration ? { skillId: task.orchestration.skillId, outputSchema: task.orchestration.outputSchema } : {}) },
         progress: { current: 3, total: 4, label: '等待飞书用户确认原文证据与坐标' },
       }, 'review_requested')
       await safeReviewNotification(store.getInternal(updated.taskId))
@@ -71,10 +76,14 @@ export function createFeishuWorkflow({ store, ocr, extractor, writeback }) {
     return created
   }
 
-  async function confirmAndWrite(taskId, inputLocations) {
+  async function confirmAndWrite(taskId, inputLocations, userAccessToken = '') {
     const task = store.getInternal(taskId)
     if (!task) throw new Error('task_not_found')
     if (task.status !== 'awaiting_review') throw new Error('task_not_awaiting_review')
+    // Persisted task snapshots intentionally never retain OAuth tokens. After a
+    // deployment/restart, reattach the current Feishu session token at the exact
+    // side-effect boundary so source-document writeback still uses user identity.
+    if (userAccessToken && task._private) task._private.userAccessToken = String(userAccessToken)
     const locations = reviewedLocations(inputLocations, task.locations)
     if (!locations.length) throw new Error('no_approved_locations')
     await store.update(taskId, {

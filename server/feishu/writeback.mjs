@@ -8,8 +8,9 @@ const displayCoordinate = (location) => (
 
 export function buildResultCard(task, config, phase = 'review') {
   const count = task.locations?.length || 0
-  const mapUrl = `${config.webBaseUrl}/feishu?taskId=${encodeURIComponent(task.taskId)}`
+  const mapUrl = `${config.webBaseUrl}/feishu?feishuPanel=1&taskId=${encodeURIComponent(task.taskId)}`
   const completed = phase === 'completed'
+  const skillLine = task.orchestration?.skillName ? `\nFrost 路由：**${task.orchestration.skillName}**（${task.orchestration.outputSchema}）` : ''
   return {
     config: { wide_screen_mode: true },
     header: {
@@ -17,7 +18,7 @@ export function buildResultCard(task, config, phase = 'review') {
       title: { tag: 'plain_text', content: completed ? 'Pocket Earth 已写回飞书' : 'Pocket Earth 等待人工确认' },
     },
     elements: [
-      { tag: 'div', text: { tag: 'lark_md', content: `**${task.fileName}**\nQwen 已从真实 OCR 结果中找到 **${count}** 个地点。${completed ? '飞书文档已生成。' : '请核对原文证据和坐标后再写回。'}` } },
+      { tag: 'div', text: { tag: 'lark_md', content: `**${task.fileName}**${skillLine}\nQwen 已从${task.sourceType === 'feishu_document' ? '飞书文档原文' : '真实 OCR 结果'}中找到 **${count}** 个地点。${completed ? '审核结果已写回飞书。' : '请核对原文证据和坐标后再写回。'}` } },
       { tag: 'hr' },
       { tag: 'div', text: { tag: 'lark_md', content: `任务 ID：\`${task.taskId}\`\n工作流：${task.workflowVersion}` } },
       { tag: 'action', actions: [{ tag: 'button', type: 'primary', text: { tag: 'plain_text', content: completed ? '查看知识地球' : '打开审核台' }, url: mapUrl }] },
@@ -31,6 +32,7 @@ function documentBlocks(task, locations) {
     textBlock(`来源文件：${task.fileName}`),
     textBlock(`任务 ID：${task.taskId}`),
     textBlock(`证据哈希：${task.sha256}`),
+    ...(task.orchestration?.skillName ? [textBlock(`Frost 路由：${task.orchestration.skillName}｜产物协议：${task.orchestration.outputSchema}`)] : []),
     textBlock(`抽取地点：${locations.length} 个`, 4),
   ]
   for (const [index, location] of locations.entries()) {
@@ -54,10 +56,12 @@ export function createFeishuWriteback({ client, config }) {
     async write(task, locations, checkpoint = async () => {}) {
       const outputs = { ...(task.outputs || {}) }
       if (!outputs.document?.documentId) {
-        outputs.document = await client.createDocument(
-          `Pocket Earth｜${task.fileName}｜${new Date(task.createdAt).toLocaleDateString('zh-CN')}`,
-          task._private?.userAccessToken || '',
-        )
+        outputs.document = task.sourceType === 'feishu_document' && task.sourceDocumentId
+          ? { documentId: task.sourceDocumentId, url: task.sourceDocumentUrl || `https://feishu.cn/docx/${task.sourceDocumentId}`, reusedSource: true }
+          : await client.createDocument(
+            `Pocket Earth｜${task.fileName}｜${new Date(task.createdAt).toLocaleDateString('zh-CN')}`,
+            task._private?.userAccessToken || '',
+          )
         await checkpoint(outputs)
       }
       if (!outputs.documentBlocksWritten) {

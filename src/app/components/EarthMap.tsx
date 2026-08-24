@@ -7,6 +7,26 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { MAPBOX_TOKEN, MAPBOX_STYLE } from '../lib/mapbox';
 import { applyPublicEarthTheme, applySoftGreenParksTheme, setMapLabelsToChinese } from '../lib/mapboxTheme';
 
+const TOKENLESS_MAP_STYLE: mapboxgl.StyleSpecification = {
+  version: 8,
+  sources: {
+    osm: {
+      type: 'raster',
+      tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors © CARTO',
+    },
+  },
+  layers: [
+    {
+      id: 'tokenless-background',
+      type: 'background',
+      paint: { 'background-color': '#cfd8d1' },
+    },
+    { id: 'osm-raster', type: 'raster', source: 'osm' },
+  ],
+};
+
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -74,25 +94,26 @@ export default function EarthMap({
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
-    // token 缺失：直接显示提示，不创建 Map（否则只会黑屏）
-    if (!MAPBOX_TOKEN) { setMapError('缺少地图 token'); return; }
-
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    const tokenlessFallback = !MAPBOX_TOKEN;
+    if (!tokenlessFallback) mapboxgl.accessToken = MAPBOX_TOKEN;
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: theme === 'public' ? 'mapbox://styles/mapbox/light-v11' : MAPBOX_STYLE,
-      projection: theme === 'public' ? 'mercator' : 'globe',
+      style: tokenlessFallback ? TOKENLESS_MAP_STYLE : theme === 'public' ? 'mapbox://styles/mapbox/light-v11' : MAPBOX_STYLE,
+      projection: tokenlessFallback || theme === 'public' ? 'mercator' : 'globe',
       center,
       zoom,
       minZoom: theme === 'public' ? -1.25 : 0,
-      attributionControl: false,
+      attributionControl: tokenlessFallback,
       interactive,
     });
     map.current.on('load', () => setLoaded(true));
-    map.current.on('error', (e: { error?: { message?: string } }) => setMapError(e?.error?.message || '地图加载失败'));
+    map.current.on('error', (e: { error?: { message?: string } }) => {
+      if (!tokenlessFallback) setMapError(e?.error?.message || '地图加载失败');
+    });
 
     map.current.on('style.load', () => {
       if (!map.current) return;
+      if (tokenlessFallback) return;
       if (theme === 'public') applyPublicEarthTheme(map.current);
       else applySoftGreenParksTheme(map.current);
       setMapLabelsToChinese(map.current);
@@ -155,7 +176,7 @@ export default function EarthMap({
       <div
         ref={mapContainer}
         className={className}
-        style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, background: theme === 'public' ? '#c9c6bd' : '#000000' }}
+        style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, background: !MAPBOX_TOKEN || theme === 'public' ? '#cfd8d1' : '#000000' }}
       />
 
       {/* 加载中 / 失败的可见反馈（盖在黑色容器上，像素风一致） */}

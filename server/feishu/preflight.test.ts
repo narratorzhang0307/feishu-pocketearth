@@ -10,6 +10,11 @@ const completeEnv = {
   FEISHU_WEB_BASE_URL: 'https://pocket-earth.test',
   FEISHU_BITABLE_APP_TOKEN: 'base-token',
   FEISHU_BITABLE_TABLE_ID: 'table-id',
+  FEISHU_BITABLE_BOOKS_TABLE_ID: 'tbl-books',
+  FEISHU_BITABLE_MOVIES_TABLE_ID: 'tbl-movies',
+  FEISHU_BITABLE_MUSIC_TABLE_ID: 'tbl-music',
+  FEISHU_BITABLE_PHOTOS_TABLE_ID: 'tbl-photos',
+  FEISHU_BITABLE_REFRESH_TOKEN: 'refresh-token',
   PADDLE_OCR_URL: 'http://paddle-ocr:8010/v1/ocr',
   PADDLE_OCR_API_KEY: 'ocr-key',
   DASHSCOPE_API_KEY: 'qwen-key',
@@ -37,9 +42,17 @@ describe('Feishu deployment preflight', () => {
       FEISHU_MAX_UPLOAD_BYTES: '20000000',
       OCR_MAX_BYTES: '10000000',
       FEISHU_BITABLE_TABLE_ID: '',
+      FEISHU_BITABLE_PHOTOS_TABLE_ID: '',
     }, '/tmp/pocket-earth');
     expect(result.ok).toBe(false);
     expect(result.checks.filter((check: { status: string }) => check.status === 'fail').map((check: { id: string }) => check.id))
-      .toEqual(expect.arrayContaining(['public_https', 'production_auth', 'real_ocr_only', 'upload_limit', 'bitable']));
+      .toEqual(expect.arrayContaining(['public_https', 'production_auth', 'real_ocr_only', 'upload_limit', 'bitable', 'bitable_library']));
+  });
+
+  it('allows the Feishu document workflow without the optional OCR sidecar', () => {
+    const result = evaluateFeishuDeployment({ ...completeEnv, PADDLE_OCR_URL: '', PADDLE_OCR_API_KEY: '' }, '/tmp/pocket-earth');
+    expect(result.ok).toBe(true);
+    expect(result.checks.filter((check: { status: string }) => check.status === 'warn').map((check: { id: string }) => check.id))
+      .toEqual(expect.arrayContaining(['paddle_ocr', 'paddle_ocr_auth', 'upload_limit']));
   });
 });

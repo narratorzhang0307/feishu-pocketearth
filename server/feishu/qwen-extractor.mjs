@@ -1,3 +1,5 @@
+import { extractionPromptForSkill } from './frost-skill-router.mjs'
+
 function stripFence(value) {
   const text = String(value || '').trim()
   const match = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
@@ -47,9 +49,10 @@ export function parseQwenLocations(rawText, pages) {
 
 export function createQwenLocationExtractor(provider, fetchImpl = fetch) {
   return {
-    async extract(pages) {
+    async extract(pages, orchestration = null) {
       if (!provider.key) throw new Error('qwen_api_key_not_configured')
       const pageText = pages.map((page) => `<<<PAGE ${page.page}>>>\n${page.text}`).join('\n\n').slice(0, 100_000)
+      const skillPrompt = extractionPromptForSkill(orchestration)
       const response = await fetchImpl(provider.url, {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${provider.key}` },
@@ -60,11 +63,11 @@ export function createQwenLocationExtractor(provider, fetchImpl = fetch) {
           messages: [
             {
               role: 'system',
-              content: '你是可审计的地理知识抽取器。只能从用户提供的 OCR 页面中抽取明确出现的地点。evidence 必须逐字摘自对应页面；不确定的经纬度必须填 null，禁止猜测。只输出 JSON。',
+              content: skillPrompt?.system || '你是可审计的地理知识抽取器。只能从用户提供的 OCR 页面中抽取明确出现的地点。evidence 必须逐字摘自对应页面；不确定的经纬度必须填 null，禁止猜测。只输出 JSON。',
             },
             {
               role: 'user',
-              content: `从下列 OCR 页面抽取地点，返回 {"locations":[{"nameAsWritten":"原文地点名","modernName":"现代规范名","description":"与材料相关的一句话","page":1,"evidence":"页面中的连续原文证据","latitude":null,"longitude":null,"confidence":0.0}]}。没有地点则返回 {"locations":[]}。\n\n${pageText}`,
+              content: `${skillPrompt?.instruction || '从下列 OCR 页面抽取地点。confidence 必须根据原文明确程度填写 0 到 1 之间的真实判断值，禁止照抄示例占位值；能够可靠对应到现实地点时填写现代坐标，不确定时经纬度填 null。返回 {"locations":[{"nameAsWritten":"原文地点名","modernName":"现代规范名","description":"与材料相关的一句话","page":1,"evidence":"页面中的连续原文证据","latitude":39.9042,"longitude":116.4074,"confidence":0.95}]}。没有地点则返回 {"locations":[]}。'}\n\n${pageText}`,
             },
           ],
         }),

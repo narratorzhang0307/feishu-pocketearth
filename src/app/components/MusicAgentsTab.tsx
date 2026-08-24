@@ -142,6 +142,14 @@ const SYSTEM_GROUPS: { title: string; sub: string; items: AgentItem[] }[] = [{
     ],
   }];
 
+const FEISHU_SYSTEM_GROUPS: typeof SYSTEM_GROUPS = [{
+  title: 'PLAZA',
+  sub: '发现、校验、安装与回滚',
+  items: [
+    { name: 'agent-plaza', label: 'SKILLS PLAZA', role: '发现并安装适合你的 Skills；权限与版本可审计、可回滚', status: '可运行' },
+  ],
+}];
+
 const GROUPS = [SKILL_GROUPS[1], SKILL_GROUPS[0], ...SYSTEM_GROUPS];
 
 
@@ -158,22 +166,43 @@ const RUN_BY_NAME: Record<string, Running> = {
 // 兼容旧深链 id：原 Agent Forge 已按总计划迁移为 Book-to-Earth Mapping Skill。
 const HERO_BY_NAME: Record<string, Running> = { 'agent-forge': 'agentforge' };
 
-export default function MusicAgentsTab() {
+function runningForTarget(target?: string | null): Running {
+  if (!target) return null;
+  return RUN_BY_NAME[target] ?? HERO_BY_NAME[target] ?? null;
+}
+
+interface MusicAgentsTabProps {
+  feishuMode?: boolean;
+  requestedTarget?: string | null;
+  onRequestedTargetOpened?: () => void;
+}
+
+export default function MusicAgentsTab({ feishuMode = false, requestedTarget, onRequestedTargetOpened }: MusicAgentsTabProps) {
   const agentFromUrl = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('agent') : null;
   const openExhibitionFromUrl = typeof location !== 'undefined' && (
     agentFromUrl === 'exhibition' ||
     new URLSearchParams(location.search).has('recoverKiri')
   );
-  const [running, setRunning] = useState<Running>(openExhibitionFromUrl ? 'exhibition' : null);
+  const [running, setRunning] = useState<Running>(() => runningForTarget(requestedTarget) || (openExhibitionFromUrl ? 'exhibition' : null));
   const [demoRestore, setDemoRestore] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   // P2-I：已学技能（点击=路由到其目标 agent）
   const [learned, setLearned] = useState<LearnedSkill[]>(getLearnedSkills());
   useEffect(() => subscribeSkills(() => setLearned([...getLearnedSkills()])), []);
   useEffect(() => ensureBuiltinSkills(), []);
+  useEffect(() => {
+    const next = runningForTarget(requestedTarget);
+    if (!next) return;
+    setRunning(next);
+    onRequestedTargetOpened?.();
+  }, [requestedTarget, onRequestedTargetOpened]);
   // 启动 FROST heartbeat：进入控制台即定期产「主动建议」（此前 startHeartbeat 全仓零调用，建议链路静默常关）。
   // 幂等（只起一个定时器），卸载时清理。
   useEffect(() => startHeartbeat(), []);
   const runSkill = (target: string) => { const t = RUN_BY_NAME[target] ?? HERO_BY_NAME[target]; if (t) setRunning(t); };
+  const visibleGroups = feishuMode
+    ? [{ ...SKILL_GROUPS[0], title: '01 · CONTENT / WORKFLOW' }, ...FEISHU_SYSTEM_GROUPS]
+    : GROUPS;
+  const visibleSkillCount = visibleGroups.reduce((count, group) => count + group.items.length, 0);
   const restoreDemo = async () => {
     if (demoRestore === 'loading') return;
     setDemoRestore('loading');
@@ -205,7 +234,7 @@ export default function MusicAgentsTab() {
     <div className="h-full flex flex-col bg-[#EAEAEA] font-sans">
       {/* 顶栏状态 */}
       <div className="flex justify-center items-center h-[30px] px-4 border-b-2 border-black bg-[#EAEAEA] shrink-0">
-        <div className="font-pixel text-[9px] uppercase tracking-[0.14em] leading-none">POCKET EARTH · QWEN + MNN</div>
+        <div className="font-pixel text-[9px] uppercase tracking-[0.14em] leading-none">{feishuMode ? 'POCKET EARTH · FEISHU SKILLS' : 'POCKET EARTH · QWEN + MNN'}</div>
       </div>
 
       {/* 标题 */}
@@ -219,7 +248,7 @@ export default function MusicAgentsTab() {
       {/* 状态条 */}
       <div className="px-4 py-2.5 border-b-2 border-black bg-black text-[#00ff88] shrink-0">
         <div className="font-pixel text-[8px] flex justify-between items-center gap-2 tracking-widest">
-          <span>MODEL {SKILL_GROUPS[1].items.length} · CONTENT {SKILL_GROUPS[0].items.length}</span>
+          <span>{feishuMode ? `SKILLS ${visibleSkillCount} · FEISHU ROUTED` : `MODEL ${SKILL_GROUPS[1].items.length} · CONTENT ${SKILL_GROUPS[0].items.length}`}</span>
           <button onClick={restoreDemo} disabled={demoRestore === 'loading'} className="shrink-0 border border-[#00ff88]/70 px-2 py-1 text-[6px] tracking-wider disabled:opacity-40 active:bg-[#00ff88] active:text-black">
             {demoRestore === 'loading' ? '恢复中…' : demoRestore === 'done' ? '✓ 已恢复并落地图' : demoRestore === 'error' ? '恢复失败 · 重试' : '↻ 恢复三个示例库'}
           </button>
@@ -228,10 +257,10 @@ export default function MusicAgentsTab() {
 
       {/* agent 分组列表（可滚动） */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-        <SkillPublishingDeclaration />
+        {!feishuMode && <SkillPublishingDeclaration />}
 
         {/* 决赛验收入口：Agents 内容区第一位，默认展开，真实控制 Android MNN / SME2 并保存可导出证据。 */}
-        <OnDeviceBrainPanel onOpenLedger={() => setRunning('deviceevidence')} />
+        {!feishuMode && <OnDeviceBrainPanel onOpenLedger={() => setRunning('deviceevidence')} />}
 
         {/* Frost 总编排入口：理解任务后路由到已登记 Skill。 */}
         <button
@@ -244,13 +273,13 @@ export default function MusicAgentsTab() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="font-pixel text-[11px] tracking-wider text-black">FROST</div>
-            <div className="mt-0.5 text-[10.5px] leading-snug text-black/60">理解任务、调度已装备 Skills；敏感原文不会因为规划失败而自动上云。</div>
-            <div className="mt-1 font-pixel text-[6px] text-[#326B55]">LOCAL PERSONA · NOT AN IDENTITY CREDENTIAL</div>
+            <div className="mt-0.5 text-[10.5px] leading-snug text-black/60">{feishuMode ? '理解飞书中的任务并调度已装备 Skills；写回前始终由用户确认。' : '理解任务、调度已装备 Skills；敏感原文不会因为规划失败而自动上云。'}</div>
+            <div className="mt-1 font-pixel text-[6px] text-[#326B55]">{feishuMode ? 'FEISHU AUTH · SKILL ROUTER · HUMAN REVIEW' : 'LOCAL PERSONA · NOT AN IDENTITY CREDENTIAL'}</div>
           </div>
           <span className="grid min-h-11 w-[76px] shrink-0 place-items-center border-2 border-black bg-[#00ff88] px-1 text-center font-pixel text-[6px] leading-relaxed text-black">▶ RUN</span>
         </button>
 
-        {GROUPS.map((g) => (
+        {visibleGroups.map((g) => (
           <div key={g.title}>
             <div className="mb-2 border-b-2 border-black pb-1.5">
               <div className="flex items-baseline justify-between gap-2">
@@ -320,7 +349,7 @@ export default function MusicAgentsTab() {
         )}
 
         <div className="text-center text-[8px] font-pixel text-black/30 py-2 tracking-widest">
-          端侧管「挑和找」· 云管「写」
+          {feishuMode ? '飞书输入 · Frost 路由 · Skills 执行 · 用户确认' : '端侧管「挑和找」· 云管「写」'}
         </div>
       </div>
     </div>

@@ -180,7 +180,7 @@ export default function FeishuApp() {
     try {
       const result = await createFeishuTask({ fileName: file.name, mimeType: file.type, sourceBase64: await fileBase64(file) });
       setTask(result.task);
-      history.replaceState(null, '', `/feishu?taskId=${encodeURIComponent(result.task.taskId)}`);
+      history.replaceState(null, '', `/feishu/workflow?taskId=${encodeURIComponent(result.task.taskId)}`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally { setBusy(false); }
@@ -211,7 +211,7 @@ export default function FeishuApp() {
     setFile(null);
     setReviewed([]);
     setError('');
-    history.replaceState(null, '', '/feishu');
+    history.replaceState(null, '', '/feishu/workflow');
   };
 
   if (authenticating) return (

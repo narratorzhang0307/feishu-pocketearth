@@ -8,6 +8,7 @@ import { saveCase } from '../council/courtroom/caseStore';
 import type { Verdict, CourtStage } from '../council/courtroom/types';
 import { addUserMark, spreadCoord } from '../data/userMarks';
 import { geocodeCity } from '../data/geoStickers';
+import { useFrostTaskHandoff } from './FrostTaskHandoffFrame';
 
 // 圆桌议事运行页（我们的像素风）：选谁入场 + 选讨论模式 + 出题 → 多 agent 轮流发言。
 // 机制是频道群聊式的多 agent 同台（见 council/engine.ts），UI 完全是 Pocket Earth 风格；与各 agent 解耦。
@@ -16,11 +17,12 @@ const ACCENT = '#00ff88';
 interface Props { onBack: () => void }
 
 export default function CouncilPage({ onBack }: Props) {
+  const handoffObjective = useFrostTaskHandoff()?.objective || '';
   const [phase, setPhase] = useState<'setup' | 'run'>('setup');
   const [selected, setSelected] = useState<Set<string>>(() => new Set(['bookworm', 'reel', 'vinyl', 'contra']));
   const [sides, setSides] = useState<Record<string, 'pro' | 'con'>>({});   // 法庭：用户手动指定的正反方覆盖（未指定者按位置默认）
   const [mode, setMode] = useState<CouncilMode>('roundtable');
-  const [topic, setTopic] = useState('');
+  const [topic, setTopic] = useState(handoffObjective);
   const [rounds, setRounds] = useState(2);
   const [backend, setBackend] = useState<CouncilBackend>('cloud');
   const [messages, setMessages] = useState<CouncilMsg[]>([]);

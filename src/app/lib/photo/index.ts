@@ -17,6 +17,9 @@ export {
 export type { PhotoAuthorizationTransition, PhotoOriginalOpenMode } from './libraryBridge';
 export { buildPhotoChronicleData } from './chronicleData';
 export type { PhotoChronicleData } from './chronicleData';
+export { buildCuratedPhotoAssets, canonicalPhotoId, curatedPhotoRecord, photoCurationInput, photoDataUrl } from './curation';
+export { submitPhotoOrganizerRequest, consumePhotoOrganizerRequest, subscribePhotoOrganizerRequests } from './inbox';
+export type { PhotoOrganizerRequest } from './inbox';
 export {
   getIndexedAssets, clearPhotoLibraryIndex, upsertIndexedAssets, getPhotoIndexCheckpoint,
   savePhotoIndexCheckpoint, clearPhotoIndexCheckpoint, reconcileFullLibrarySnapshot,
@@ -24,7 +27,7 @@ export {
 } from './libraryStore';
 export type { PhotoLocationAuthorization } from './photoLocationBridge';
 export { checkPhotoLocationAuthorization, requestPhotoLocationAuthorization, attachPhotoLocations } from './photoLocationBridge';
-export type { PhotoRadarAnalysis, PhotoDecisionGroups } from './radarTypes';
+export type { PhotoRadarAnalysis, PhotoDecisionGroups, PhotoCurationEvidence } from './radarTypes';
 export { getRadarAnalyses, putRadarAnalysis, putRadarAnalyses, clearPhotoRadar } from './radarStore';
 export { analyzePhotoAssets, enrichRadarWithQwen, extractRadarDocument, needsPhotoRadarAnalysis, PHOTO_RADAR_ALGORITHM_VERSION } from './radarPipeline';
 export { buildPhotoDecisionGroups } from './decisions';

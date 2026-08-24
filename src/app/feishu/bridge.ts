@@ -1,17 +1,16 @@
-type AccessResult = { code?: string };
-type AccessError = { errMsg?: string; errCode?: number };
+type AuthCodeResult = { code?: string };
+type AuthCodeError = { errMsg?: string; errCode?: number };
 
 type FeishuBridgeWindow = Window & {
   h5sdk?: {
     ready: (callback: () => void) => void;
-    error?: (callback: (error: AccessError) => void) => void;
+    error?: (callback: (error: AuthCodeError) => void) => void;
   };
   tt?: {
-    requestAccess: (options: {
-      appID: string;
-      scopeList: string[];
-      success: (result: AccessResult) => void;
-      fail: (error: AccessError) => void;
+    requestAuthCode?: (options: {
+      appId: string;
+      success: (result: AuthCodeResult) => void;
+      fail: (error: AuthCodeError) => void;
     }) => void;
   };
 };
@@ -43,20 +42,19 @@ export async function requestFeishuAuthCode(appId: string) {
   const feishuWindow = window as FeishuBridgeWindow;
   return new Promise<string>((resolve, reject) => {
     const timer = window.setTimeout(() => reject(new Error('feishu_jssdk_timeout')), 15_000);
-    const fail = (error: AccessError) => {
+    const fail = (error: AuthCodeError) => {
       window.clearTimeout(timer);
-      reject(new Error(error.errMsg || `feishu_request_access_${error.errCode || 'failed'}`));
+      reject(new Error(error.errMsg || `feishu_request_auth_code_${error.errCode || 'failed'}`));
     };
     feishuWindow.h5sdk?.error?.(fail);
     feishuWindow.h5sdk?.ready(() => {
-      if (!feishuWindow.tt) return fail({ errMsg: 'feishu_tt_unavailable' });
-      feishuWindow.tt.requestAccess({
-        appID: appId,
-        scopeList: [],
+      if (!feishuWindow.tt?.requestAuthCode) return fail({ errMsg: 'feishu_request_auth_code_unavailable' });
+      feishuWindow.tt.requestAuthCode({
+        appId,
         success: (result) => {
           window.clearTimeout(timer);
           if (result.code) resolve(result.code);
-          else reject(new Error('feishu_auth_code_missing'));
+          else fail({ errMsg: 'feishu_auth_code_missing' });
         },
         fail,
       });

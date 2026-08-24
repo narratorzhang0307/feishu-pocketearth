@@ -266,6 +266,14 @@ export default defineConfig(({ mode }) => {
             if (id.includes('mapbox-gl')) return 'mapbox'
             if (id.includes('/react') || id.includes('react-dom') || id.includes('scheduler')) return 'react'
             if (id.includes('motion') || id.includes('framer')) return 'motion'
+            // 飞书 WebView 对弱网首屏有超时保护。以下能力都只在用户进入相应流程后才需要，
+            // 不能和首页共用一个 vendor 包，否则 PDF/压缩/EXIF 会让空白页持续几十秒。
+            if (id.includes('pdfjs-dist')) return 'pdfjs'
+            if (id.includes('jszip')) return 'jszip'
+            if (id.includes('fflate')) return 'fflate'
+            if (id.includes('exifr')) return 'exifr'
+            if (id.includes('@capacitor') || id.includes('@capgo')) return 'capacitor'
+            if (id.includes('lucide-react')) return 'icons'
             return 'vendor'
           },
         },

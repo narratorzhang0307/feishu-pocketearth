@@ -342,7 +342,9 @@ async function qwenPlan(ctx: FrostContext, catalog: RoutableSkill[]): Promise<Fr
 export async function planFrostTask(ctx: FrostContext): Promise<{ plan: FrostPlan | null; trace: string[] }> {
   const started = nowMs();
   const text = (ctx.userText || '').trim();
-  const catalog = listRoutableSkills();
+  const allSkills = listRoutableSkills();
+  const allowed = ctx.skillIds?.length ? new Set(ctx.skillIds) : null;
+  const catalog = allowed ? allSkills.filter((skill) => allowed.has(skill.id)) : allSkills;
   const catalogMs = elapsed(started);
   const localStart = nowMs();
   const local = localPlan(text, catalog);

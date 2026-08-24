@@ -10,9 +10,16 @@ export const SECURITY_HEADERS = Object.freeze({
   'cross-origin-opener-policy': 'same-origin',
 })
 
-export function applySecurityHeaders(res) {
+const FEISHU_FRAME_ANCESTORS = "frame-ancestors 'self' https://feishu.cn https://*.feishu.cn https://larksuite.com https://*.larksuite.com"
+
+export function applySecurityHeaders(res, { allowFeishuEmbed = false } = {}) {
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+    if (allowFeishuEmbed && name === 'x-frame-options') continue
     if (!res.hasHeader(name)) res.setHeader(name, value)
+  }
+  if (allowFeishuEmbed) {
+    res.removeHeader('x-frame-options')
+    res.setHeader('content-security-policy', FEISHU_FRAME_ANCESTORS)
   }
 }
 

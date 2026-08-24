@@ -16,6 +16,26 @@ const location = {
 };
 
 describe('Feishu writeback checkpoints', () => {
+  it('appends confirmed knowledge to the source Feishu document', async () => {
+    const client = {
+      createDocument: vi.fn(),
+      appendDocumentBlocks: vi.fn(async () => ({})),
+      createBitableRecords: vi.fn(async () => ({ skipped: true })),
+      sendInteractiveCard: vi.fn(async () => ({ skipped: true })),
+    };
+    const writeback = createFeishuWriteback({ client, config: { webBaseUrl: 'http://localhost:4173' } });
+    const outputs = await writeback.write({
+      taskId: 'task-doc', openId: 'open-1', fileName: '杭州游记', createdAt: '2026-08-20T00:00:00.000Z',
+      workflowVersion: 'test-v1', sha256: 'sha256', sourceType: 'feishu_document', sourceDocumentId: 'doc-source',
+      sourceDocumentUrl: 'https://example.feishu.cn/docx/doc-source', outputs: {}, _private: { userAccessToken: 'user-token' },
+      orchestration: { engine: 'frost', skillId: 'pocket.book-to-earth', skillName: 'Book-to-Earth', outputSchema: 'pocket.mapping/v1' },
+    }, [location]);
+    expect(client.createDocument).not.toHaveBeenCalled();
+    expect(client.appendDocumentBlocks).toHaveBeenCalledWith('doc-source', expect.any(Array), 'user-token');
+    expect(JSON.stringify(client.appendDocumentBlocks.mock.calls[0][1])).toContain('Frost 路由：Book-to-Earth');
+    expect(outputs.document).toMatchObject({ documentId: 'doc-source', reusedSource: true });
+  });
+
   it('resumes after completed document steps without duplicating writes', async () => {
     const client = {
       createDocument: vi.fn(),

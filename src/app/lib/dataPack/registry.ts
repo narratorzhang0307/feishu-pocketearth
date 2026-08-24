@@ -9,6 +9,9 @@ import {
   validateRecords,
 } from './protocol';
 import {
+  DATA_PACK_PROTOCOL,
+  DATA_PACK_RUNTIME_VERSION,
+  dataPackAdapterForDomain,
   packKeyOf,
   type DataPackDomain,
   type DataPackRecord,
@@ -22,9 +25,11 @@ const DISABLED_KEY = 'pe.dataPacks.disabled.v1';
 const MAX_DOWNLOAD_BYTES = 50 * 1024 * 1024;
 
 export const DEFAULT_DATA_PACK_URLS: Record<DataPackDomain, string> = {
-  books: import.meta.env.VITE_BOOKS_DATA_PACK_URL || 'https://last-night-on-earth.oss-cn-hangzhou.aliyuncs.com/pocket-earth/data-packs/releases/20260810-books-movies-v1/pocket-earth-books/1.0.0/manifest.json',
-  movies: import.meta.env.VITE_MOVIES_DATA_PACK_URL || 'https://last-night-on-earth.oss-cn-hangzhou.aliyuncs.com/pocket-earth/data-packs/releases/20260810-books-movies-v1/pocket-earth-movies/1.0.0/manifest.json',
-  music: import.meta.env.VITE_MUSIC_DATA_PACK_URL || 'https://last-night-on-earth.oss-cn-hangzhou.aliyuncs.com/pocket-earth/data-packs/releases/20260810-music-v1/pocket-earth-music/1.0.0/manifest.json',
+  // Feishu Web App uses the same HTTPS origin for manifests and chunks. This avoids a CORS/network
+  // dependency on the legacy OSS release while preserving env overrides for dedicated deployments.
+  books: import.meta.env.VITE_BOOKS_DATA_PACK_URL || '/data-packs/pocket-earth-books/1.0.0/manifest.json',
+  movies: import.meta.env.VITE_MOVIES_DATA_PACK_URL || '/data-packs/pocket-earth-movies/1.0.0/manifest.json',
+  music: import.meta.env.VITE_MUSIC_DATA_PACK_URL || '/data-packs/pocket-earth-music/1.0.0/manifest.json',
   mapping: import.meta.env.VITE_MAPPING_DATA_PACK_URL || '',
 };
 
@@ -198,6 +203,48 @@ export async function installDataPackFromFile(domain: DataPackDomain, file: File
   setState(domain, { status: 'loading', error: '' });
   try { return await persistAndActivate(await loadFromFile(file, domain)); }
   catch (error) {
+    setState(domain, { status: states[domain].active ? 'ready' : 'error', error: dataPackErrorMessage(error) });
+    throw error;
+  }
+}
+
+/** Install a server-validated record projection (for example Feishu Bitable) into the normal Data Pack runtime. */
+export async function installDataPackRecords(
+  domain: DataPackDomain,
+  values: unknown[],
+  options: { version: string; source: string; name?: string },
+): Promise<InstalledDataPack> {
+  setState(domain, { status: 'loading', error: '' });
+  try {
+    const records = validateRecords(domain, values);
+    const adapter = dataPackAdapterForDomain(domain);
+    const revision = Number.parseInt(options.version.slice(0, 8), 16);
+    const version = `1.0.${Number.isFinite(revision) ? revision : Date.now()}`;
+    const generatedAt = new Date().toISOString();
+    return await persistAndActivate({
+      packKey: `feishu-bitable-${domain}@${version}`,
+      domain,
+      manifest: {
+        protocol: DATA_PACK_PROTOCOL,
+        identity: {
+          id: `feishu-bitable-${domain}`,
+          name: options.name || `飞书多维表格 · ${domain}`,
+          version,
+          author: 'Pocket Earth × 飞书',
+          description: '由飞书多维表格自动同步、经原 Pocket Data Pack Schema 校验的运行时投影。',
+        },
+        schema: { name: adapter.schemaName, version: adapter.schemaVersion, record_count: records.length },
+        compatibility: { skills: [adapter.skillId], runtime_min: DATA_PACK_RUNTIME_VERSION },
+        privacy: 'restricted',
+        provenance: { source: options.source, license: 'private-collaborative', generated_at: generatedAt },
+        distribution: { mode: 'inline' },
+        records,
+      },
+      records,
+      installedAt: generatedAt,
+      source: options.source,
+    });
+  } catch (error) {
     setState(domain, { status: states[domain].active ? 'ready' : 'error', error: dataPackErrorMessage(error) });
     throw error;
   }

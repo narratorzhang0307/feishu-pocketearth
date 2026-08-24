@@ -14,6 +14,7 @@ import {
   getTravelPlannerRuntimeStatus,
   type TravelPlannerRuntimeStatus,
 } from '../../../frost-agent/edge/httpQwenEdge';
+import { useFrostTaskHandoff } from './FrostTaskHandoffFrame';
 
 // travel-agent 运行页 —— 行程 agent（薄 UI，业务逻辑在 src/app/lib/travel/*）。
 // B 线（规划）：选目的地+喜好 → 三级排序（云脑按你跨域口味挑 / 端侧真后端 / 本地兜底）→ 逐日行程 → 钉星球。
@@ -29,15 +30,18 @@ const CROWD_LABEL = { low: '避开人潮', medium: '适中热度', high: '接受
 const MIX_LABEL = { balanced: '主题交错', primary_secondary: '主次分明', theme_day: '主题分天' } as const;
 
 export default function TravelRunPage({ onBack }: Props) {
+  const handoffObjective = useFrostTaskHandoff()?.objective || '';
+  const routedDestination = DESTINATIONS.find((destination) => handoffObjective.includes(destination.name))?.name;
+  const routedDays = handoffObjective.match(/([123])\s*天/)?.[1];
   const [, force] = useReducer((x) => x + 1, 0);
   useEffect(() => subscribeUserMarks(force), []);
 
-  const [destName, setDestName] = useState(DESTINATIONS[0].name);
+  const [destName, setDestName] = useState(routedDestination || DESTINATIONS[0].name);
   const [prefs, setPrefs] = useState<Set<Pref>>(() => new Set<Pref>(['美食', '小众']));
-  const [days, setDays] = useState(2);
+  const [days, setDays] = useState(routedDays ? Number(routedDays) : 2);
   const [date, setDate] = useState(today());       // 出行日期：驱动逐日天气 + 票务深链
   const [fromCity, setFromCity] = useState('');    // 出发城市（选填）：查票深链 + 余票/参考价
-  const [requestText, setRequestText] = useState('少走回头路，路线松弛一点。');
+  const [requestText, setRequestText] = useState(handoffObjective || '少走回头路，路线松弛一点。');
   const [runtimeStatus, setRuntimeStatus] = useState<TravelPlannerRuntimeStatus>({
     phase: 'checking', engine: 'stub', baseReady: false, adapterReady: false,
     baseModel: 'Qwen3-VL-2B-Instruct', adapter: 'travel-planner', runtime: 'MNN 3.6.1',

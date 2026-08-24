@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import MusicLibraryView from './MusicLibraryView';
 import MusicAgentRunPage from './MusicAgentRunPage';
+import { useFrostTaskHandoff } from './FrostTaskHandoffFrame';
 
 // music-agent 容器：顶部两个 tab —— 左「曲库」(全部歌曲条目，可按地域/城市/歌手/流派归类)，
 // 右「对话」(原电台 / 音乐 agent 对话框，行为完全保留)。两个 tab 都常驻挂载，切换不丢对话与播放状态。
@@ -10,7 +11,8 @@ interface Props { onBack: () => void }
 type Tab = 'library' | 'chat';
 
 export default function MusicAgentPage({ onBack }: Props) {
-  const [tab, setTab] = useState<Tab>('library');
+  const handoffObjective = useFrostTaskHandoff()?.objective || '';
+  const [tab, setTab] = useState<Tab>(handoffObjective ? 'chat' : 'library');
 
   return (
     <div className="h-full flex flex-col bg-[#EAEAEA] overflow-hidden">
@@ -33,7 +35,7 @@ export default function MusicAgentPage({ onBack }: Props) {
       {/* 两 tab 常驻挂载，靠显隐切换以保留各自状态 */}
       <div className="flex-1 min-h-0 relative">
         <div className={`absolute inset-0 ${tab === 'library' ? '' : 'hidden'}`}><MusicLibraryView /></div>
-        <div className={`absolute inset-0 ${tab === 'chat' ? '' : 'hidden'}`}><MusicAgentRunPage onBack={onBack} embedded /></div>
+        <div className={`absolute inset-0 ${tab === 'chat' ? '' : 'hidden'}`}><MusicAgentRunPage onBack={onBack} embedded initialInput={handoffObjective} /></div>
       </div>
     </div>
   );

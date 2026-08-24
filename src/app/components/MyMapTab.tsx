@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import EarthMap from './EarthMap';
 import AmapEarth from './AmapEarth';
@@ -13,7 +13,7 @@ import { showcasePhotos } from '../data/photos';
 import { getMoodStickers, addMoodSticker, removeMoodSticker, updateMoodStickerPos, commitStickers, seedStickers, subscribeMood, resolveMoodPlace, pickStickerColor, pickRot } from '../data/geoStickers';
 import { applyOverride, setOverride, commitOverrides, subscribeOverrides } from '../data/markerOverrides';
 import { consumePendingMapFocus, subscribeMapFocus } from '../data/mapFocus';
-import { Plus, X, Play, Pause } from 'lucide-react';
+import { FileText, Plus, X, Play, Pause } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import MapLegend, { type PackLayerStatus } from './MapLegend';
 import MarkerDetail, { type MarkerDetailData } from './MarkerDetail';
@@ -142,7 +142,11 @@ function resolveDetail(id: string, kind: MarkerKind, label: string): MarkerDetai
 
 interface MyMapTabProps {
   onViewInAR?: () => void;
+  feishuMode?: boolean;
+  onOpenSkill?: (target: string) => void;
 }
+
+const FeishuEarthPanel = lazy(() => import('../feishu/FeishuEarthPanel'));
 
 // 标定点：固定到西湖周边真实经纬度（WGS84，源自 OpenStreetMap / Wikidata）。
 // 其中的「文字卡片」现已解耦为可拖动便贴（见 seedStickers）；此处保留绿点 + 照片 + 连线。
@@ -224,6 +228,9 @@ export default function MyMapTab(_props: MyMapTabProps) {
   const [moodText, setMoodText] = useState('');
   const [moodBusy, setMoodBusy] = useState(false);
   const [moodStyle, setMoodStyle] = useState<'color' | 'card'>('color'); // 「+」可产出两种便贴：彩色 / 白卡片
+  const [feishuOpen, setFeishuOpen] = useState(() => _props.feishuMode === true && (
+    new URLSearchParams(location.search).get('feishuPanel') === '1' || new URLSearchParams(location.search).has('taskId')
+  ));
   // 点击标记后的详情弹层
   const [selected, setSelected] = useState<MarkerDetailData | null>(null);
   const [view3D, setView3D] = useState<{ url: string; format: string } | null>(null);   // 地球点开展品 → 全屏 3D（mesh/高斯泼溅由 Viewer3D 按 format 分发）
@@ -707,17 +714,34 @@ export default function MyMapTab(_props: MyMapTabProps) {
   return (
     <div className="flex flex-col h-full bg-[#EAEAEA] font-sans relative overflow-hidden">
       {/* Top Bar Status */}
-      <div className="flex justify-center items-center h-[30px] px-4 border-b-2 border-black bg-[#EAEAEA]">
+      <div className="relative flex justify-center items-center h-[30px] px-4 border-b-2 border-black bg-[#EAEAEA]">
         <div className="font-pixel text-[10.4px] uppercase tracking-widest leading-none">POCKET EARTH</div>
       </div>
 
       {/* Header Area */}
-      <div className="px-4 py-4 border-b-2 border-black bg-white">
-        <h1 className="font-pixel text-xl uppercase tracking-wider mb-2">MY MAP</h1>
-        <p className="text-xs text-black/70 tracking-wide font-medium">
-          城市属于我们<br />
-          <span className="text-black/70 text-[9px] font-pixel block mt-1">The city, filling with your poems.</span>
-        </p>
+      <div className="flex items-center justify-between gap-3 border-b-2 border-black bg-white px-4 py-4">
+        <div className="min-w-0">
+          <h1 className="mb-2 font-pixel text-xl uppercase tracking-wider">MY MAP</h1>
+          <p className="text-xs font-medium tracking-wide text-black/70">
+            城市属于我们<br />
+            <span className="mt-1 block font-pixel text-[9px] text-black/70">The city, filling with your poems.</span>
+          </p>
+        </div>
+        {_props.feishuMode && (
+          <button
+            type="button"
+            onClick={() => setFeishuOpen(true)}
+            className="flex h-[54px] w-[128px] shrink-0 items-center justify-center gap-2 border-2 border-black bg-[#00ff88] px-3 text-black shadow-[3px_3px_0_#000] transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_#000]"
+            title="打开飞书知识协作入口"
+            aria-label="打开飞书知识协作入口"
+          >
+            <FileText className="h-5 w-5" strokeWidth={3} />
+            <span className="flex flex-col items-start leading-none">
+              <span className="font-pixel text-[11px]">飞书</span>
+              <span className="mt-1 text-[8px] font-black tracking-wide">知识协作入口</span>
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Stat Strip */}
@@ -1031,6 +1055,20 @@ export default function MyMapTab(_props: MyMapTabProps) {
           onRemovePlanet={removePlanet}
         />
       </div>
+
+      {_props.feishuMode && feishuOpen && (
+        <Suspense fallback={null}>
+          <FeishuEarthPanel
+            onClose={() => setFeishuOpen(false)}
+            onOpenSkill={(target) => _props.onOpenSkill?.(target)}
+            onPinned={(location) => {
+              refreshMapSources();
+              setVisibleKinds((current) => new Set([...current, 'custom']));
+              if (map && location) map.flyTo({ center: [location.longitude, location.latitude], zoom: Math.max(map.getZoom(), 5.5) });
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* 标记详情弹层（照片灯箱 / 电影票根 / 藏书票 / 行程足迹 / 音乐城市） */}
       <AnimatePresence>

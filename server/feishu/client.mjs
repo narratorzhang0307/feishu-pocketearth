@@ -81,6 +81,18 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     }
   }
 
+  async function getDocumentRawContent(documentId, userAccessToken = '') {
+    const token = userAccessToken || await cachedToken('tenant')
+    const data = await request(`/docx/v1/documents/${encodeURIComponent(documentId)}/raw_content`, {
+      token,
+      timeoutMs: 30000,
+      operation: 'get_feishu_document_raw_content',
+    })
+    const content = safeText(data?.data?.content, 200_000)
+    if (!content) throw new Error('feishu_document_content_empty')
+    return content
+  }
+
   async function createDocument(title, userAccessToken = '') {
     const token = userAccessToken || await cachedToken('tenant')
     const data = await request('/docx/v1/documents', {
@@ -106,16 +118,131 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     })
   }
 
-  async function createBitableRecords(records) {
-    if (!config.bitableAppToken || !config.bitableTableId) return { skipped: true, reason: 'bitable_not_configured' }
+  async function createBitableRecords(records, tableId = config.bitableTableId) {
+    if (!config.bitableAppToken || !tableId) return { skipped: true, reason: 'bitable_not_configured' }
     const token = await cachedToken('tenant')
-    const data = await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables/${encodeURIComponent(config.bitableTableId)}/records/batch_create`, {
+    const created = []
+    for (let offset = 0; offset < records.length; offset += 500) {
+      const chunk = records.slice(offset, offset + 500)
+      const data = await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables/${encodeURIComponent(tableId)}/records/batch_create`, {
+        method: 'POST', token,
+        body: { records: chunk.map((fields) => ({ fields })) },
+        timeoutMs: 30000,
+        operation: 'create_feishu_bitable_records',
+      })
+      created.push(...(data?.data?.records || []))
+    }
+    return { skipped: false, records: created }
+  }
+
+  async function updateBitableRecords(records, tableId = config.bitableTableId) {
+    if (!config.bitableAppToken || !tableId) return { skipped: true, reason: 'bitable_not_configured' }
+    const token = await cachedToken('tenant')
+    const updated = []
+    for (let offset = 0; offset < records.length; offset += 500) {
+      const data = await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables/${encodeURIComponent(tableId)}/records/batch_update`, {
+        method: 'POST', token,
+        body: { records: records.slice(offset, offset + 500) },
+        timeoutMs: 30000,
+        operation: 'update_feishu_bitable_records',
+      })
+      updated.push(...(data?.data?.records || []))
+    }
+    return { skipped: false, records: updated }
+  }
+
+  async function deleteBitableRecords(recordIds, tableId = config.bitableTableId) {
+    if (!config.bitableAppToken || !tableId) return { skipped: true, reason: 'bitable_not_configured' }
+    const ids = [...new Set((Array.isArray(recordIds) ? recordIds : []).map((value) => safeText(value, 256)).filter(Boolean))]
+    if (!ids.length) return { skipped: false, deleted: 0 }
+    const token = await cachedToken('tenant')
+    let deleted = 0
+    for (let offset = 0; offset < ids.length; offset += 500) {
+      const chunk = ids.slice(offset, offset + 500)
+      await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables/${encodeURIComponent(tableId)}/records/batch_delete`, {
+        method: 'POST', token,
+        body: { records: chunk },
+        timeoutMs: 30000,
+        operation: 'delete_feishu_bitable_records',
+      })
+      deleted += chunk.length
+    }
+    return { skipped: false, deleted }
+  }
+
+  async function listBitableRecords(tableId = config.bitableTableId) {
+    if (!config.bitableAppToken || !tableId) throw new Error('bitable_not_configured')
+    const token = await cachedToken('tenant')
+    const items = []
+    let pageToken = ''
+    do {
+      const query = new URLSearchParams({ page_size: '500' })
+      if (pageToken) query.set('page_token', pageToken)
+      const data = await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables/${encodeURIComponent(tableId)}/records?${query}`, {
+        token,
+        timeoutMs: 30000,
+        operation: 'list_feishu_bitable_records',
+      })
+      items.push(...(data?.data?.items || []))
+      pageToken = data?.data?.has_more ? safeText(data?.data?.page_token, 512) : ''
+    } while (pageToken)
+    return items
+  }
+
+  async function createBitableTable(name) {
+    if (!config.bitableAppToken) throw new Error('bitable_not_configured')
+    const token = await cachedToken('tenant')
+    const data = await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables`, {
       method: 'POST', token,
-      body: { records: records.map((fields) => ({ fields })) },
+      body: { table: { name: safeText(name, 100) } },
       timeoutMs: 30000,
-      operation: 'create_feishu_bitable_records',
+      operation: 'create_feishu_bitable_table',
     })
-    return { skipped: false, records: data?.data?.records || [] }
+    const tableId = data?.data?.table_id || data?.data?.table?.table_id
+    if (!tableId) throw new Error('bitable_table_id_missing')
+    return { tableId }
+  }
+
+  async function listBitableTables() {
+    if (!config.bitableAppToken) throw new Error('bitable_not_configured')
+    const token = await cachedToken('tenant')
+    const tables = []
+    let pageToken = ''
+    do {
+      const query = new URLSearchParams({ page_size: '100' })
+      if (pageToken) query.set('page_token', pageToken)
+      const data = await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables?${query}`, {
+        token, operation: 'list_feishu_bitable_tables',
+      })
+      tables.push(...(data?.data?.items || []))
+      pageToken = data?.data?.has_more ? safeText(data?.data?.page_token, 512) : ''
+    } while (pageToken)
+    return tables
+  }
+
+  async function listBitableFields(tableId) {
+    const token = await cachedToken('tenant')
+    const fields = []
+    let pageToken = ''
+    do {
+      const query = new URLSearchParams({ page_size: '100' })
+      if (pageToken) query.set('page_token', pageToken)
+      const data = await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables/${encodeURIComponent(tableId)}/fields?${query}`, {
+        token, operation: 'list_feishu_bitable_fields',
+      })
+      fields.push(...(data?.data?.items || []))
+      pageToken = data?.data?.has_more ? safeText(data?.data?.page_token, 512) : ''
+    } while (pageToken)
+    return fields
+  }
+
+  async function createBitableField(tableId, fieldName, type = 1) {
+    const token = await cachedToken('tenant')
+    return request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables/${encodeURIComponent(tableId)}/fields`, {
+      method: 'POST', token,
+      body: { field_name: safeText(fieldName, 100), type },
+      operation: 'create_feishu_bitable_field',
+    })
   }
 
   async function sendInteractiveCard(openId, card) {
@@ -132,17 +259,27 @@ export function createFeishuClient(config, fetchImpl = fetch) {
   return {
     exchangeAuthCode,
     getUserInfo,
+    getDocumentRawContent,
     createDocument,
     appendDocumentBlocks,
     createBitableRecords,
+    updateBitableRecords,
+    deleteBitableRecords,
+    listBitableRecords,
+    createBitableTable,
+    listBitableTables,
+    listBitableFields,
+    createBitableField,
     sendInteractiveCard,
     getTenantAccessToken: () => cachedToken('tenant'),
   }
 }
 
 export function textBlock(content, blockType = 2) {
+  const blockName = blockType === 3 ? 'heading1' : blockType === 4 ? 'heading2' : 'text'
+  const normalizedBlockType = blockName === 'text' ? 2 : blockType
   return {
-    block_type: blockType,
-    text: { elements: [{ text_run: { content: safeText(content, 5000) } }] },
+    block_type: normalizedBlockType,
+    [blockName]: { elements: [{ text_run: { content: safeText(content, 5000) } }] },
   }
 }

@@ -52,14 +52,21 @@ function useStandalone() {
 // · 浏览器：用 aspect-ratio 等比自适应（窄屏按宽收、矮屏按高收，比例恒为 430:932）
 // · 已安装 PWA：铺满 100dvw×100dvh，顶部留灵动岛、底部留 home 指示条的安全区
 export default function App() {
+  const feishuMode = typeof location !== 'undefined' && (location.pathname === '/feishu' || location.pathname.startsWith('/feishu/'));
   const openAgentFromUrl = typeof location !== 'undefined' && (
     new URLSearchParams(location.search).get('agent') === 'exhibition' ||
     new URLSearchParams(location.search).has('recoverKiri')
   );
-  const [activeTab, setActiveTab] = useState<Tab>(openAgentFromUrl ? 'agents' : 'earth');
+  const [activeTab, setActiveTab] = useState<Tab>(feishuMode ? 'earth' : openAgentFromUrl ? 'agents' : 'earth');
+  const [requestedSkillTarget, setRequestedSkillTarget] = useState<string | null>(null);
+  useEffect(() => {
+    if (!feishuMode) return;
+    void import('./feishu/librarySync').then(({ enableFeishuBuiltinMapLayersOnce }) => enableFeishuBuiltinMapLayersOnce());
+  }, [feishuMode]);
   // 记一笔等入口钉完会请求地图焦点 → 自动切到地球 tab，并由 MyMap 消费焦点。
   useEffect(() => subscribeMapFocus(() => setActiveTab('earth')), []);
   const standalone = useStandalone();
+  const appViewportMode = standalone || feishuMode;
   // 录制态：本地给地址加 ?rec（或 ?record）才套 iPhone 外壳 + 9:16 录制画布；线上 PWA 默认走正常手机框。
   const recordMode = typeof location !== 'undefined' && /[?&](rec|record)\b/.test(location.search);
   // 嵌入态（?embed）：app 内容满铺、不套任何手机框——给外部独立录制台（record-stage/）用 iframe 套进自带的 iPhone 壳里。
@@ -79,8 +86,8 @@ export default function App() {
         data-pocket-earth-main
         className="flex-1 overflow-hidden relative"
         style={{
-          paddingBottom: standalone
-            ? 'calc(70px + max(20px, env(safe-area-inset-bottom)))'
+          paddingBottom: appViewportMode
+            ? `calc(70px + max(${feishuMode ? '8px' : '20px'}, env(safe-area-inset-bottom)))`
             : '84px',
         }}
       >
@@ -88,8 +95,11 @@ export default function App() {
         <ErrorBoundary key={activeTab}>
           <Suspense fallback={<TabFallback />}>
             {activeTab === 'photos' && <PhotosTab />}
-            {activeTab === 'earth' && <MyMapTab />}
-            {activeTab === 'agents' && <MusicAgentsTab />}
+            {activeTab === 'earth' && <MyMapTab feishuMode={feishuMode} onOpenSkill={(target) => {
+              if (target === 'photo-organizer') { setActiveTab('photos'); return; }
+              setRequestedSkillTarget(target); setActiveTab('agents');
+            }} />}
+            {activeTab === 'agents' && <MusicAgentsTab feishuMode={feishuMode} requestedTarget={requestedSkillTarget} onRequestedTargetOpened={() => setRequestedSkillTarget(null)} />}
           </Suspense>
         </ErrorBoundary>
       </main>
@@ -98,9 +108,9 @@ export default function App() {
 
       <div
         className="absolute bottom-0 left-0 right-0 bg-[#EAEAEA] border-t-2 border-black z-30 pt-2"
-        style={{ paddingBottom: standalone ? 'max(20px, env(safe-area-inset-bottom))' : '20px' }}
+        style={{ paddingBottom: appViewportMode ? `max(${feishuMode ? '8px' : '20px'}, env(safe-area-inset-bottom))` : '20px' }}
       >
-        <div className="flex h-[60px] items-center justify-between px-6">
+        <div className={`flex h-[60px] items-center justify-between px-6 ${feishuMode ? 'mx-auto w-full max-w-[720px]' : ''}`}>
           <button
             onClick={() => setActiveTab('photos')}
             className={`flex flex-col items-center gap-1.5 transition-all w-20 ${
@@ -138,6 +148,18 @@ export default function App() {
       </div>
     </>
   );
+
+  // 飞书网页应用已经运行在客户端自己的 WebView 中：直接适配它提供的动态视口，
+  // 不再重复套 430×932 手机框。这样手机无灰边，桌面端也能利用可用宽度。
+  if (feishuMode) {
+    return (
+      <div data-feishu-viewport className="fixed inset-0 h-[100dvh] w-full overflow-hidden bg-[#EAEAEA]">
+        <div className="relative flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden bg-[#EAEAEA]">
+          {content}
+        </div>
+      </div>
+    );
+  }
 
   // 安装态（PWA）：铺满全屏
   if (standalone) {

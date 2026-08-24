@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, Cpu, Dices, Globe2, History, LockKeyhole } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Dices, Globe2, History, LockKeyhole } from 'lucide-react';
 import earthAnswersPayload from '../../../hardware/frost-edge-google/raspi/earth_answers_365.json';
 
 interface EarthAnswer {
@@ -115,7 +115,7 @@ export default function EarthAnswerAgentPage({ onBack }: Props) {
       </div>
 
       <main className="flex-1 min-h-0 overflow-y-auto px-3 py-3 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3">
-        <section className="border-[3px] border-black bg-[#f7f2e7] shadow-[4px_4px_0_#000]" aria-label={`${answer.date} 地球答案`}>
+        <section className="border-[3px] border-black bg-[#f7f2e7]" aria-label={`${answer.date} 地球答案`}>
           <div className="flex items-center justify-between border-b-2 border-black bg-[#121416] px-3 py-2 text-white">
             <span className="font-pixel text-[8px] tracking-[0.16em]">EARTH ANSWER</span>
             <span className="font-pixel text-[7px] text-[#7CFF6B]">{editionIndex}/365</span>
@@ -153,7 +153,7 @@ export default function EarthAnswerAgentPage({ onBack }: Props) {
               </div>
             ) : (
               <div className="flex min-h-[255px] flex-col items-center justify-center text-center">
-                <button type="button" onClick={revealToday} disabled={rolling} className="group grid h-24 w-24 place-items-center border-[3px] border-black bg-white shadow-[5px_5px_0_#2357d9] active:translate-x-1 active:translate-y-1 active:shadow-none disabled:cursor-wait" aria-label="掷骰子揭晓今天的地球答案">
+                <button type="button" onClick={revealToday} disabled={rolling} className="group grid h-24 w-24 place-items-center border-[3px] border-black bg-white disabled:cursor-wait" aria-label="掷骰子揭晓今天的地球答案">
                   <Dices className={`h-10 w-10 ${rolling ? 'animate-spin text-[#2357d9]' : 'group-active:rotate-12'}`} strokeWidth={2.2} />
                 </button>
                 <h2 className="mt-6 text-[19px] font-bold">{rolling ? '地球正在回答' : '今天的答案尚未揭晓'}</h2>
@@ -175,7 +175,7 @@ export default function EarthAnswerAgentPage({ onBack }: Props) {
           </div>
         </section>
 
-        <section className="border-2 border-black bg-white p-2.5 shadow-[2px_2px_0_#000]" aria-labelledby="earth-answer-history">
+        <section className="border-2 border-black bg-white p-2.5" aria-labelledby="earth-answer-history">
           <div className="mb-2 flex items-center justify-between gap-2">
             <h2 id="earth-answer-history" className="inline-flex items-center gap-1.5 font-pixel text-[8px] tracking-widest"><History className="h-3.5 w-3.5" />往日答案</h2>
             {selectedKey !== todayKey && <button type="button" onClick={() => setSelected(today)} className="border border-black bg-[#EAEAEA] px-2 py-1 font-pixel text-[7px] active:translate-y-px">回到今天</button>}
@@ -189,7 +189,7 @@ export default function EarthAnswerAgentPage({ onBack }: Props) {
               return (
                 <button type="button" key={key} disabled={isFuture || beforeEdition} onClick={() => setSelected(date)} aria-pressed={active}
                   aria-label={`${isFuture ? '尚未解锁' : beforeEdition ? '不在本版次' : '查看'} ${String(date.getMonth() + 1).padStart(2, '0')}月${String(date.getDate()).padStart(2, '0')}日地球答案`}
-                  className={`min-h-14 border-2 border-black px-0.5 py-1 text-center active:translate-y-px disabled:cursor-not-allowed ${active ? 'bg-black text-white shadow-[2px_2px_0_#00ff88]' : isFuture || beforeEdition ? 'bg-[#d9d9d9] text-black/35' : 'bg-[#f7f2e7] text-black'}`}>
+                  className={`min-h-14 border-2 border-black px-0.5 py-1 text-center active:translate-y-px disabled:cursor-not-allowed ${active ? 'bg-black text-white' : isFuture || beforeEdition ? 'bg-[#d9d9d9] text-black/35' : 'bg-[#f7f2e7] text-black'}`}>
                   <span className="block font-pixel text-[6px]">{String(date.getMonth() + 1).padStart(2, '0')}</span>
                   <span className="mt-1 block font-serif text-[20px] font-bold leading-none">{date.getDate()}</span>
                   <span className="mt-1 block text-[7px]">{isFuture ? '锁' : key === todayKey ? '今' : '阅'}</span>
@@ -199,11 +199,6 @@ export default function EarthAnswerAgentPage({ onBack }: Props) {
           </div>
         </section>
 
-        <section className="grid grid-cols-3 border-2 border-black bg-[#e7efff] shadow-[2px_2px_0_#000]" aria-label="地球答案 Agent 能力">
-          <div className="border-r border-black p-2 text-center"><CalendarDays className="mx-auto h-4 w-4" /><b className="mt-1.5 block text-[9px]">00:00 解锁</b></div>
-          <div className="border-r border-black p-2 text-center"><Cpu className="mx-auto h-4 w-4" /><b className="mt-1.5 block text-[9px]">端侧留痕</b></div>
-          <div className="p-2 text-center"><Globe2 className="mx-auto h-4 w-4" /><b className="mt-1.5 block text-[9px]">软硬同版</b></div>
-        </section>
         <p className="px-2 text-center text-[9px] leading-relaxed text-black/45">这不是占卜。Agent 只把经过审阅的哲学原文，变成每天一次、不可提前消费的行动仪式。</p>
       </main>
     </div>

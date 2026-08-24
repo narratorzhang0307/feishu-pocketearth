@@ -71,6 +71,12 @@ OPTIMIZATION-LOG.md
 # 提交材料与本地测试图（保密，绝不入库；防自动化 git add 误提交）
 GMI提交材料/
 test-label.jpg
+Demo证据/
+docs/assets/feishu/
+.video-analysis-venv/
+.window_info
+111.png
+口袋地球图标/
 
 # 本地活动材料包含联系方式、证书与邮寄信息，只保留在本机。
 GoogleAIVibeathon/

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  AlertTriangle, Aperture, Camera, Copy, Cpu, FileText,
+  AlertTriangle, Aperture, Camera, Copy, Cpu,
   Images, MapPin, RefreshCw, ScanLine, Search, ShieldCheck, Upload, X,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -9,6 +9,7 @@ import {
   analyzePhotoAssets,
   attachPhotoLocations,
   buildPreferencePairs,
+  buildCuratedPhotoAssets,
   buildPhotoChronicleData,
   buildPhotoDecisionGroups,
   buildPhotoSemanticIndex,
@@ -21,8 +22,6 @@ import {
   clearPhotoLibraryIndex,
   clearPhotoSearchHistory,
   clearPhotoRadar,
-  enrichRadarWithQwen,
-  extractRadarDocument,
   explainPhotoSearchMatch,
   getIndexedAssets,
   getPhotoIndexCheckpoint,
@@ -44,7 +43,6 @@ import {
   photoPinIdentity,
   photoAuthorizationTransition,
   preferenceVector,
-  putRadarAnalysis,
   putRadarAnalyses,
   releaseSessionAsset,
   rememberPhotoSearch,
@@ -57,6 +55,9 @@ import {
   savePhotoIndexCheckpoint,
   searchPhotoRadar,
   searchPhotoSemantic,
+  consumePhotoOrganizerRequest,
+  curatedPhotoRecord,
+  photoCurationInput,
   upsertIndexedAssets,
   type PhotoLocationAuthorization,
   type PhotoLibraryAsset,
@@ -66,23 +67,18 @@ import {
   undoPhotoPreference,
 } from '../lib/photo';
 import { startAgentRun } from '../lib/observe/bus';
-import { getPhotoRuntimeStatus, type PhotoRuntimeStatus } from '../../../frost-agent/edge/httpPhotoEdge';
 import RunTrace from './RunTrace';
 import PhotosChronicle from './PhotosChronicle';
+import { getFeishuPhotoAssets, subscribeFeishuPhotoAssets } from '../feishu/librarySync';
+import { reviewFeishuPhotos, upsertFeishuLibraryRecords } from '../feishu/api';
 
 const PHOTO_SECTIONS = ['照片整理', '杂志', '日历'] as const;
 const ORGANIZE_TABS = ['待你决定', '找照片'] as const;
 type PhotoSection = (typeof PHOTO_SECTIONS)[number];
 type OrganizeTab = (typeof ORGANIZE_TABS)[number];
-type ActiveTask = 'library-index' | 'selection' | 'location' | 'semantic' | 'qwen' | 'ocr' | null;
+type ActiveTask = 'library-index' | 'selection' | 'location' | 'semantic' | 'curation' | null;
 const BATCH_SIZE = 48;
 const SEARCH_WINDOW = 60;
-
-const emptyRuntime = (): PhotoRuntimeStatus => ({
-  phase: 'checking', engine: 'stub', baseReady: false, ocrAdapterReady: false,
-  baseModel: 'Qwen3-VL-2B-Instruct', ocrAdapter: 'general-ocr-vision', runtime: 'MNN 3.6.1',
-  acceleration: [], sme2Verified: false,
-});
 
 const mergeByKey = <T extends { key: string }>(before: T[], incoming: T[]): T[] => {
   const map = new Map(before.map((item) => [item.key, item]));
@@ -121,13 +117,14 @@ function SearchMatchReasons({ asset, analysis, query, semanticScore }: {
 }
 
 export default function PhotosTab() {
-  const [section, setSection] = useState<PhotoSection>('杂志');
+  const feishuMode = typeof location !== 'undefined' && (location.pathname === '/feishu' || location.pathname.startsWith('/feishu/'));
+  const [section, setSection] = useState<PhotoSection>('照片整理');
   const [root, setRoot] = useState<OrganizeTab>('待你决定');
   const [assets, setAssets] = useState<PhotoLibraryAsset[]>([]);
   const [analyses, setAnalyses] = useState<PhotoRadarAnalysis[]>([]);
   const [authorization, setAuthorization] = useState<PhotoLibraryAuthorization>('notDetermined');
   const [locationAuthorization, setLocationAuthorization] = useState<PhotoLocationAuthorization>('unsupported');
-  const [runtime, setRuntime] = useState<PhotoRuntimeStatus>(emptyRuntime);
+  const [initialized, setInitialized] = useState(false);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState('');
   const [query, setQuery] = useState('');
@@ -148,7 +145,6 @@ export default function PhotosTab() {
   const contentRef = useRef<HTMLDivElement>(null);
   const cancelIndexRef = useRef(false);
   const cancelSemanticRef = useRef(false);
-  const modelAbortRef = useRef<AbortController | null>(null);
   const capabilities = getPhotoLibraryCapabilities();
 
   const updateAssets = (incoming: PhotoLibraryAsset[]) => setAssets((current) => {
@@ -158,7 +154,7 @@ export default function PhotosTab() {
 
   useEffect(() => {
     let alive = true;
-    // Local photo state must not wait for the optional MNN sidecar health request (up to 6.5s).
+    // Restore local/Feishu-derived state first; original files remain in the user's photo library.
     void Promise.all([getIndexedAssets(), getRadarAnalyses(), checkPhotoAuthorization(), checkPhotoLocationAuthorization(), getPhotoSemanticIndexStatus()]).then(async ([storedAssets, storedAnalyses, auth, locationAuth, semantic]) => {
       if (!alive) return;
       let currentAssets = storedAssets;
@@ -167,15 +163,24 @@ export default function PhotosTab() {
         currentAssets = await getIndexedAssets();
       }
       if (!alive) return;
-      const restored = currentAssets.map((asset) => ({ ...asset, thumbnailUrl: asset.thumbnailRef }));
+      const restored = mergeByKey<PhotoLibraryAsset>(
+        currentAssets.map((asset): PhotoLibraryAsset => ({ ...asset, thumbnailUrl: asset.thumbnailRef })),
+        getFeishuPhotoAssets(),
+      );
       assetsRef.current = restored; setAssets(restored); setAnalyses(storedAnalyses); setAuthorization(auth); setLocationAuthorization(locationAuth); setSemanticStatus(semantic);
+      setInitialized(true);
       if (capabilities.native && (auth === 'authorized' || auth === 'limited')) {
         void listPhotoLibrary({ limit: 120 }).then((page) => { if (alive) updateAssets(page.assets); });
       }
-    });
-    void getPhotoRuntimeStatus().then((status) => { if (alive) setRuntime(status); });
-    return () => { alive = false; modelAbortRef.current?.abort(); assetsRef.current.forEach(releaseSessionAsset); };
+    }).catch(() => { if (alive) setInitialized(true); });
+    return () => { alive = false; assetsRef.current.forEach(releaseSessionAsset); };
   }, [capabilities.native]);
+
+  useEffect(() => subscribeFeishuPhotoAssets(() => updateAssets(getFeishuPhotoAssets())), []);
+
+  useEffect(() => {
+    if (feishuMode) { setSection('照片整理'); setRoot('待你决定'); }
+  }, [feishuMode]);
 
   useEffect(() => { if (contentRef.current) contentRef.current.scrollTop = 0; }, [root, section]);
   useEffect(() => { setSearchLimit(SEARCH_WINDOW); }, [query]);
@@ -193,11 +198,12 @@ export default function PhotosTab() {
     && asset.sourceState !== 'permission-revoked'
     && Boolean(imageUrl(asset))
   )), [assets]);
-  const chronicleData = useMemo(() => buildPhotoChronicleData(realLibraryAssets), [realLibraryAssets]);
   const availableAnalyses = useMemo(() => analyses.filter((analysis) => {
     const asset = assetMap.get(analysis.key);
     return asset && asset.sourceState !== 'missing' && asset.sourceState !== 'permission-revoked';
   }), [analyses, assetMap]);
+  const curatedAssets = useMemo(() => buildCuratedPhotoAssets(realLibraryAssets, availableAnalyses), [realLibraryAssets, availableAnalyses]);
+  const chronicleData = useMemo(() => buildPhotoChronicleData(curatedAssets), [curatedAssets]);
   const decisions = useMemo(() => buildPhotoDecisionGroups(availableAnalyses), [availableAnalyses]);
   const searchable = useMemo(() => analyses.map((analysis) => {
     const asset = assetMap.get(analysis.key); return asset ? { asset, analysis } : null;
@@ -210,7 +216,7 @@ export default function PhotosTab() {
     searchable, literalSearchResults, semanticMatches, query,
   ), [literalSearchResults, query, searchable, semanticMatches]);
   const visibleSearchResults = useMemo(() => searchResults.slice(0, searchLimit), [searchLimit, searchResults]);
-  const webSessionRestoreCount = useMemo(() => assets.filter((asset) => asset.source === 'web-picker' && !asset.thumbnailUrl).length, [assets]);
+  const webSessionRestoreCount = useMemo(() => assets.filter((asset) => asset.source === 'web-picker' && !asset.key.startsWith('feishu:') && !asset.thumbnailUrl).length, [assets]);
   const preferencePairs = useMemo(() => buildPreferencePairs(availableAnalyses), [availableAnalyses]);
   const coldStartPair = preferencePairs.length ? preferencePairs[preferenceCursor % preferencePairs.length] : null;
 
@@ -325,14 +331,33 @@ export default function PhotosTab() {
     finally { setBusy(false); setActiveTask(null); setProgress(''); cancelIndexRef.current = false; }
   };
 
-  const pickWebFiles = async (files: FileList | null) => {
-    if (!files?.length || busy) return;
+  const processSelectedFiles = async (files: FileList | File[], objective = '') => {
+    if (!files.length || busy) return;
     const selected = importWebPhotos(files); updateAssets(selected);
     const run = startAgentRun(`照片雷达 · 手动选择 ${selected.length} 张`); setRunId(run.runId); setActiveTask('selection'); setBusy(true); setMessage('');
-    try { run.phase('网页安全降级', '浏览器不能枚举系统相册 · 只分析本次选择'); await analyze(selected, run); run.end(true); }
+    try {
+      setSection('照片整理'); setRoot('待你决定');
+      run.phase('Frost 转交照片整理', `${selected.length} 张主动选择的照片${objective ? ` · 目标：${objective.slice(0, 80)}` : ''}`);
+      await analyze(selected, run);
+      setMessage(`已完成 ${selected.length} 张照片的本地查重与技术筛选。下一步点击“Qwen 精选待审照片”，确认后才会进入杂志、日历和飞书多维表格。`);
+      run.end(true);
+    }
     catch (error) { setMessage(String(error)); run.end(false); }
     finally { setBusy(false); setActiveTask(null); setProgress(''); if (webInput.current) webInput.current.value = ''; }
   };
+
+  const pickWebFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    await processSelectedFiles(files);
+  };
+
+  useEffect(() => {
+    if (!initialized) return;
+    const request = consumePhotoOrganizerRequest();
+    if (request) void processSelectedFiles(request.files, request.objective);
+    // The Photos tab is mounted when Frost routes here, so one pending handoff is sufficient.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialized]);
 
   const enablePhotoLocations = async () => {
     if (busy || !capabilities.native) return;
@@ -408,52 +433,70 @@ export default function PhotosTab() {
     setMessage(`已清除本机照片派生索引与缓存${removedCacheFiles ? `（${removedCacheFiles} 个缓存文件）` : ''}；系统原片、地球已有落点和个人偏好没有变化。`);
   };
 
-  const useQwen = async (analysis: PhotoRadarAnalysis) => {
-    const asset = assetMap.get(analysis.key); if (!asset || busy) return;
-    if (!runtime.baseReady) { setMessage('Qwen3-VL/MNN 尚未就绪；当前保留本地像素与元数据结果，不冒充模型输出。'); return; }
-    const controller = new AbortController(); modelAbortRef.current = controller;
-    const run = startAgentRun('Qwen 看照片 · 本地代表图', { skillId: 'pocket.photos.router', skillVersion: '1.0.0', baseRevision: 'Qwen3-VL-2B-Instruct@9e49ec71', executionPath: 'local-mnn', runtime: runtime.runtime, acceleration: runtime.acceleration.length ? runtime.acceleration : ['none reported · SME2 未验证'], visualInput: '1 × ≤320px 缩略图', maxTokens: 320, inputSummary: '1 张用户明确触发的本地缩略图；不记录文件名或 OCR 正文', tools: ['Qwen3-VL-2B', 'MNN 3.6.1'], userConfirmation: 'confirmed' }); setRunId(run.runId); setActiveTask('qwen'); setBusy(true); setMessage('');
+  const reviewCandidates = useMemo(() => availableAnalyses.filter((analysis) => (
+    !analysis.duplicateOf
+    && !analysis.chronicleIncluded
+    && ['place', 'life', 'place_nogps', 'uncertain'].includes(analysis.photoType)
+  )), [availableAnalyses]);
+  const unreviewedCandidates = useMemo(() => reviewCandidates.filter((analysis) => !analysis.curation), [reviewCandidates]);
+
+  const reviewWithQwen = async (only?: PhotoRadarAnalysis) => {
+    const candidates = only ? [only] : unreviewedCandidates;
+    if (!candidates.length || busy) return;
+    const run = startAgentRun('照片精选 · Qwen 云端评审', {
+      skillId: 'pocket.photos.curation', skillVersion: '1.0.0', executionPath: 'qwen-cloud',
+      visualInput: '≤448px 用户主动选择缩略图', inputSummary: `${candidates.length} 张已完成本地查重/技术检测的候选；Qwen 只建议，不自动入库`,
+      tools: ['Qwen Vision', 'Feishu Bitable'], userConfirmation: 'required',
+    });
+    setRunId(run.runId); setActiveTask('curation'); setBusy(true); setMessage('');
     try {
-      run.phase('代表图内容理解', 'Qwen3-VL-2B-Instruct · MNN · 缩略图');
-      const next = await enrichRadarWithQwen(asset, analysis, controller.signal); updateAnalyses([next]);
-      if (next === analysis) {
-        setMessage('本次 Qwen 输出超时、不可用或未通过结构门禁，已保留原有本地判断。');
-        run.phase('Qwen 结构门禁失败', '超时、固定字段缺失、枚举非法或非 MNN 输出；保留便宜分析结果', { qualityGate: 'failed', fallbackReason: 'photo-router-unavailable-or-schema-invalid' });
-      } else run.phase('Qwen 结构门禁通过', '只保存结构化路由证据；不在 RunTrace 记录 OCR 正文', { qualityGate: 'passed' });
-      run.end(next !== analysis);
+      const reviewed: PhotoRadarAnalysis[] = [];
+      for (let offset = 0; offset < candidates.length; offset += 8) {
+        const batch = candidates.slice(offset, offset + 8);
+        setProgress(`Qwen 正在评审 ${Math.min(offset + batch.length, candidates.length)}/${candidates.length}`);
+        const inputs = await Promise.all(batch.map(async (analysis) => {
+          const asset = assetMap.get(analysis.key);
+          if (!asset) throw new Error('候选照片已不可用，请重新选择。');
+          return photoCurationInput(asset, analysis);
+        }));
+        const result = await reviewFeishuPhotos(inputs);
+        const byId = new Map(result.reviews.map((review) => [review.id, review]));
+        reviewed.push(...batch.map((analysis) => {
+          const review = byId.get(analysis.contentHash);
+          if (!review) throw new Error('Qwen 返回缺少照片评审结果。');
+          return {
+            ...analysis,
+            curation: { ...review, model: result.model, reviewedAt: Date.now() },
+            visionBackend: 'qwen-cloud' as const,
+            analyzedAt: Date.now(),
+          };
+        }));
+      }
+      await putRadarAnalyses(reviewed); updateAnalyses(reviewed);
+      run.phase('结构化评审完成', `${reviewed.length} 张 · keep/review/reject · 等待用户逐张确认`);
+      setMessage(`Qwen 已完成 ${reviewed.length} 张精选建议。请逐张确认；确认前不会进入杂志、日历或飞书多维表格。`);
+      run.end(true);
     } catch (error) {
-      if (controller.signal.aborted) { setMessage('已取消本次 Qwen 看图；原有本地判断保持不变。'); run.phase('用户取消', 'AbortSignal 已终止端侧请求；无派生结果写入', { qualityGate: 'failed', fallbackReason: 'user-aborted' }); }
-      else setMessage(error instanceof Error ? error.message : String(error));
-      run.end(false);
-    } finally { if (modelAbortRef.current === controller) modelAbortRef.current = null; setBusy(false); setActiveTask(null); }
+      setMessage(`Qwen 精选失败：${error instanceof Error ? error.message : String(error)}`); run.end(false);
+    } finally { setBusy(false); setActiveTask(null); setProgress(''); }
   };
 
-  const runOcr = async (analysis: PhotoRadarAnalysis) => {
-    const asset = assetMap.get(analysis.key); if (!asset || busy) return;
-    if (!runtime.baseReady) { setMessage('端侧 Qwen3-VL/MNN 尚未就绪，不能把规则结果冒充票据 OCR。'); return; }
-    const controller = new AbortController(); modelAbortRef.current = controller;
-    const run = startAgentRun('票据识别 · 本地资产', { skillId: 'pocket.photos.ocr', skillVersion: '1.0.0', baseRevision: 'Qwen3-VL-2B-Instruct@9e49ec71', executionPath: 'local-mnn', runtime: runtime.runtime, acceleration: runtime.acceleration.length ? runtime.acceleration : ['none reported · SME2 未验证'], visualInput: '1 × 按需本地票据', maxTokens: 960, inputSummary: '1 张用户明确触发的本地票据；不记录文件名或 OCR 正文', tools: ['Qwen3-VL-2B', 'MNN 3.6.1'], userConfirmation: 'required' }); setRunId(run.runId); setActiveTask('ocr'); setBusy(true); setMessage('');
+  const confirmCurated = async (analysis: PhotoRadarAnalysis) => {
+    const asset = assetMap.get(analysis.key);
+    if (!asset || analysis.duplicateOf || !analysis.curation || busy) return;
+    setBusy(true); setMessage('');
     try {
-      run.phase('普通票据基座 OCR', 'Qwen3-VL-2B · MNN · Base first');
-      const result = await extractRadarDocument(asset, analysis, runtime, controller.signal);
-      if (!result.analysis.document) run.phase('OCR 未完成', '超时、运行时不可用或输出未通过结构门禁；不写入票据字段', { qualityGate: 'failed', fallbackReason: 'ocr-unavailable-or-schema-invalid' });
-      else if (result.adapterAttempted) run.phase('OCR 难例门禁', 'general-ocr Visual LoRA · 仅提升≥0.08才采纳；关键字段并列冲突转人工', { adapterVersion: 'general-document-ocr-v6-int8@d09be9ee', qualityGate: result.analysis.document.qualityGate === 'manual-review' ? 'manual-review' : 'passed', fallbackReason: result.analysis.document.qualityGate === 'base-kept' ? 'LoRA 未达到最小提升，保留 Base' : undefined });
-      else run.phase('OCR 质量门通过', '干净文档停在 Base · 未调用 LoRA', { qualityGate: result.analysis.document.qualityGate === 'manual-review' ? 'manual-review' : 'passed' });
-      updateAnalyses([result.analysis]); run.end(!!result.analysis.document);
+      const next = { ...analysis, chronicleIncluded: true, analyzedAt: Date.now() };
+      const record = await curatedPhotoRecord(asset, next);
+      await upsertFeishuLibraryRecords('photos', [record]);
+      await putRadarAnalyses([next]); updateAnalyses([next]);
+      setMessage('已确认：照片进入杂志与日历，并按稳定 Pocket Photo ID 写入飞书照片多维表格；重复记录会更新而不是新增。');
     } catch (error) {
-      if (controller.signal.aborted) { setMessage('已取消本次票据识别；没有写入 OCR 字段。'); run.phase('用户取消', 'AbortSignal 已终止 Base/LoRA 请求；无 OCR 正文写入', { qualityGate: 'failed', fallbackReason: 'user-aborted' }); }
-      else setMessage(error instanceof Error ? error.message : String(error));
-      run.end(false);
-    } finally { if (modelAbortRef.current === controller) modelAbortRef.current = null; setBusy(false); setActiveTask(null); }
+      setMessage(`确认未完成：${error instanceof Error ? error.message : String(error)}。本地与飞书都没有写入半成品。`);
+    } finally { setBusy(false); }
   };
 
-  const includeInChronicle = async (analysis: PhotoRadarAnalysis, included = true) => {
-    const next = { ...analysis, chronicleIncluded: included, analyzedAt: Date.now() };
-    await putRadarAnalysis(next); updateAnalyses([next]);
-    setMessage(included ? '已收入光阴志。原片仍在系统相册。' : '已从光阴志移除，系统原片没有变化。');
-  };
-
-  const applyPreferenceModel = async (model: ReturnType<typeof getPhotoPreferenceModel>, chronicleKey?: string) => {
+  const applyPreferenceModel = async (model: ReturnType<typeof getPhotoPreferenceModel>) => {
     const next = analyses.map((item) => {
       const asset = assetMap.get(item.key);
       const scored = scorePreference(model, preferenceVector(item, !!asset && asset.latitude != null && asset.longitude != null));
@@ -461,7 +504,6 @@ export default function PhotosTab() {
         ...item,
         personalAffinity: scored.affinity,
         preferenceConfidence: scored.confidence,
-        chronicleIncluded: item.key === chronicleKey ? true : item.chronicleIncluded,
       };
     });
     await putRadarAnalyses(next);
@@ -495,25 +537,24 @@ export default function PhotosTab() {
 
   const chooseRepresentative = async (winner: PhotoRadarAnalysis, group: PhotoRadarAnalysis[]) => {
     const loser = group.filter((item) => item.key !== winner.key).sort((a, b) => b.technicalQuality - a.technicalQuality)[0];
-    if (!loser) { await includeInChronicle(winner); return; }
+    if (!loser) { setMessage('已选择代表照片。请运行 Qwen 精选并确认后，再进入杂志、日历与飞书多维表格。'); return; }
     const winnerAsset = assetMap.get(winner.key); const loserAsset = assetMap.get(loser.key);
     if (!winnerAsset || !loserAsset) return;
     const model = learnPhotoPreference(
       preferenceVector(winner, winnerAsset.latitude != null && winnerAsset.longitude != null),
       preferenceVector(loser, loserAsset.latitude != null && loserAsset.longitude != null),
     );
-    await applyPreferenceModel(model, winner.key);
+    await applyPreferenceModel(model);
     setMessage(model.choices < MIN_PREFERENCE_CHOICES
       ? `已记住第 ${model.choices} 次明确选择；满 ${MIN_PREFERENCE_CHOICES} 次后才显示个人偏好分。`
-      : '已更新本地个人偏好，并把所选代表收入光阴志。');
+      : '已更新本地个人偏好。还需通过 Qwen 精选并由你确认，才会进入杂志、日历和飞书。');
   };
 
   const pinToEarth = async (analysis: PhotoRadarAnalysis) => {
     const asset = assetMap.get(analysis.key);
     if (!asset || asset.latitude == null || asset.longitude == null) return;
     await addPhotoPins([{ id: photoPinIdentity(asset.key, analysis.contentHash), assetKey: asset.key, contentHash: analysis.contentHash, lat: asset.latitude, lng: asset.longitude, thumb: imageUrl(asset), name: asset.fileName, source: 'exif', ts: Date.now() }]);
-    await includeInChronicle(analysis);
-    setMessage('已确认钉到 Pocket Earth；地球只保存小缩略图，不保存原片。');
+    setMessage('已确认钉到 Pocket Earth；地球落点与杂志/日历收录是两个独立确认，地球只保存小缩略图，不保存原片。');
   };
 
   const openPhoto = (asset: PhotoLibraryAsset) => setLightbox({ asset, url: imageUrl(asset), original: false });
@@ -539,8 +580,8 @@ export default function PhotosTab() {
   const firstBurst = decisions.bursts[0] || [];
   const technicalBest = firstBurst.slice().sort((a, b) => b.technicalQuality - a.technicalQuality)[0];
   const preferenceBest = firstBurst.filter((item) => item.personalAffinity != null).sort((a, b) => (b.personalAffinity || 0) - (a.personalAffinity || 0))[0];
-  const includedAnalyses = availableAnalyses.filter((analysis) => analysis.chronicleIncluded);
-  const hiddenIncludedCount = analyses.filter((analysis) => analysis.chronicleIncluded).length - includedAnalyses.length;
+  const includedAnalyses = availableAnalyses.filter((analysis) => analysis.chronicleIncluded && analysis.curation);
+  const hiddenIncludedCount = analyses.filter((analysis) => analysis.chronicleIncluded && analysis.curation).length - includedAnalyses.length;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#EAEAEA] font-sans">
@@ -563,24 +604,30 @@ export default function PhotosTab() {
       </div>
 
       {section === '照片整理' && <div className="shrink-0 border-b-2 border-black bg-[#EAEAEA] px-3 py-2">
-        <div className="flex border-2 border-black bg-white p-1">
-          {ORGANIZE_TABS.map((item) => <button key={item} onClick={() => setRoot(item)} className={`flex-1 py-1.5 text-[10px] font-bold ${root === item ? 'bg-black text-[#7CFF6B]' : ''}`}>{item}</button>)}
-        </div>
-        <div className="mt-1.5 flex items-center justify-between gap-2 text-[7px] text-black/45">
-          <span>照片雷达 · 最终决定留给你</span>
-          <div className="flex items-center gap-1">
-            <span className={`border border-black px-1.5 py-0.5 font-pixel text-[6px] ${runtime.baseReady ? 'bg-[#7CFF6B]' : 'bg-[#ffe4a8]'}`}>{runtime.baseReady ? 'QWEN · MNN READY' : 'LOCAL FALLBACK'}</span>
-            {(activeTask === 'qwen' || activeTask === 'ocr') && <button onClick={() => modelAbortRef.current?.abort()} className="border border-black bg-[#ffe4a8] px-1.5 py-0.5 font-bold">停止{activeTask === 'ocr' ? ' OCR' : ' Qwen'}</button>}
+        {feishuMode ? (
+          <div className="border-2 border-black bg-white p-2">
+            <div className="flex items-center justify-between gap-2"><b className="text-[10px]">飞书照片整理</b><span className="border border-black bg-[#7CFF6B] px-1.5 py-0.5 font-pixel text-[6px]">DEDUPE → QWEN → CONFIRM → FEISHU</span></div>
+            <p className="mt-1 text-[8px] leading-4 text-black/50">无需安装 PWA 模型。选择照片后先查重与技术检测，再由 Qwen 建议；你确认后才进入杂志、日历和飞书照片表。</p>
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="flex border-2 border-black bg-white p-1">
+              {ORGANIZE_TABS.map((item) => <button key={item} onClick={() => setRoot(item)} className={`flex-1 py-1.5 text-[10px] font-bold ${root === item ? 'bg-black text-[#7CFF6B]' : ''}`}>{item}</button>)}
+            </div>
+            <div className="mt-1.5 flex items-center justify-between gap-2 text-[7px] text-black/45">
+              <span>照片雷达 · 最终决定留给你</span>
+              <span className="border border-black bg-[#7CFF6B] px-1.5 py-0.5 font-pixel text-[6px]">LOCAL DEDUPE → QWEN → HUMAN</span>
+            </div>
+          </>
+        )}
       </div>}
 
       <div ref={contentRef} className={`min-h-0 flex-1 ${section === '日历' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'}`}>
         <section className={`shrink-0 border-b-2 border-black px-3 py-2 ${realLibraryAssets.length ? 'bg-[#f8fff3]' : 'bg-[#fff8dc]'}`}>
           <div className="flex items-center gap-2">
             <div className="min-w-0 flex-1">
-              <div className="font-pixel text-[8px]">{realLibraryAssets.length ? `手机相册已连接 · ${realLibraryAssets.length} 张` : '当前为远程演示样刊 · 尚未连接手机相册'}</div>
-              <div className="mt-0.5 text-[8px] leading-relaxed text-black/50">{realLibraryAssets.length ? '照片整理、杂志、日历正在共用同一批系统 assetId；原片仍只在系统相册。' : '授权后会按真实拍摄时间重建三个视图；APK 不复制、不移动、不内置用户原片。'}</div>
+              <div className="font-pixel text-[8px]">{realLibraryAssets.length ? `照片源 ${realLibraryAssets.length} 张 · 已确认精选 ${curatedAssets.length} 张` : '尚未连接或选择照片'}</div>
+              <div className="mt-0.5 text-[8px] leading-relaxed text-black/50">{realLibraryAssets.length ? '照片整理先查重和评审；只有你确认的照片才进入杂志、日历，并 upsert 飞书多维表格。' : '选择照片后会先整理，不再自动把整批相册直接放进杂志和日历。'}</div>
             </div>
             <button disabled={busy} onClick={() => void connectSystemLibrary()} className="flex shrink-0 items-center gap-1 border-2 border-black bg-[#7CFF6B] px-2 py-2 text-[8px] font-bold shadow-[2px_2px_0_#000] disabled:opacity-50">
               {busy ? <RefreshCw className="h-3 w-3 animate-spin" /> : capabilities.native ? <Camera className="h-3 w-3" /> : <Upload className="h-3 w-3" />}
@@ -602,6 +649,17 @@ export default function PhotosTab() {
 
           <div className="grid grid-cols-5 gap-1.5"><Metric label="连拍组" value={decisions.bursts.length} /><Metric label="疑似重复" value={decisions.duplicates.length} /><Metric label="技术问题" value={decisions.technicalIssues.length} tone="amber" /><Metric label="票据" value={decisions.documents.length} /><Metric label="可落地球" value={decisions.earthCandidates.length} tone="green" /></div>
 
+          {!!reviewCandidates.length && <section className="border-2 border-black bg-[#d9ffec] p-3 shadow-[3px_3px_0_#000]">
+            <div className="flex items-start justify-between gap-3"><div><div className="font-pixel text-[9px]">QWEN 精选 → 你确认 → 飞书入库</div><div className="mt-1 text-[8px] leading-4 text-black/55">已排除确定重复、截图和票据。点击后仅将 ≤448px 缩略图发送给服务端 Qwen；它只建议故事与编辑价值，不会自动收录或删除。</div></div><span className="shrink-0 border border-black bg-white px-2 py-1 font-pixel text-[7px]">待评 {unreviewedCandidates.length}</span></div>
+            <button disabled={busy || !unreviewedCandidates.length} onClick={() => void reviewWithQwen()} className="mt-3 w-full border-2 border-black bg-[#7CFF6B] py-2 text-[9px] font-black shadow-[2px_2px_0_#000] disabled:opacity-40">{activeTask === 'curation' ? progress || 'Qwen 正在评审…' : unreviewedCandidates.length ? `Qwen 精选待审照片（${unreviewedCandidates.length}）` : '本批照片已完成 Qwen 建议'}</button>
+          </section>}
+
+          {reviewCandidates.filter((analysis) => analysis.curation).slice(0, 12).map((analysis) => {
+            const review = analysis.curation!;
+            const tone = review.recommendation === 'keep' ? 'bg-[#d9ffec]' : review.recommendation === 'reject' ? 'bg-[#ffe5e2]' : 'bg-[#fff8dc]';
+            return <section key={`curation:${analysis.key}`} className={`border-2 border-black p-3 ${tone}`}><div className="flex gap-3"><div className="w-[92px] shrink-0"><PhotoThumb asset={assetMap.get(analysis.key)} analysis={analysis} onOpen={() => { const asset = assetMap.get(analysis.key); if (asset) openPhoto(asset); }} /></div><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="font-pixel text-[8px]">{review.recommendation === 'keep' ? '建议精选' : review.recommendation === 'reject' ? '建议不收录' : '建议人工复核'}</span><span className="border border-black bg-white px-1 text-[7px]">质量 {review.qualityScore} · 故事 {review.storyScore}</span></div><p className="mt-1 text-[9px] font-bold leading-4">{review.summary}</p><p className="mt-1 text-[8px] leading-4 text-black/55">{review.reasons.join('；')}</p><div className="mt-2 flex gap-1.5"><button disabled={busy || analysis.chronicleIncluded} onClick={() => void confirmCurated(analysis)} className="flex-1 border-2 border-black bg-[#7CFF6B] py-1.5 text-[8px] font-black disabled:opacity-50">{analysis.chronicleIncluded ? '已进入杂志 / 日历 / 飞书' : '确认收录并同步飞书'}</button><button disabled={busy} onClick={() => void reviewWithQwen(analysis)} className="border-2 border-black bg-white px-2 text-[8px]">重新评审</button></div></div></div></section>;
+          })}
+
           {coldStartPair && preferenceModel.choices < MIN_PREFERENCE_CHOICES && <section className="border-2 border-black bg-[#f5f0ff] p-3 shadow-[3px_3px_0_#000]"><div className="flex items-center justify-between gap-2"><div><div className="font-pixel text-[9px]">个人偏好冷启动 · {preferenceModel.choices}/{MIN_PREFERENCE_CHOICES}</div><div className="mt-1 text-[8px] text-black/50">哪张更值得你留下？只在本机学习；跳过不算负样本。</div></div><button onClick={() => setPreferenceCursor((value) => value + 1)} className="shrink-0 border border-black bg-white px-2 py-1 text-[8px]">跳过</button></div><div className="mt-3 grid grid-cols-2 gap-3">{([coldStartPair.left, coldStartPair.right] as const).map((item, index) => <div key={item.key}><PhotoThumb asset={assetMap.get(item.key)} analysis={item} onOpen={() => { const asset = assetMap.get(item.key); if (asset) openPhoto(asset); }} /><button onClick={() => void chooseColdStart(item, index === 0 ? coldStartPair.right : coldStartPair.left)} className="mt-2 w-full border-2 border-black bg-white py-1.5 text-[8px] font-bold shadow-[2px_2px_0_#000]">更想留这张</button></div>)}</div></section>}
 
           {preferenceModel.choices > 0 && <div className="flex items-center justify-between border border-black/30 bg-white px-2 py-1.5 text-[8px] text-black/55"><span>{preferenceModel.choices < MIN_PREFERENCE_CHOICES ? `个人偏好学习中 · ${preferenceModel.choices}/${MIN_PREFERENCE_CHOICES}` : `个人偏好已启用 · ${preferenceModel.choices} 次明确选择`}</span><span className="flex gap-2"><button onClick={() => void undoLastPreference()} className="underline">撤销上次</button><button onClick={() => void resetPreference()} className="underline">清空偏好</button></span></div>}
@@ -610,14 +668,14 @@ export default function PhotosTab() {
 
           {!!firstBurst.length && <section className="border-2 border-black bg-[#f8fff3] p-3 shadow-[3px_3px_0_#000]"><div className="flex items-center gap-2"><Aperture className="h-4 w-4" /><div className="font-pixel text-[9px]">连拍代表 · 选择权在你</div></div><div className="mt-1 text-[9px] text-black/55">技术最佳与个人偏好分开显示；你的选择只训练本机小型排序器。</div><div className="mt-3 grid grid-cols-3 gap-2">{firstBurst.slice(0, 6).map((item) => <div key={item.key}><PhotoThumb asset={assetMap.get(item.key)} analysis={item} onOpen={() => { const asset = assetMap.get(item.key); if (asset) openPhoto(asset); }} /><div className="mt-1 min-h-[20px] text-[8px] leading-tight">{item.key === technicalBest?.key ? '✓ 技术代表' : item.key === preferenceBest?.key ? '♥ 更像你的偏好' : '同组候选'}</div><button onClick={() => void chooseRepresentative(item, firstBurst)} className="mt-1 w-full border border-black bg-white py-1 text-[8px] font-bold">选这张</button></div>)}</div></section>}
 
-          {decisions.documents.slice(0, 3).map((item) => <section key={item.key} className="border-2 border-black bg-white p-3"><div className="flex gap-3"><div className="w-[82px] shrink-0"><PhotoThumb asset={assetMap.get(item.key)} analysis={item} onOpen={() => { const asset = assetMap.get(item.key); if (asset) openPhoto(asset); }} /></div><div className="min-w-0 flex-1"><div className="flex items-center gap-1.5 font-pixel text-[8px]"><FileText className="h-3.5 w-3.5" />票据等待提取</div><div className="mt-1 line-clamp-2 text-[9px] text-black/55">{item.document?.text || item.reasons.join('；')}</div>{!!item.understanding?.privacyRisk.length && <div className="mt-1 border-l-2 border-[#9a6500] pl-1.5 text-[8px] text-[#765000]">隐私提示：{item.understanding.privacyRisk.join(' · ')}；分享或导出前请复核。</div>}{item.document && <div className={`mt-1 text-[8px] ${item.document.qualityGate === 'manual-review' ? 'text-[#9a6500]' : 'text-[#087a43]'}`}>{item.document.qualityGate === 'manual-review' ? '需人工核对' : item.document.qualityGate === 'lora-accepted' ? '难例 LoRA 已采纳' : item.document.qualityGate === 'base-kept' ? 'LoRA 未提升，保留 Base' : 'Base 已通过'} · 质量 {Math.round(item.document.qualityScore * 100)}{item.document.conflicts?.length ? ` · 冲突：${item.document.conflicts.map((field) => field === 'merchant' ? '商户' : field === 'amount' ? '金额' : '日期').join('、')}` : ''}</div>}{item.document?.qualityGate === 'manual-review' && item.document.candidates?.enhanced && <div className="mt-1 border border-[#9a6500] bg-[#fff8dc] p-1.5 text-[8px] leading-4"><b>Base / LoRA 候选：</b> 金额 {item.document.candidates.base.amount || '—'} / {item.document.candidates.enhanced.amount || '—'}；日期 {item.document.candidates.base.date || '—'} / {item.document.candidates.enhanced.date || '—'}。请对照原图，不自动写入。</div>}<div className="mt-2 flex gap-1.5"><button disabled={busy} onClick={() => void useQwen(item)} className="border border-black px-2 py-1 text-[8px]">Qwen 看图</button><button disabled={busy} onClick={() => void runOcr(item)} className="border border-black bg-[#7CFF6B] px-2 py-1 text-[8px] font-bold">提取票据</button></div></div></div></section>)}
+          {!!decisions.documents.length && <section className="border-2 border-black bg-white p-3"><div className="font-pixel text-[8px]">资料类照片已隔离 · {decisions.documents.length} 张</div><p className="mt-1 text-[8px] leading-4 text-black/55">截图、票据与文档不会进入本次照片精选，也不会自动进入杂志或日历；原资料保持不变，等待你另行处理。</p></section>}
 
           {decisions.earthCandidates.slice(0, 3).map((item) => <section key={item.key} className="flex gap-3 border-2 border-black bg-white p-3"><div className="w-[82px] shrink-0"><PhotoThumb asset={assetMap.get(item.key)} analysis={item} onOpen={() => { const asset = assetMap.get(item.key); if (asset) openPhoto(asset); }} /></div><div className="flex-1"><div className="flex items-center gap-1.5 font-pixel text-[8px]"><MapPin className="h-3.5 w-3.5 text-[#087a43]" />适合钉到地球</div><div className="mt-1 text-[9px] text-black/55">有系统 GPS · 技术质量 {item.technicalQuality} · 置信度 {Math.round(item.confidence * 100)}%</div><button onClick={() => void pinToEarth(item)} className="mt-3 border-2 border-black bg-[#7CFF6B] px-3 py-1.5 text-[9px] font-bold shadow-[2px_2px_0_#000]">确认钉到 Pocket Earth</button></div></section>)}
 
           {!!decisions.technicalIssues.length && <section className="border-2 border-black bg-[#fff8e6] p-3"><div className="flex items-center gap-2 font-pixel text-[8px]"><AlertTriangle className="h-4 w-4 text-[#9a6500]" />{decisions.technicalIssues.length} 张技术问题 · 仅建议</div><div className="mt-2 grid grid-cols-5 gap-1.5">{decisions.technicalIssues.slice(0, 10).map((item) => <PhotoThumb key={item.key} asset={assetMap.get(item.key)} analysis={item} onOpen={() => { const asset = assetMap.get(item.key); if (asset) openPhoto(asset); }} />)}</div><div className="mt-2 space-y-0.5 text-[8px] text-[#765000]">{decisions.technicalIssues.slice(0, 3).map((item) => <div key={item.key}>• {item.reasons.filter((reason) => /清晰度|过曝|欠曝|裁切/.test(reason)).join('；') || '技术质量偏低，建议对照原图复核'}</div>)}</div><div className="mt-2 text-[8px] text-black/45">Pocket Earth 不会自动删除。删除必须回到系统相册再次确认。</div></section>}
         </div>}
 
-        {section === '照片整理' && root === '找照片' && <div className="space-y-3 p-3 pb-8">
+        {!feishuMode && section === '照片整理' && root === '找照片' && <div className="space-y-3 p-3 pb-8">
           <section className="border-2 border-black bg-white p-3 shadow-[3px_3px_0_#000]">
             <div className="flex items-start justify-between gap-3"><div><div className="font-pixel text-[9px]">端侧语义索引 · {semanticStatus.count}/{assets.length}</div><div className="mt-1 text-[8px] leading-relaxed text-black/50">用户点击后才安装量化 CLIP；每张只存 512 维 int8 向量。模型升级只重建向量，不动照片与确认。</div></div><Cpu className="h-5 w-5 shrink-0 text-[#087a43]" /></div>
             <div className="mt-3 flex gap-2"><button disabled={busy || !assets.length} onClick={() => void buildSemanticIndex()} className="flex-1 border-2 border-black bg-[#7CFF6B] py-2 text-[9px] font-bold shadow-[2px_2px_0_#000] disabled:opacity-40">{semanticStatus.count ? '增量更新语义索引' : '安装模型并建立语义索引'}</button>{activeTask === 'semantic' ? <button onClick={() => { cancelSemanticRef.current = true; setProgress('将在当前照片完成后暂停…'); }} className="border-2 border-black bg-[#ffe4a8] px-2 text-[8px] font-bold">停止</button> : semanticStatus.count > 0 && <button disabled={busy} onClick={() => void resetSemanticIndex()} className="border-2 border-black bg-white px-2 text-[8px] disabled:opacity-40">清除向量</button>}</div>
@@ -632,18 +690,18 @@ export default function PhotosTab() {
             <div className="mt-2 flex items-center gap-1 text-[8px] text-black/45"><Cpu className="h-3 w-3" />标签、时间、GPS、OCR 与 embedding top-k 在本机合并；原片不上传</div>{semanticSearchState && <div className="mt-1 text-[8px] text-[#087a43]">{semanticSearchState}</div>}
           </div>
 
-          {!searchResults.length ? <div className="py-16 text-center text-[10px] text-black/40">{analyses.length ? '没有命中。可以增量建立语义索引，或让 Qwen 看代表图补全结构标签。' : '先在“待你决定”连接并分析真实相册。'}</div> : <><div className="grid grid-cols-3 gap-2">{visibleSearchResults.map(({ asset, analysis }) => <div key={analysis.key}><PhotoThumb asset={asset} analysis={analysis} onOpen={() => openPhoto(asset)} /><SearchMatchReasons asset={asset} analysis={analysis} query={query} semanticScore={semanticScoreMap.get(analysis.key)} /><div className="mt-1 truncate text-[8px] text-black/55">{analysis.tags.slice(0, 3).join(' · ') || dateLabel(asset.creationTime)}</div><div className="mt-1 flex gap-1"><button disabled={busy} onClick={() => void useQwen(analysis)} className="flex-1 border border-black bg-white py-1 text-[7px]">Qwen</button><button onClick={() => void includeInChronicle(analysis, !analysis.chronicleIncluded)} className={`flex-1 border border-black py-1 text-[7px] ${analysis.chronicleIncluded ? 'bg-[#7CFF6B]' : 'bg-white'}`}>{analysis.chronicleIncluded ? '已收录' : '收录'}</button></div></div>)}</div>{searchLimit < searchResults.length && <button onClick={() => setSearchLimit((value) => value + SEARCH_WINDOW)} className="w-full border-2 border-black bg-white py-2 text-[9px] font-bold">再显示 {Math.min(SEARCH_WINDOW, searchResults.length - searchLimit)} 张 · 当前 DOM {visibleSearchResults.length}/{searchResults.length}</button>}</>}
+          {!searchResults.length ? <div className="py-16 text-center text-[10px] text-black/40">{analyses.length ? '没有命中。可以增量建立语义索引。' : '先在“待你决定”连接并分析真实相册。'}</div> : <><div className="grid grid-cols-3 gap-2">{visibleSearchResults.map(({ asset, analysis }) => <div key={analysis.key}><PhotoThumb asset={asset} analysis={analysis} onOpen={() => openPhoto(asset)} /><SearchMatchReasons asset={asset} analysis={analysis} query={query} semanticScore={semanticScoreMap.get(analysis.key)} /><div className="mt-1 truncate text-[8px] text-black/55">{analysis.tags.slice(0, 3).join(' · ') || dateLabel(asset.creationTime)}</div><div className="mt-1 flex gap-1"><button disabled={busy || Boolean(analysis.duplicateOf)} onClick={() => void reviewWithQwen(analysis)} className="flex-1 border border-black bg-white py-1 text-[7px]">{analysis.curation ? '重评' : 'Qwen 评审'}</button><button disabled={busy || !analysis.curation || Boolean(analysis.duplicateOf) || analysis.chronicleIncluded} onClick={() => void confirmCurated(analysis)} className={`flex-1 border border-black py-1 text-[7px] ${analysis.chronicleIncluded ? 'bg-[#7CFF6B]' : 'bg-white'} disabled:opacity-40`}>{analysis.chronicleIncluded ? '已收录' : '确认收录'}</button></div></div>)}</div>{searchLimit < searchResults.length && <button onClick={() => setSearchLimit((value) => value + SEARCH_WINDOW)} className="w-full border-2 border-black bg-white py-2 text-[9px] font-bold">再显示 {Math.min(SEARCH_WINDOW, searchResults.length - searchLimit)} 张 · 当前 DOM {visibleSearchResults.length}/{searchResults.length}</button>}</>}
         </div>}
 
         {section !== '照片整理' && <div className={section === '日历' ? 'min-h-0 flex-1' : 'h-full'}>
           {hiddenIncludedCount > 0 && <div className="border-b-2 border-black bg-[#fff8dc] px-3 py-2 text-[8px] text-[#765000]">{hiddenIncludedCount} 条已确认记录因原片缺失或相册权限撤回而隐藏；确认记录未删除，权限恢复后会重新出现。</div>}
           <PhotosChronicle
-            key={`${section}:${realLibraryAssets.length ? 'device' : 'preview'}`}
+            key={`${section}:${curatedAssets.length}:${realLibraryAssets.length ? 'device' : 'preview'}`}
             embedded
             segment={section}
             showSegments={false}
-            data={realLibraryAssets.length ? chronicleData : undefined}
-            onOpenAsset={realLibraryAssets.length ? openPhotoByKey : undefined}
+            data={(realLibraryAssets.length || analyses.length) ? chronicleData : undefined}
+            onOpenAsset={curatedAssets.length ? openPhotoByKey : undefined}
           />
         </div>}
       </div>

@@ -24,18 +24,20 @@ describe('Feishu AI task workflow', () => {
     const dataDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-test-'));
     const store = new FeishuTaskStore({ dataDir, workflowVersion: 'test-v1' });
     await store.init();
+    let writebackToken = '';
     const workflow = createFeishuWorkflow({
       store,
       ocr: { recognize: async () => ({ engine: 'real-test-adapter', pages: [{ page: 1, text: '杭州西湖' }] }) },
       extractor: { extract: async () => ({ model: 'qwen-test', locations: [{ id: 'location-1', nameAsWritten: '杭州西湖', modernName: '西湖', description: '', page: 1, evidence: '杭州西湖', latitude: 30.25, longitude: 120.15, confidence: 0.9, reviewStatus: 'pending' }] }) },
-      writeback: { notifyReview: async () => ({ ok: true }), write: async (task: { taskId: string }) => ({ document: { documentId: `doc-${task.taskId}`, url: 'https://feishu.cn/docx/test' } }) },
+      writeback: { notifyReview: async () => ({ ok: true }), write: async (task: { taskId: string; _private?: { userAccessToken?: string } }) => { writebackToken = task._private?.userAccessToken || ''; return { document: { documentId: `doc-${task.taskId}`, url: 'https://feishu.cn/docx/test' } }; } },
     });
     const first = await workflow.createTask({ identity, source, userAccessToken: 'server-only-token' });
     const reviewTask = await eventually(() => store.get(first.task.taskId), (task) => task?.status === 'awaiting_review');
     expect(reviewTask?.taskId).toBe(first.task.taskId);
     expect(store.getInternal(first.task.taskId)._private.source).toBeNull();
-    const completed = await workflow.confirmAndWrite(first.task.taskId, reviewTask!.locations.map((location: { id: string; modernName: string; description: string; latitude: number; longitude: number }) => ({ ...location, approved: true })));
+    const completed = await workflow.confirmAndWrite(first.task.taskId, reviewTask!.locations.map((location: { id: string; modernName: string; description: string; latitude: number; longitude: number }) => ({ ...location, approved: true })), 'refreshed-user-token');
     expect(completed).toMatchObject({ taskId: first.task.taskId, status: 'completed' });
+    expect(writebackToken).toBe('refreshed-user-token');
     expect(JSON.stringify(completed)).not.toContain('server-only-token');
     expect(store.getInternal(first.task.taskId)._private.userAccessToken).toBe('');
 
@@ -57,6 +59,30 @@ describe('Feishu AI task workflow', () => {
     const created = await workflow.createTask({ identity, source });
     const failed = await eventually(() => store.get(created.task.taskId), (task) => task?.status === 'failed');
     expect(failed).toMatchObject({ status: 'failed', error: 'paddle_ocr_not_configured', locations: [] });
+  });
+
+  it('uses authenticated Feishu document text directly without OCR', async () => {
+    const dataDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-doc-test-'));
+    const store = new FeishuTaskStore({ dataDir, workflowVersion: 'test-doc-v1' });
+    await store.init();
+    let ocrCalls = 0;
+    let routedSkill = '';
+    const workflow = createFeishuWorkflow({
+      store,
+      ocr: { recognize: async () => { ocrCalls += 1; throw new Error('must_not_run'); } },
+      extractor: { extract: async (pages: Array<{ text: string }>, orchestration: { skillId?: string }) => { routedSkill = orchestration?.skillId || ''; return { model: 'qwen-test', locations: [{ id: 'location-1', nameAsWritten: pages[0].text, modernName: '西湖', description: '', page: 1, evidence: pages[0].text, latitude: 30.25, longitude: 120.15, confidence: 0.9, reviewStatus: 'pending' }] }; } },
+      writeback: { notifyReview: async () => ({}), write: async () => ({}) },
+    });
+    const created = await workflow.createTask({
+      identity,
+      userAccessToken: 'server-only-token',
+      orchestration: { engine: 'frost', skillId: 'pocket.book-to-earth', skillName: 'Book-to-Earth', outputSchema: 'pocket.mapping/v1', adapterVersion: 'feishu-docx-v1' },
+      source: { fileName: '杭州游记', mimeType: 'application/x-feishu-document', documentId: 'doc-source', sourceUrl: 'https://example.feishu.cn/docx/doc-source', pages: [{ page: 1, text: '杭州西湖', confidence: 1 }] },
+    });
+    const review = await eventually(() => store.get(created.task.taskId), (task) => task?.status === 'awaiting_review');
+    expect(ocrCalls).toBe(0);
+    expect(routedSkill).toBe('pocket.book-to-earth');
+    expect(review).toMatchObject({ sourceType: 'feishu_document', sourceDocumentId: 'doc-source', orchestration: { engine: 'frost', skillId: 'pocket.book-to-earth' }, inference: { skillId: 'pocket.book-to-earth', outputSchema: 'pocket.mapping/v1' }, ocr: { engine: 'feishu-docx-raw-content' }, locations: [{ evidence: '杭州西湖' }] });
   });
 
   it('reopens the review stage after a writeback failure without repeating OCR or Qwen', async () => {

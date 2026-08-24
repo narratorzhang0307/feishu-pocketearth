@@ -21,6 +21,7 @@ import { selectCaptureGuideForArtifact, captureGuideBrief, type CaptureGuide } f
 import { MUSEUM_2_5D_DEMOS } from '../lib/exhibition/museum2_5d';
 import Exhibit3DGSEvidencePage from './Exhibit3DGSEvidencePage';
 import Museum2_5DStoryPage from './Museum2_5DStoryPage';
+import { useFrostTaskHandoff } from './FrostTaskHandoffFrame';
 
 import Viewer3D from './Viewer3D';
 
@@ -121,10 +122,11 @@ function readRecoveryParam(name: string): string {
 }
 
 export default function ExhibitionRunPage({ onBack, embedded }: Props) {
+  const handoffObjective = useFrostTaskHandoff()?.objective || '';
   const [, force] = useReducer((x) => x + 1, 0);
   useEffect(() => subscribeUserMarks(force), []);
 
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(handoffObjective);
   const [analyzing, setAnalyzing] = useState(false);
   const [, setPhase] = useState<ExhibitionPhase | ''>('');
   const [runId, setRunId] = useState<string | null>(null);

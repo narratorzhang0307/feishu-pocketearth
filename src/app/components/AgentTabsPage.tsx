@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function AgentTabsPage({ onBack, title, leftLabel, rightLabel, left, chat }: Props) {
-  const [tab, setTab] = useState<'data' | 'chat'>('data');
+  const [tab, setTab] = useState<'data' | 'chat'>(chat.initialInput ? 'chat' : 'data');
   return (
     <div className="h-full flex flex-col bg-[#EAEAEA] overflow-hidden">
       <div className="px-3 py-2.5 border-b-2 border-black bg-white shrink-0">

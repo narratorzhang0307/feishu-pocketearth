@@ -18,6 +18,7 @@ export interface AgentChatConfig {
   context: () => string;      // 用户数据摘要（每次发送时取最新）
   placeholder: string;
   suggestions: string[];
+  initialInput?: string;       // Frost handoff：只预填，不自动发送，保留用户确认门
   intentLabels?: string[];    // 端侧意图分类标签（可选）
   // 「这部作品用户接触过吗」查询（命中已看/已读全集则返回标注词如「看过」，否则 null）。
   // 用于推荐去重：扫云脑回复里的《作品名》，把用户已看过的当场标出来（确定性兜底，不靠云脑自觉）。
@@ -44,7 +45,7 @@ function extractJSON(text: string): Record<string, unknown> | null {
 
 export default function AgentChat({ config }: { config: AgentChatConfig }) {
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(config.initialInput || '');
   const [busy, setBusy] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(true);

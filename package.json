@@ -18,6 +18,8 @@
     "test": "vitest run",
     "feishu:verify": "npm run typecheck && vitest run server/feishu && cd services/paddle-ocr && python3 -m unittest -v test_contract.py",
     "feishu:preflight": "node scripts/feishu-preflight.mjs",
+    "feishu:bitable:bootstrap": "node scripts/bootstrap-feishu-bitable-library.mjs",
+    "feishu:bitable:sync": "node scripts/sync-feishu-bitable-library.mjs",
     "datapack:build": "node scripts/data-packs/build-library.mjs",
     "datapack:verify": "node scripts/data-packs/verify-library.mjs",
     "datapack:validate": "node scripts/data-packs/validate-pack.mjs",

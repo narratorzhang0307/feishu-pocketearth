@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boundedText, clientAddress, createSlidingWindowLimiter, isSafeDataImage, isSafeInlineImage } from './security.mjs';
+import { applySecurityHeaders, boundedText, clientAddress, createSlidingWindowLimiter, isSafeDataImage, isSafeInlineImage } from './security.mjs';
 
 describe('server security boundary', () => {
   it('rate limits by a bounded sliding window and recovers after expiry', () => {
@@ -27,5 +27,22 @@ describe('server security boundary', () => {
   it('bounds user text before it reaches paid providers', () => {
     expect(boundedText('abcdef', 3)).toBe('abc');
     expect(boundedText(42, 3)).toBe('');
+  });
+
+  it('keeps frame denial by default but allows only Feishu ancestors for the embedded entry', () => {
+    const headers = new Map<string, string>();
+    const response = {
+      hasHeader: (name: string) => headers.has(name),
+      setHeader: (name: string, value: string) => headers.set(name, value),
+      removeHeader: (name: string) => headers.delete(name),
+    };
+
+    applySecurityHeaders(response);
+    expect(headers.get('x-frame-options')).toBe('DENY');
+
+    applySecurityHeaders(response, { allowFeishuEmbed: true });
+    expect(headers.has('x-frame-options')).toBe(false);
+    expect(headers.get('content-security-policy')).toContain('https://*.feishu.cn');
+    expect(headers.get('content-security-policy')).toContain('https://*.larksuite.com');
   });
 });

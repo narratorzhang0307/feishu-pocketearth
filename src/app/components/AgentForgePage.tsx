@@ -3,6 +3,7 @@ import { Check, ChevronLeft, Database, Download, FileImage, FileText, LoaderCirc
 import { getDocument, GlobalWorkerOptions, type PDFPageProxy } from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { edgeSafe } from '../../../frost-agent/edge/contract';
+import { useFrostTaskHandoff } from './FrostTaskHandoffFrame';
 import { fetchWithDeadline } from '../lib/runtime/fetchWithDeadline';
 import { visionRead } from '../lib/skills/visionRead';
 import {
@@ -259,9 +260,10 @@ function downloadJson(name: string, value: unknown) {
 function packFileName(bundle: MappingDataPackBundle) { return `${bundle.identity.id}-${bundle.identity.version}.pocket-data.json`; }
 
 export default function AgentForgePage({ onBack }: { onBack: () => void }) {
+  const handoffObjective = useFrostTaskHandoff()?.objective || '';
   const [, render] = useReducer((value) => value + 1, 0);
   const [file, setFile] = useState<File | null>(null);
-  const [meta, setMeta] = useState<ForgeBookMeta>({ city: '', title: '', author: '', era: '', purpose: '把书中人物、地点与事件落到私人地球', preferences: '' });
+  const [meta, setMeta] = useState<ForgeBookMeta>({ city: '', title: '', author: '', era: '', purpose: handoffObjective || '把书中人物、地点与事件落到私人地球', preferences: '' });
   const [phase, setPhase] = useState<Phase>('idle'); const [error, setError] = useState(''); const [progress, setProgress] = useState({ current: 0, total: 0, note: '' });
   const [pages, setPages] = useState<ForgePageEvidence[]>([]); const [candidates, setCandidates] = useState<ForgePlaceCandidate[]>([]); const [sourceHash, setSourceHash] = useState('');
   const [runId, setRunId] = useState<string | null>(null); const [bundle, setBundle] = useState<MappingDataPackBundle | null>(null); const [packs, setPacks] = useState<InstalledDataPack[]>([]);

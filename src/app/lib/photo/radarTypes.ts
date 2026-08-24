@@ -18,6 +18,16 @@ export interface PhotoRouterEvidence {
   confidence: number;
 }
 
+export interface PhotoCurationEvidence {
+  recommendation: 'keep' | 'review' | 'reject';
+  qualityScore: number;
+  storyScore: number;
+  summary: string;
+  reasons: string[];
+  model: string;
+  reviewedAt: number;
+}
+
 export interface PhotoDocumentEvidence {
   kind: PhotoDocumentKind;
   text: string;
@@ -74,7 +84,9 @@ export interface PhotoRadarAnalysis {
   document?: PhotoDocumentEvidence;
   /** Structured Qwen routing evidence. Never contains OCR body text. */
   understanding?: PhotoRouterEvidence;
-  visionBackend: 'local-features' | 'local-clip' | 'qwen3-vl-mnn' | 'fallback';
+  /** Cloud Qwen only recommends; chronicleIncluded remains the human confirmation gate. */
+  curation?: PhotoCurationEvidence;
+  visionBackend: 'local-features' | 'local-clip' | 'qwen3-vl-mnn' | 'qwen-cloud' | 'fallback';
   /** Cheap-analysis algorithm version. Old dHash records remain readable and fall back safely. */
   algorithmVersion?: 'photo-radar-dhash-v2' | 'photo-radar-dhash-phash-v3';
   analyzedAt: number;

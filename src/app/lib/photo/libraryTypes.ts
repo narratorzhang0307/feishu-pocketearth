@@ -47,6 +47,9 @@ export interface PhotoIndexCheckpoint {
 export interface PhotoLibraryAsset extends PhotoAssetIndex {
   thumbnailUrl?: string;
   localFile?: File;
+  /** Confirmed Feishu records re-enter the local views without another AI pass. */
+  curated?: boolean;
+  contentHash?: string;
 }
 
 export interface PhotoLibraryPage {
