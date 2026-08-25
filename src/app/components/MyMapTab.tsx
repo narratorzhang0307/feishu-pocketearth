@@ -12,7 +12,7 @@ import { trackDownload } from '../data/themePlanet';
 import { showcasePhotos } from '../data/photos';
 import { getMoodStickers, addMoodSticker, removeMoodSticker, updateMoodStickerPos, commitStickers, seedStickers, subscribeMood, resolveMoodPlace, pickStickerColor, pickRot } from '../data/geoStickers';
 import { applyOverride, setOverride, commitOverrides, subscribeOverrides } from '../data/markerOverrides';
-import { consumePendingMapFocus, subscribeMapFocus } from '../data/mapFocus';
+import { consumePendingMapFocus, subscribeMapFocus, type MapFocusReq } from '../data/mapFocus';
 import { FileText, Plus, X, Play, Pause } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import MapLegend, { type PackLayerStatus } from './MapLegend';
@@ -367,11 +367,20 @@ export default function MyMapTab(_props: MyMapTabProps) {
     let alive = true;
     // 轮询等 style 加载完再 flyTo：切回 earth tab 重新挂载的新 map 初始 styleLoaded=false，
     // once('idle') 在重渲染/重建过程中不可靠（实测不触发）；轮询确保 style 就绪后必然飞过去。
-    const fly = (c: { lng: number; lat: number; zoom: number }) => {
+    const fly = (c: MapFocusReq) => {
       let tries = 0;
       const tick = () => {
         if (!alive) return;
-        if (map.isStyleLoaded()) map.flyTo({ center: [c.lng, c.lat], zoom: Math.max(map.getZoom(), c.zoom), duration: 1600 });
+        if (map.isStyleLoaded()) {
+          // 可观测的验收标记：不显示在 UI 中，供自动化验证“哪张票让地图飞到了哪里”。
+          const container = map.getContainer();
+          container.dataset.focusDomain = c.domain || '';
+          container.dataset.focusRecord = c.recordId || '';
+          container.dataset.focusLabel = c.label || '';
+          container.dataset.focusLng = String(c.lng);
+          container.dataset.focusLat = String(c.lat);
+          map.flyTo({ center: [c.lng, c.lat], zoom: Math.max(map.getZoom(), c.zoom), duration: 1600 });
+        }
         else if (tries++ < 50) setTimeout(tick, 100);
       };
       tick();

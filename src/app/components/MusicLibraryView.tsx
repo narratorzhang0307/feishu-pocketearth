@@ -80,17 +80,27 @@ export default function MusicLibraryView() {
 
   const [pinMsg, setPinMsg] = useState<string | null>(null);
 
+  const focusSong = (song?: Song) => {
+    if (!song) return;
+    const city = RADIO_CITIES.find((item) => item.cityNameZh === song.city || item.cityName === song.city);
+    const lng = Number.isFinite(song.lng) ? song.lng : city?.lng;
+    const lat = Number.isFinite(song.lat) ? song.lat : city?.lat;
+    if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+    requestMapFocus(lng!, lat!, 7.8, { domain: 'music', recordId: song.id, label: song.title });
+  };
+
   const playSong = (id: string) => {
+    const s = songs.find((x) => x.id === id);
+    // 音乐条目也是地球入口：重复点击当前歌曲仍要重新定位，不能被播放开关的提前 return 吞掉。
+    focusSong(s);
     if (id === curId) { setPlaying((p) => !p); return; }
     const resolved = resolveTracksByIds([id])[0];
     setCurId(id);
     setPlaying(canPlayMusicSource(resolved?.playback));
     setSourceError(canPlayMusicSource(resolved?.playback) ? null : '这条数据没有可用的原曲来源');
-    const s = songs.find((x) => x.id === id);   // 记一次收听 → 听歌记忆库 + 回流口味画像（含 genre/city）
+    // 记一次收听 → 听歌记忆库 + 回流口味画像（含 genre/city）
     if (s) {
       recordPlay({ id: s.id, title: s.title, artist: s.artist, genre: s.genre, city: s.city });
-      const city = RADIO_CITIES.find((item) => item.cityNameZh === s.city || item.cityName === s.city);
-      if (Number.isFinite(city?.lng) && Number.isFinite(city?.lat)) requestMapFocus(city!.lng!, city!.lat!, 7.8);
     }
   };
 
@@ -112,7 +122,7 @@ export default function MusicLibraryView() {
   const Row = (s: Song, showArtistFirst = false) => {
     const active = s.id === curId;
     return (
-      <button key={s.id} onClick={() => playSong(s.id)}
+      <button key={s.id} onClick={() => playSong(s.id)} title={`回到地球并定位「${s.title}」· ${s.city}`}
         className={`w-full text-left flex items-center gap-2.5 px-2.5 py-2 border-b border-black/10 transition-colors ${active ? 'bg-[#00ff88]/15' : 'hover:bg-[#00ff88]/8 active:bg-[#00ff88]/20'}`}>
         <div className="w-7 h-7 shrink-0 bg-black flex items-center justify-center border border-black shadow-[1px_1px_0_#00ff88]">
           {active && playing ? <Pause className="w-3.5 h-3.5 text-[#00ff88]" fill="currentColor" strokeWidth={0} /> : <Play className="w-3.5 h-3.5 text-[#00ff88] ml-0.5" fill="currentColor" strokeWidth={0} />}

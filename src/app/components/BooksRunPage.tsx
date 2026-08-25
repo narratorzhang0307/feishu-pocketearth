@@ -93,7 +93,7 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
 
   const openPlate = (p: Plate) => {
     if (p.pinned && Number.isFinite(p.lng) && Number.isFinite(p.lat)) {
-      requestMapFocus(p.lng!, p.lat!, 7.8);
+      requestMapFocus(p.lng!, p.lat!, 7.8, { domain: 'books', recordId: p.key, label: p.title });
       return;
     }
     setSelected({ kind: 'book', title: p.title, author: p.author, place: p.place,

@@ -87,7 +87,7 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
 
   const openTicket = (ticket: Ticket) => {
     if (ticket.pinned && Number.isFinite(ticket.lng) && Number.isFinite(ticket.lat)) {
-      requestMapFocus(ticket.lng!, ticket.lat!, 7.8);
+      requestMapFocus(ticket.lng!, ticket.lat!, 7.8, { domain: 'movies', recordId: ticket.key, label: ticket.title });
       return;
     }
     setSelected({ kind: 'movie', title: ticket.title, original: ticket.original, director: ticket.director, country: ticket.country, year: ticket.year, rating: ticket.rating, date: ticket.date, synopsis: ticket.synopsis });
@@ -271,7 +271,7 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
           </div>
         )}
         {feed.map((t) => (
-          <button key={t.key} onClick={() => openTicket(t)} className="w-full text-left border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.85)] bg-white relative overflow-hidden active:translate-y-px">
+          <button key={t.key} onClick={() => openTicket(t)} title={t.pinned ? `回到地球并定位《${t.title}》` : `查看《${t.title}》票根详情`} className="w-full text-left border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.85)] bg-white relative overflow-hidden active:translate-y-px">
             {/* 票根顶部 amber 条 */}
             <div className="flex items-center justify-between px-2.5 py-1" style={{ background: AMBER }}>
               <span className="font-pixel text-[7px] tracking-widest text-black">ADMIT ONE · 观影票根{t.user ? ' · NEW' : ''}</span>
