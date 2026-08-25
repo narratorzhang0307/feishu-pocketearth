@@ -9,7 +9,7 @@ const generatedAt = '2026-08-24T00:00:00.000Z';
 
 const definitions = {
   books: {
-    id: 'earth.pocket.feishu.demo.books',
+    id: 'earth.pocket.feishu.demo.books.v2',
     name: 'Pocket Earth × 飞书 · 100 条示例书库',
     description: '与飞书书籍多维表格已确认示例协调的 100 条轻量书籍数据包。',
     schema: 'pocket.books/v1',

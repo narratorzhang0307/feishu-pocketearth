@@ -33,10 +33,13 @@ export const DEFAULT_DATA_PACK_URLS: Record<DataPackDomain, string> = {
   mapping: import.meta.env.VITE_MAPPING_DATA_PACK_URL || '',
 };
 
-const LEGACY_DEMO_PACK_IDS: Partial<Record<DataPackDomain, string>> = {
-  books: 'earth.pocket.demo.books',
-  movies: 'earth.pocket.demo.movies',
-  music: 'earth.pocket.demo.music',
+const REPLACEABLE_DEMO_PACK_IDS: Partial<Record<DataPackDomain, string[]>> = {
+  // v1 of the Feishu book demo still contained temporary verification rows. Treat it like the
+  // original legacy demo so existing WebViews install the cleaned v2 pack once. Personal and
+  // Feishu-synced packs use different ids and are never replaced here.
+  books: ['earth.pocket.demo.books', 'earth.pocket.feishu.demo.books'],
+  movies: ['earth.pocket.demo.movies'],
+  music: ['earth.pocket.demo.music'],
 };
 
 const states: Record<DataPackDomain, DataPackState> = {
@@ -191,7 +194,8 @@ export const getDataPackState = (domain: DataPackDomain): DataPackState => state
 export async function ensureActiveDataPack(domain: DataPackDomain): Promise<InstalledDataPack | null> {
   await hydrate();
   const active = states[domain].active;
-  if (active && active.manifest.identity.id !== LEGACY_DEMO_PACK_IDS[domain]) return active;
+  const replaceableDemoIds = REPLACEABLE_DEMO_PACK_IDS[domain] || [];
+  if (active && !replaceableDemoIds.includes(active.manifest.identity.id)) return active;
   if (disabledDomains()[domain]) return null;
   if (!DEFAULT_DATA_PACK_URLS[domain]) return null;
   if (pending[domain]) return pending[domain]!;

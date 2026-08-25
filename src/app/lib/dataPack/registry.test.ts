@@ -88,4 +88,26 @@ describe('Data Pack demo restore', () => {
     expect(active?.source).toContain('/data-packs/feishu-pocket-earth-books/1.0.0/manifest.json');
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/data-packs/feishu-pocket-earth-books/1.0.0/manifest.json'), expect.anything());
   });
+
+  it('replaces the retired Feishu book demo while preserving personal and synced pack ids', async () => {
+    const retiredPack = {
+      packKey: 'earth.pocket.feishu.demo.books@1.0.0',
+      domain: 'books',
+      manifest: {
+        ...bundle('books'),
+        identity: { ...bundle('books').identity, id: 'earth.pocket.feishu.demo.books' },
+      },
+      records: [],
+      installedAt: '2026-08-24T00:00:00.000Z',
+      source: '/data-packs/feishu-pocket-earth-books/1.0.0/manifest.json',
+    } as InstalledDataPack;
+    db.set(retiredPack.packKey, retiredPack);
+    localStorage.setItem('pe.dataPacks.active.v1', JSON.stringify({ books: retiredPack.packKey }));
+
+    const registry = await import('./registry');
+    const active = await registry.ensureActiveDataPack('books');
+
+    expect(active?.packKey).not.toBe(retiredPack.packKey);
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/data-packs/feishu-pocket-earth-books/1.0.0/manifest.json'), expect.anything());
+  });
 });
