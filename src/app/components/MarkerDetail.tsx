@@ -18,7 +18,7 @@ export interface MarkerDetailData {
   // 通用
   title?: string;
   // photo
-  full?: string; thumb?: string; city?: string;
+  full?: string; thumb?: string; city?: string; artist?: string;
   // movie
   original?: string; director?: string; country?: string; year?: number | null; rating?: number | null; date?: string; synopsis?: string; type?: string;
   cast?: string[]; genre?: string; movement?: string; geoKind?: string;   // 电影 agent 补全的多维标签 + 落点精度
@@ -299,9 +299,14 @@ export default function MarkerDetail({ data, onClose, onRemove, onView3D, onSele
         {data.kind === 'music' && (
           <div>
             <div className="px-2.5 py-1.5 bg-black"><span className="font-pixel text-[7px] tracking-widest text-[#00ff88]">CITY · 音乐城市</span></div>
-            <div className="px-3 py-3 text-center">
-              <div className="text-[16px] font-bold">{data.title || data.city}</div>
-              <div className="text-[10px] text-black/45 mt-1">● 歌手出身地 / 歌曲城市</div>
+            <div className="px-3 py-2.5">
+              <div className="text-[16px] font-bold leading-tight">{data.title || data.city}</div>
+              {data.artist && <div className="mt-1 text-[11px] text-black/65">{data.artist}</div>}
+              {data.genre && <span className="mt-1.5 inline-block border border-black/30 bg-[#eafff3] px-1.5 py-0.5 font-pixel text-[6px]">流派·{data.genre}</span>}
+              <div className="mt-2 flex items-center gap-1.5">
+                <span className="h-2 w-2 bg-[#00ff88]" />
+                <span className="font-pixel text-[7px] tracking-wider text-black/50">钉于 {data.city || data.place || '音乐城市'}</span>
+              </div>
             </div>
           </div>
         )}

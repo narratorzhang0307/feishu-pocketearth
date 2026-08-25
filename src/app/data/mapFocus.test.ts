@@ -21,11 +21,15 @@ describe('map focus bridge', () => {
       domain: 'books',
       recordId: 'book:1',
       label: '测试藏书票',
+      detail: { title: '测试藏书票', author: '测试作者', place: '杭州', year: 2026 },
     });
 
     expect(received).toHaveLength(1);
     expect(received[0]).toMatchObject({ lng: 120.15, lat: 30.27, zoom: 7.8, domain: 'books', recordId: 'book:1' });
-    expect(focus.consumePendingMapFocus()).toMatchObject({ label: '测试藏书票' });
+    expect(focus.consumePendingMapFocus()).toMatchObject({
+      label: '测试藏书票',
+      detail: { author: '测试作者', place: '杭州', year: 2026 },
+    });
     expect(focus.consumePendingMapFocus()).toBeNull();
     unsubscribe();
   });
@@ -46,12 +50,21 @@ describe('map focus bridge', () => {
     const received: unknown[] = [];
     focus.subscribeMapFocus((request) => received.push(request));
 
-    focus.requestMapFocus(-74.19, 10.59, 7.8, { domain: 'books', recordId: 'book:macondo' });
+    focus.requestMapFocus(-74.19, 10.59, 7.8, {
+      domain: 'books',
+      recordId: 'book:macondo',
+      detail: { title: '百年孤独', author: '加西亚·马尔克斯', synopsis: '一部关于布恩迪亚家族的小说。' },
+    });
     expect(received).toHaveLength(1);
 
     // 模拟切换 tab 后地图 chunk 才挂载：清空模块并从 sessionStorage 恢复未消费请求。
     const remounted = await loadFresh();
-    expect(remounted.consumePendingMapFocus()).toMatchObject({ lng: -74.19, lat: 10.59, recordId: 'book:macondo' });
+    expect(remounted.consumePendingMapFocus()).toMatchObject({
+      lng: -74.19,
+      lat: 10.59,
+      recordId: 'book:macondo',
+      detail: { title: '百年孤独', author: '加西亚·马尔克斯' },
+    });
     expect(remounted.consumePendingMapFocus()).toBeNull();
   });
 });

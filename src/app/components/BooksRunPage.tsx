@@ -23,6 +23,7 @@ const VIOLET = '#b388ff';
 interface Plate {
   key: string; title: string; author: string; place: string;
   year?: number | null; rating?: number | null; note?: string; synopsis?: string; date?: string; pinned?: boolean; user?: boolean;
+  genre?: string; movement?: string; translator?: string; geoKind?: string;
   lng?: number; lat?: number;
 }
 
@@ -42,8 +43,10 @@ const oneLine = (p: Plate) => {
 
 function fromRecord(b: BookRecord): Plate {
   const point = bookMapPoint(b);
-  return { key: 'bk' + b.id, title: b.title, author: b.author, place: b.country,
-    year: b.year, rating: b.rating, synopsis: b.synopsis, date: b.date, pinned: !!point, lng: point?.lng, lat: point?.lat };
+  const location = b.locations?.find((item) => Number.isFinite(item.lng) && Number.isFinite(item.lat));
+  return { key: 'bk' + b.id, title: b.title, author: b.author, place: location?.place || b.country,
+    year: b.year, rating: b.rating, synopsis: b.synopsis, date: b.date, genre: b.type, geoKind: location?.kind,
+    pinned: !!point, lng: point?.lng, lat: point?.lat };
 }
 
 export default function BooksRunPage({ onBack, embedded }: Props) {
@@ -76,7 +79,9 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
     const meta = (m.meta || {}) as Record<string, unknown>;
     return { key: m.id, title: m.label || String(meta.title || ''), author: String(meta.author || ''),
       place: String(meta.place || ''), year: meta.year as number, rating: meta.rating as number,
-      note: String(meta.note || ''), synopsis: String(meta.synopsis || ''), date: String(meta.date || ''), pinned: true, user: true, lng: m.lng, lat: m.lat };
+      note: String(meta.note || ''), synopsis: String(meta.synopsis || ''), date: String(meta.date || ''),
+      genre: String(meta.genre || ''), movement: String(meta.movement || ''), translator: String(meta.translator || ''), geoKind: String(meta.geoKind || ''),
+      pinned: true, user: true, lng: m.lng, lat: m.lat };
   });
 
   // 按读完日期倒序；同一天以飞书新写入的记录优先，避免新确认藏书票被挤到 60 条之外。
@@ -93,11 +98,31 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
 
   const openPlate = (p: Plate) => {
     if (p.pinned && Number.isFinite(p.lng) && Number.isFinite(p.lat)) {
-      requestMapFocus(p.lng!, p.lat!, 7.8, { domain: 'books', recordId: p.key, label: p.title });
+      requestMapFocus(p.lng!, p.lat!, 7.8, {
+        domain: 'books',
+        recordId: p.key,
+        label: p.title,
+        detail: {
+          title: p.title,
+          author: p.author,
+          country: p.place,
+          place: p.place,
+          year: p.year,
+          rating: p.rating,
+          synopsis: p.synopsis,
+          note: p.note,
+          date: p.date,
+          genre: p.genre,
+          movement: p.movement,
+          translator: p.translator,
+          geoKind: p.geoKind,
+        },
+      });
       return;
     }
     setSelected({ kind: 'book', title: p.title, author: p.author, place: p.place,
-      year: p.year, rating: p.rating, synopsis: p.synopsis, date: p.date, note: p.note });
+      year: p.year, rating: p.rating, synopsis: p.synopsis, date: p.date, note: p.note,
+      genre: p.genre, movement: p.movement, translator: p.translator, geoKind: p.geoKind });
   };
 
   // 跑读书 agent：一句话 / 书封截图 → 解析→本地库→云脑补全子agent→地理子agent→校验 → 草稿藏书票

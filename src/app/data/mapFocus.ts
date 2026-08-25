@@ -4,6 +4,29 @@
 // - sessionStorage 负责地图尚未挂载时保存一次性请求。
 export type MapFocusDomain = 'books' | 'movies' | 'music' | 'photos' | 'other';
 
+// 票据页比地图查找表拥有更完整、也更新的数据（尤其是刚从飞书同步的记录）。
+// 跳转时把详情快照一起带到地图，避免 recordId 尚未进入静态索引时只剩一个标题。
+export interface MapFocusDetail {
+  title?: string;
+  original?: string;
+  author?: string;
+  director?: string;
+  artist?: string;
+  country?: string;
+  place?: string;
+  city?: string;
+  year?: number | null;
+  rating?: number | null;
+  date?: string;
+  synopsis?: string;
+  note?: string;
+  genre?: string;
+  movement?: string;
+  translator?: string;
+  cast?: string[];
+  geoKind?: string;
+}
+
 export interface MapFocusReq {
   lng: number;
   lat: number;
@@ -11,6 +34,7 @@ export interface MapFocusReq {
   domain?: MapFocusDomain;
   recordId?: string;
   label?: string;
+  detail?: MapFocusDetail;
   requestedAt: number;
 }
 
@@ -18,6 +42,7 @@ export interface MapFocusMeta {
   domain?: MapFocusDomain;
   recordId?: string;
   label?: string;
+  detail?: MapFocusDetail;
 }
 
 export const MAP_FOCUS_EVENT = 'pocket-earth:map-focus';

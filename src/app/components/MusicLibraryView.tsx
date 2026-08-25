@@ -86,7 +86,18 @@ export default function MusicLibraryView() {
     const lng = Number.isFinite(song.lng) ? song.lng : city?.lng;
     const lat = Number.isFinite(song.lat) ? song.lat : city?.lat;
     if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
-    requestMapFocus(lng!, lat!, 7.8, { domain: 'music', recordId: song.id, label: song.title });
+    requestMapFocus(lng!, lat!, 7.8, {
+      domain: 'music',
+      recordId: song.id,
+      label: song.title,
+      detail: {
+        title: song.title,
+        artist: song.artist,
+        city: song.city,
+        place: song.city,
+        genre: song.genre,
+      },
+    });
   };
 
   const playSong = (id: string) => {

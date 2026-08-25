@@ -155,6 +155,21 @@ function fallbackFocusDetail(target: MapFocusReq, kind: MarkerKind): MarkerDetai
   return { kind: 'custom', title, agentName: '', emoji: '📍', domain: '', tags: {}, note: '', place: '' };
 }
 
+// 优先使用票据页随跳转带来的详情快照；静态/用户索引只负责补充缺失字段。
+// 飞书刚确认的记录可能尚未被 mapMarkers 索引，此处不能再退化成只有标题的空卡。
+function detailForFocus(target: MapFocusReq, kind: MarkerKind): MarkerDetailData {
+  const resolved = target.recordId
+    ? resolveDetail(target.recordId, kind, target.label || '')
+    : null;
+  const fallback = resolved || fallbackFocusDetail(target, kind);
+  return {
+    ...fallback,
+    ...(target.detail || {}),
+    kind,
+    title: target.detail?.title || fallback.title || target.label || '知识点',
+  };
+}
+
 interface MyMapTabProps {
   onViewInAR?: () => void;
   feishuMode?: boolean;
@@ -723,9 +738,7 @@ export default function MyMapTab(_props: MyMapTabProps) {
         {map && focusTarget && (() => {
           const point = map.project([focusTarget.lng, focusTarget.lat]);
           const kind = focusKind(focusTarget.domain);
-          const detail = focusTarget.recordId
-            ? resolveDetail(focusTarget.recordId, kind, focusTarget.label || '')
-            : null;
+          const detail = detailForFocus(focusTarget, kind);
           return (
             <div
               className="absolute z-[17] -translate-x-1/2 -translate-y-1/2"
@@ -735,7 +748,7 @@ export default function MyMapTab(_props: MyMapTabProps) {
               <button
                 type="button"
                 aria-label={`打开${focusTarget.label || '知识点'}详情`}
-                onClick={() => setSelected(detail || fallbackFocusDetail(focusTarget, kind))}
+                onClick={() => setSelected(detail)}
                 className="block h-3.5 w-3.5 border-2 border-black active:scale-90"
                 style={{ backgroundColor: KIND_COLOR[kind] || '#00ff88' }}
               />

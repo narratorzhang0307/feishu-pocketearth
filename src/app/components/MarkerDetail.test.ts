@@ -3,6 +3,55 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import MarkerDetail from './MarkerDetail';
 
+describe('MarkerDetail · 原版知识票据', () => {
+  it('藏书票展示作者、年份、类型、简介、地点与阅读日期', () => {
+    const html = renderToStaticMarkup(React.createElement(MarkerDetail, {
+      data: {
+        kind: 'book', title: '酒吧长谈', author: '马里奥·巴尔加斯·略萨', country: '秘鲁',
+        year: 1969, genre: '小说', synopsis: '以利马为背景的多声部叙事。',
+        place: '利马', geoKind: 'story', date: '2026-08-25', rating: 5,
+      },
+      onClose: () => {},
+    }));
+
+    expect(html).toContain('EX LIBRIS · 藏书票');
+    expect(html).toContain('马里奥·巴尔加斯·略萨 · 秘鲁');
+    expect(html).toContain('1969');
+    expect(html).toContain('类型·小说');
+    expect(html).toContain('以利马为背景的多声部叙事。');
+    expect(html).toContain('钉于 故事地利马 · 读于 2026-08-25');
+  });
+
+  it('电影票展示导演、年份、类型、简介与地点', () => {
+    const html = renderToStaticMarkup(React.createElement(MarkerDetail, {
+      data: {
+        kind: 'movie', title: '花样年华', director: '王家卫', country: '中国香港', year: 2000,
+        genre: '剧情', synopsis: '两段克制的情感在香港交错。', place: '香港', geoKind: 'filming', rating: 5,
+      },
+      onClose: () => {},
+    }));
+
+    expect(html).toContain('ADMIT ONE · 观影票根');
+    expect(html).toContain('王家卫 · 中国香港 · 2000');
+    expect(html).toContain('类型·剧情');
+    expect(html).toContain('两段克制的情感在香港交错。');
+    expect(html).toContain('钉于 取景地香港');
+  });
+
+  it('音乐城市卡展示歌名、歌手、流派与城市', () => {
+    const html = renderToStaticMarkup(React.createElement(MarkerDetail, {
+      data: { kind: 'music', title: 'California Dreamin\'', artist: 'The Mamas & the Papas', genre: '摇滚', city: '洛杉矶' },
+      onClose: () => {},
+    }));
+
+    expect(html).toContain('CITY · 音乐城市');
+    expect(html).toContain('California Dreamin&#x27;');
+    expect(html).toContain('The Mamas &amp; the Papas');
+    expect(html).toContain('流派·摇滚');
+    expect(html).toContain('钉于 洛杉矶');
+  });
+});
+
 describe('MarkerDetail · 看展 Qwen 展示字段', () => {
   it('在钉地球详情里展示规整后的 Qwen 时间线位置', () => {
     const html = renderToStaticMarkup(React.createElement(MarkerDetail, {

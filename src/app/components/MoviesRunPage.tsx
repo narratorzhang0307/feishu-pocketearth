@@ -22,6 +22,7 @@ interface Ticket {
   key: string; title: string; original?: string; director?: string;
   country: string; year?: number | null; rating?: number | null; type?: string; date?: string;
   synopsis?: string; douban?: number; pinned: boolean; user?: boolean; lng?: number; lat?: number;
+  place?: string; geoKind?: string; movement?: string; cast?: string[];
 }
 
 const stars = (r?: number | null) => {
@@ -31,8 +32,10 @@ const stars = (r?: number | null) => {
 
 function fromRecord(m: MovieRecord): Ticket {
   const point = moviePoints.find((item) => item.id === m.id);
+  const location = m.locations?.find((item) => Number.isFinite(item.lng) && Number.isFinite(item.lat));
   return { key: 'd' + m.id, title: m.title, original: m.original, director: m.director, country: m.country,
     year: m.year, rating: m.rating, type: m.type, date: m.date, synopsis: m.synopsis, douban: doubanRating(m.id),
+    place: location?.place || m.country, geoKind: location?.kind,
     pinned: Boolean(point), lng: point?.lng, lat: point?.lat };
 }
 
@@ -62,7 +65,8 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
     return { key: m.id, title: m.label || String(meta.title || ''), original: String(meta.original || ''),
       director: String(meta.director || ''), country: String(meta.country || ''), year: meta.year as number,
       rating: meta.rating as number, type: String(meta.type || '电影'), date: String(meta.date || ''), synopsis: String(meta.synopsis || ''),
-      pinned: true, user: true, lng: m.lng, lat: m.lat };
+      place: String(meta.place || meta.country || ''), geoKind: String(meta.geoKind || ''), movement: String(meta.movement || ''),
+      cast: Array.isArray(meta.cast) ? (meta.cast as string[]) : [], pinned: true, user: true, lng: m.lng, lat: m.lat };
   });
 
   // 豆瓣记录：按观看日期倒序，取近 60 条做票根流
@@ -87,10 +91,31 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
 
   const openTicket = (ticket: Ticket) => {
     if (ticket.pinned && Number.isFinite(ticket.lng) && Number.isFinite(ticket.lat)) {
-      requestMapFocus(ticket.lng!, ticket.lat!, 7.8, { domain: 'movies', recordId: ticket.key, label: ticket.title });
+      requestMapFocus(ticket.lng!, ticket.lat!, 7.8, {
+        domain: 'movies',
+        recordId: ticket.key,
+        label: ticket.title,
+        detail: {
+          title: ticket.title,
+          original: ticket.original,
+          director: ticket.director,
+          country: ticket.country,
+          place: ticket.place || ticket.country,
+          year: ticket.year,
+          rating: ticket.rating,
+          date: ticket.date,
+          synopsis: ticket.synopsis,
+          genre: ticket.type,
+          movement: ticket.movement,
+          cast: ticket.cast,
+          geoKind: ticket.geoKind,
+        },
+      });
       return;
     }
-    setSelected({ kind: 'movie', title: ticket.title, original: ticket.original, director: ticket.director, country: ticket.country, year: ticket.year, rating: ticket.rating, date: ticket.date, synopsis: ticket.synopsis });
+    setSelected({ kind: 'movie', title: ticket.title, original: ticket.original, director: ticket.director, country: ticket.country,
+      place: ticket.place, year: ticket.year, rating: ticket.rating, date: ticket.date, synopsis: ticket.synopsis,
+      genre: ticket.type, movement: ticket.movement, cast: ticket.cast, geoKind: ticket.geoKind });
   };
 
   // 跑电影 agent：一句话 / 截图 → 解析→本地库→云脑补全子agent→地理子agent→校验 → 出草稿卡
