@@ -70,14 +70,12 @@ describe('Feishu photo library projection', () => {
     expect(() => validateBookRecord(book)).not.toThrow();
   });
 
-  it('removes temporary book verification records from the runtime projection', () => {
+  it('keeps newly confirmed books even when an older demo used the same title', () => {
     const compact = compactFeishuRuntimeRecords('books', [
-      { id: '1', title: '酒吧长谈' },
-      { id: '2', title: '城市与狗' },
-      { id: '3', title: '【手机验证】百年孤独：马孔多与阿拉卡塔卡' },
-      { id: '4', title: '老人与海' },
+      { id: 'book:feishu-ai:new', title: '酒吧长谈', author: '马里奥·巴尔加斯·略萨', country: '秘鲁', type: '小说', year: 1969, rating: null, date: '2026-08-25', synopsis: '新确认记录', locations: [] },
     ]) as Array<Record<string, unknown>>;
-    expect(compact.map((record) => record.title)).toEqual(['老人与海']);
+    expect(compact.map((record) => record.title)).toEqual(['酒吧长谈']);
+    expect(() => validateBookRecord(compact[0])).not.toThrow();
   });
 
   it('can switch a sample slot back to its Feishu table source before syncing confirmed rows', async () => {

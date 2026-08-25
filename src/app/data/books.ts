@@ -20,14 +20,6 @@ export let bookDataVersion = 0;
 const listeners = new Set<() => void>();
 let lastRecords: unknown = null;
 
-// Temporary Feishu end-to-end verification rows must not be resurrected by an older
-// embedded WebView or IndexedDB snapshot after the source rows have been deleted.
-const REMOVED_DEMO_BOOK_TITLES = ['酒吧长谈', '城市与狗', '百年孤独'];
-export const isRemovedDemoBook = (record: Pick<BookRecord, 'title'>): boolean => {
-  const title = String(record?.title || '').replace(/\s+/g, '');
-  return REMOVED_DEMO_BOOK_TITLES.some((removed) => title.includes(removed));
-};
-
 // Skill 级地理兜底：仅用于用户新记一本但尚无明确地点时；默认 Data Pack 自身已经携带 locations。
 const COUNTRY_COORDS: Record<string, [number, number]> = {
   中国大陆: [116.40, 39.90], 中国: [116.40, 39.90], 中国台湾: [121.56, 25.03], 中国香港: [114.17, 22.32],
@@ -80,7 +72,9 @@ function applyActivePack() {
   const records = getDataPackState('books').active?.records || [];
   if (records === lastRecords) return;
   lastRecords = records;
-  bookRecords = (records as BookRecord[]).filter((record) => !isRemovedDemoBook(record));
+  // The active Feishu projection is authoritative. Do not blacklist titles here: a user may
+  // legitimately create a new record with the same title as a previously removed demo row.
+  bookRecords = records as BookRecord[];
   bookTotal = bookRecords.length;
   bookPoints = bookRecords.map(bookMapPoint).filter((record): record is BookPoint => !!record);
   bookMappedTotal = bookPoints.length;
