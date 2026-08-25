@@ -4,6 +4,17 @@ import { describe, expect, it } from 'vitest';
 import MarkerDetail from './MarkerDetail';
 
 describe('MarkerDetail · 原版知识票据', () => {
+  it('详情弹层不叠加灰色蒙版或卡片阴影', () => {
+    const html = renderToStaticMarkup(React.createElement(MarkerDetail, {
+      data: { kind: 'book', title: '美国众神' },
+      onClose: () => {},
+    }));
+
+    expect(html).not.toContain('bg-black/70');
+    expect(html).not.toContain('backdrop-blur-sm');
+    expect(html).not.toContain('shadow-[6px_6px_0_#000]');
+  });
+
   it('藏书票展示作者、年份、类型、简介、地点与阅读日期', () => {
     const html = renderToStaticMarkup(React.createElement(MarkerDetail, {
       data: {

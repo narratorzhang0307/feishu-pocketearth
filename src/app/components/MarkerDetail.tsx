@@ -117,12 +117,12 @@ export default function MarkerDetail({ data, onClose, onRemove, onView3D, onSele
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="absolute inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6"
+      className="absolute inset-0 z-[120] flex items-center justify-center p-6"
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-        className="w-[300px] max-w-full bg-white border-[3px] border-black shadow-[6px_6px_0_#000] relative"
+        className="w-[300px] max-w-full bg-white border-[3px] border-black relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} aria-label="关闭" className="absolute -top-3 -right-3 w-7 h-7 bg-black border-2 border-[#7CFF6B] flex items-center justify-center z-10">
