@@ -138,6 +138,23 @@ function resolveDetail(id: string, kind: MarkerKind, label: string): MarkerDetai
   return null;
 }
 
+function focusKind(domain: MapFocusReq['domain']): MarkerKind {
+  if (domain === 'books') return 'book';
+  if (domain === 'movies') return 'movie';
+  if (domain === 'music') return 'music';
+  if (domain === 'photos') return 'photo';
+  return 'custom';
+}
+
+function fallbackFocusDetail(target: MapFocusReq, kind: MarkerKind): MarkerDetailData {
+  const title = target.label || '知识点';
+  if (kind === 'book') return { kind, title, place: '' };
+  if (kind === 'movie') return { kind, title, country: '' };
+  if (kind === 'photo') return { kind, full: '', thumb: '', city: title };
+  if (kind === 'music') return { kind, title, city: '' };
+  return { kind: 'custom', title, agentName: '', emoji: '📍', domain: '', tags: {}, note: '', place: '' };
+}
+
 interface MyMapTabProps {
   onViewInAR?: () => void;
   feishuMode?: boolean;
@@ -428,39 +445,11 @@ export default function MyMapTab(_props: MyMapTabProps) {
       map.addSource('marks', {
         type: 'geojson',
         data: buildMarksData(viewportMarkerBounds(map)) as never,
-        cluster: true,
-        clusterMaxZoom: 9,
-        clusterRadius: 46,
       });
-      map.addLayer({
-        id: 'marks-clusters',
-        type: 'circle',
-        source: 'marks',
-        filter: ['has', 'point_count'],
-        paint: {
-          'circle-color': ['step', ['get', 'point_count'], '#f5e6b8', 20, '#ffb000', 100, '#ff3b6b'],
-          'circle-radius': ['step', ['get', 'point_count'], 13, 20, 17, 100, 21],
-          'circle-stroke-width': 3,
-          'circle-stroke-color': '#000',
-        },
-      } as never);
-      map.addLayer({
-        id: 'marks-cluster-count',
-        type: 'symbol',
-        source: 'marks',
-        filter: ['has', 'point_count'],
-        layout: {
-          'text-field': ['get', 'point_count_abbreviated'],
-          'text-font': ['Arial Unicode MS Regular'],
-          'text-size': 10,
-        },
-        paint: { 'text-color': '#000' },
-      } as never);
       map.addLayer({
         id: 'mark-layer',
         type: 'symbol',
         source: 'marks',
-        filter: ['!', ['has', 'point_count']],
         layout: {
           'icon-image': ['concat', 'sq-', ['get', 'kind']],
           'icon-size': ['interpolate', ['linear'], ['zoom'], 1, 0.28, 4, 0.42, 7, 0.7, 11, 1],
@@ -502,7 +491,7 @@ export default function MyMapTab(_props: MyMapTabProps) {
       if (!map.getLayer('mark-layer')) return;
       // 放大到街区(≥SONG_ZOOM)时，城市级音乐点交给歌曲落点卡片接管，从 symbol 层排除 music
       const kinds = [...visibleKinds].filter((k) => !(k === 'music' && zoom >= SONG_ZOOM));
-      map.setFilter('mark-layer', ['all', ['!', ['has', 'point_count']], ['in', ['get', 'kind'], ['literal', kinds]]] as never);
+      map.setFilter('mark-layer', ['in', ['get', 'kind'], ['literal', kinds]] as never);
     };
     if (map.isStyleLoaded()) apply();
     else map.once('idle', apply);
@@ -564,17 +553,6 @@ export default function MyMapTab(_props: MyMapTabProps) {
       if (!ph) return;
       setSelected({ kind: 'photo', full: ph.full, thumb: ph.thumb, city: ph.alt || '照片', authorName: ph.author, authorLink: ph.authorUrl, photoLink: ph.link });
       trackDownload(ph.downloadLocation); // 看大图触发 Unsplash 合规埋点
-    };
-    const onClusterClick = (e: mapboxgl.MapLayerMouseEvent) => {
-      const feature = e.features?.[0];
-      const clusterId = Number(feature?.properties?.cluster_id);
-      const coordinates = (feature?.geometry as GeoJSON.Point | undefined)?.coordinates;
-      if (!Number.isFinite(clusterId) || !coordinates) return;
-      const source = map.getSource('marks') as mapboxgl.GeoJSONSource | undefined;
-      source?.getClusterExpansionZoom(clusterId, (error, nextZoom) => {
-        if (error || typeof nextZoom !== 'number') return;
-        map.easeTo({ center: [Number(coordinates[0]), Number(coordinates[1])], zoom: nextZoom });
-      });
     };
     const enter = () => { if (!dragging) map.getCanvas().style.cursor = 'pointer'; };
     const leave = () => { if (!dragging) map.getCanvas().style.cursor = ''; };
@@ -642,11 +620,6 @@ export default function MyMapTab(_props: MyMapTabProps) {
         map.on('mouseenter', 'mark-layer', enter);
         map.on('mouseleave', 'mark-layer', leave);
       }
-      if (map.getLayer('marks-clusters')) {
-        map.on('click', 'marks-clusters', onClusterClick);
-        map.on('mouseenter', 'marks-clusters', enter);
-        map.on('mouseleave', 'marks-clusters', leave);
-      }
       if (map.getLayer('planet-layer')) {
         map.on('click', 'planet-layer', onPlanetClick);
         map.on('mousedown', 'planet-layer', onPlanetDown);
@@ -661,9 +634,6 @@ export default function MyMapTab(_props: MyMapTabProps) {
       map.off('mousedown', 'mark-layer', onMarkDown);
       map.off('mouseenter', 'mark-layer', enter);
       map.off('mouseleave', 'mark-layer', leave);
-      map.off('click', 'marks-clusters', onClusterClick);
-      map.off('mouseenter', 'marks-clusters', enter);
-      map.off('mouseleave', 'marks-clusters', leave);
       map.off('click', 'planet-layer', onPlanetClick);
       map.off('mousedown', 'planet-layer', onPlanetDown);
       map.off('mouseenter', 'planet-layer', enter);
@@ -749,17 +719,27 @@ export default function MyMapTab(_props: MyMapTabProps) {
 
         {/* 旧版的西湖网格、斜线、LOC_SYNC 卡片和演示照片已移除。 */}
 
-        {/* 票据定位的独立目标标记：不依赖图层聚合，定位后始终清晰可见。 */}
+        {/* 票据定位点沿用原版小方块；点击可查看书籍 / 电影 / 音乐 / 照片详情。 */}
         {map && focusTarget && (() => {
           const point = map.project([focusTarget.lng, focusTarget.lat]);
+          const kind = focusKind(focusTarget.domain);
+          const detail = focusTarget.recordId
+            ? resolveDetail(focusTarget.recordId, kind, focusTarget.label || '')
+            : null;
           return (
             <div
-              className="absolute z-[17] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+              className="absolute z-[17] -translate-x-1/2 -translate-y-1/2"
               style={{ left: `${point.x}px`, top: `${point.y}px` }}
               data-testid="map-focus-target"
             >
-              <div className="h-8 w-8 animate-pulse rounded-full border-[3px] border-black bg-[#00ff88]/35 shadow-[0_0_0_5px_rgba(0,255,136,0.25)]" />
-              <div className="absolute left-1/2 top-9 max-w-[190px] -translate-x-1/2 whitespace-nowrap border-2 border-black bg-white px-2 py-1 text-[10px] font-black shadow-[2px_2px_0_#000]">
+              <button
+                type="button"
+                aria-label={`打开${focusTarget.label || '知识点'}详情`}
+                onClick={() => setSelected(detail || fallbackFocusDetail(focusTarget, kind))}
+                className="block h-3.5 w-3.5 border-2 border-black active:scale-90"
+                style={{ backgroundColor: KIND_COLOR[kind] || '#00ff88' }}
+              />
+              <div className="pointer-events-none absolute left-1/2 top-5 max-w-[190px] -translate-x-1/2 whitespace-nowrap border border-black bg-white px-1.5 py-0.5 text-[9px] font-black shadow-[1px_1px_0_#000]">
                 已定位 · {focusTarget.label || '知识点'}
               </div>
             </div>
