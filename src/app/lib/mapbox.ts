@@ -5,7 +5,7 @@ export const MAPBOX_TOKEN = (import.meta.env.VITE_MAPBOX_TOKEN as string) || "";
 
 if (!MAPBOX_TOKEN && typeof console !== "undefined") {
   console.warn(
-    "[mapbox] 未检测到 VITE_MAPBOX_TOKEN，正在使用 OpenStreetMap 免 token 底图。"
+    "[mapbox] 未检测到 VITE_MAPBOX_TOKEN，地图将显示明确的配置错误。"
   );
 }
 

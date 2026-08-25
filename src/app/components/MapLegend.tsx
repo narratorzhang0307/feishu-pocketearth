@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { MARKER_KINDS, type MarkerKind } from '../data/mapMarkers';
 import type { Planet } from '../data/planets';
-import { X } from 'lucide-react';
+import { Layers3, X } from 'lucide-react';
 
 // 地球左下角图例 + 图层开关：标明每种颜色代表什么，点一下开/闭该类点。
 // 上段=基础各类（从 MARKER_KINDS 自动列出），下段=用户建立的「星球」（圆点，可开关 / 删除）。
@@ -20,9 +21,30 @@ interface Props {
 }
 
 export default function MapLegend({ visibleKinds, onToggle, packLayerStates = {}, planets = [], onTogglePlanet, onRemovePlanet }: Props) {
+  const [open, setOpen] = useState(false);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="absolute bottom-3 left-3 z-20 flex h-9 items-center gap-1.5 border-2 border-black bg-white px-2.5 text-[9px] font-black pointer-events-auto active:translate-y-px"
+        aria-label="打开地图图层"
+      >
+        <Layers3 className="h-4 w-4" strokeWidth={2.5} />
+        图层
+      </button>
+    );
+  }
+
   return (
     <div className="absolute bottom-3 left-3 z-20 w-[174px] max-w-[calc(100%-24px)] select-none border-[1.5px] border-black bg-white/95 p-2 shadow-[1.5px_1.5px_0_#000] backdrop-blur-md pointer-events-auto">
-      <div className="font-pixel text-[7px] tracking-widest mb-1.5 text-black/65">LAYERS · 图层</div>
+      <div className="mb-1.5 flex items-center justify-between">
+        <div className="font-pixel text-[7px] tracking-widest text-black/65">LAYERS · 图层</div>
+        <button type="button" onClick={() => setOpen(false)} className="flex h-6 w-6 items-center justify-center" aria-label="收起地图图层">
+          <X className="h-3.5 w-3.5" strokeWidth={3} />
+        </button>
+      </div>
       <div className="space-y-1">
         {MARKER_KINDS.map((k) => {
           const on = visibleKinds.has(k.kind);
