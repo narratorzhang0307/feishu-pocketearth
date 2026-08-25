@@ -189,7 +189,12 @@ async function applyDomain(data: FeishuLibraryDomainData) {
  */
 export function compactFeishuRuntimeRecords(domain: FeishuLibraryDomain, records: unknown[]): unknown[] {
   if (!DATA_PACK_DOMAINS.has(domain)) return records;
-  return records.map((value) => {
+  const removedBookTitles = ['酒吧长谈', '城市与狗', '百年孤独'];
+  return records.filter((value) => {
+    if (domain !== 'books' || !value || typeof value !== 'object' || Array.isArray(value)) return true;
+    const title = String((value as Record<string, unknown>).title || '').replace(/\s+/g, '');
+    return !removedBookTitles.some((removed) => title.includes(removed));
+  }).map((value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
     const record = Object.fromEntries(Object.entries(value as Record<string, unknown>)
       .filter(([key]) => key !== 'aiInstruction' && key !== 'note'));

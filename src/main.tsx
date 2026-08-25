@@ -5,6 +5,10 @@ import "./styles/index.css";
 import { setFrostBrain } from "../frost-agent/harness/brain";
 import { httpBrain } from "../frost-agent/harness/httpBrain";
 
+// Explicit revision makes the entry asset URL change so Feishu's embedded WebView receives
+// this cleanup/migration release instead of keeping an older application shell.
+document.documentElement.dataset.feishuRelease = '2026-08-25-book-cleanup-1';
+
 // 接入阿里云百炼 Qwen 云脑；无 key 时 Skill 自动走确定性规则 fallback。
 setFrostBrain(httpBrain);
 

@@ -20,6 +20,14 @@ export let bookDataVersion = 0;
 const listeners = new Set<() => void>();
 let lastRecords: unknown = null;
 
+// Temporary Feishu end-to-end verification rows must not be resurrected by an older
+// embedded WebView or IndexedDB snapshot after the source rows have been deleted.
+const REMOVED_DEMO_BOOK_TITLES = ['酒吧长谈', '城市与狗', '百年孤独'];
+export const isRemovedDemoBook = (record: Pick<BookRecord, 'title'>): boolean => {
+  const title = String(record?.title || '').replace(/\s+/g, '');
+  return REMOVED_DEMO_BOOK_TITLES.some((removed) => title.includes(removed));
+};
+
 // Skill 级地理兜底：仅用于用户新记一本但尚无明确地点时；默认 Data Pack 自身已经携带 locations。
 const COUNTRY_COORDS: Record<string, [number, number]> = {
   中国大陆: [116.40, 39.90], 中国: [116.40, 39.90], 中国台湾: [121.56, 25.03], 中国香港: [114.17, 22.32],
@@ -72,7 +80,7 @@ function applyActivePack() {
   const records = getDataPackState('books').active?.records || [];
   if (records === lastRecords) return;
   lastRecords = records;
-  bookRecords = records as BookRecord[];
+  bookRecords = (records as BookRecord[]).filter((record) => !isRemovedDemoBook(record));
   bookTotal = bookRecords.length;
   bookPoints = bookRecords.map(bookMapPoint).filter((record): record is BookPoint => !!record);
   bookMappedTotal = bookPoints.length;
@@ -94,7 +102,6 @@ export const subscribeBookData = (listener: () => void): (() => void) => {
 
 export interface BookSeed { id: string; title: string; author: string; place: string; lng: number; lat: number; year?: number; note?: string }
 export const SEED_BOOKS: BookSeed[] = [
-  { id: 'b01', title: '百年孤独', author: '加西亚·马尔克斯', place: '阿拉卡塔卡 · 哥伦比亚', lng: -74.19, lat: 10.59, year: 1967, note: '马孔多的雨下了四年十一个月零两天。' },
   { id: 'b03', title: '老人与海', author: '海明威', place: '哈瓦那 · 古巴', lng: -82.38, lat: 23.13, year: 1952, note: '人可以被毁灭，但不能被打败。' },
   { id: 'b06', title: '挪威的森林', author: '村上春树', place: '东京', lng: 139.70, lat: 35.69, year: 1987, note: '每个人都有属于自己的一片森林。' },
   { id: 'b14', title: '1984', author: '乔治·奥威尔', place: '伦敦', lng: -0.12, lat: 51.51, year: 1949, note: '老大哥在看着你。' },

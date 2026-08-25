@@ -60,14 +60,24 @@ describe('Feishu photo library projection', () => {
 
   it('removes Feishu collaboration-only fields before strict book Data Pack validation', () => {
     const [book] = compactFeishuRuntimeRecords('books', [{
-      id: 'book:city-and-dogs', title: '城市与狗', author: '马里奥·巴尔加斯·略萨', country: '秘鲁',
-      type: '小说', year: 1963, rating: null, date: '2026-08-24', synopsis: '利马的军校故事', locations: [],
-      aiInstruction: '用 AI 记录《城市与狗》', note: '我很喜欢',
+      id: 'book:old-man-and-sea', title: '老人与海', author: '海明威', country: '美国',
+      type: '小说', year: 1952, rating: null, date: '2026-08-24', synopsis: '古巴近海的故事', locations: [],
+      aiInstruction: '用 AI 记录《老人与海》', note: '我很喜欢',
     }]) as Array<Record<string, unknown>>;
     expect(book).not.toHaveProperty('aiInstruction');
     expect(book).not.toHaveProperty('note');
-    expect(book).toMatchObject({ title: '城市与狗', author: '马里奥·巴尔加斯·略萨', country: '秘鲁' });
+    expect(book).toMatchObject({ title: '老人与海', author: '海明威', country: '美国' });
     expect(() => validateBookRecord(book)).not.toThrow();
+  });
+
+  it('removes temporary book verification records from the runtime projection', () => {
+    const compact = compactFeishuRuntimeRecords('books', [
+      { id: '1', title: '酒吧长谈' },
+      { id: '2', title: '城市与狗' },
+      { id: '3', title: '【手机验证】百年孤独：马孔多与阿拉卡塔卡' },
+      { id: '4', title: '老人与海' },
+    ]) as Array<Record<string, unknown>>;
+    expect(compact.map((record) => record.title)).toEqual(['老人与海']);
   });
 
   it('can switch a sample slot back to its Feishu table source before syncing confirmed rows', async () => {
