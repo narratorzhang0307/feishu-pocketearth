@@ -21,7 +21,7 @@ import {
   type InstalledDataPack,
 } from '../lib/dataPack';
 import { selectPersonalDataSource, setFeishuLibraryDomainEnabled, syncFeishuLibraryNow } from '../feishu/librarySync';
-import { bootstrapFeishuLibrary, ensureFeishuSession } from '../feishu/api';
+import { bootstrapFeishuLibrary, cachedFeishuDomainUrl, ensureFeishuSession, FEISHU_WORKSPACE_CHANGED_EVENT } from '../feishu/api';
 
 interface Props {
   domain: DataPackDomain;
@@ -69,7 +69,7 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   const [creatingFeishuLibrary, setCreatingFeishuLibrary] = useState(false);
   const [syncingFeishuLibrary, setSyncingFeishuLibrary] = useState(false);
   const [openingFeishuLibrary, setOpeningFeishuLibrary] = useState(false);
-  const [feishuLibraryUrl, setFeishuLibraryUrl] = useState('');
+  const [feishuLibraryUrl, setFeishuLibraryUrl] = useState(() => domain === 'mapping' ? '' : cachedFeishuDomainUrl(domain));
   const fileRef = useRef<HTMLInputElement>(null);
   const state = getDataPackState(domain);
   const isFeishuSurface = typeof window !== 'undefined' && window.location.pathname.startsWith('/feishu');
@@ -80,11 +80,14 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   useEffect(() => { if (open) void refresh(); }, [open, domain]);
   useEffect(() => {
     if (!isFeishuSurface || domain === 'mapping') return;
-    setFeishuLibraryUrl('');
+    const updateFromCache = () => setFeishuLibraryUrl(cachedFeishuDomainUrl(domain));
+    updateFromCache();
+    window.addEventListener(FEISHU_WORKSPACE_CHANGED_EVENT, updateFromCache);
     void ensureFeishuSession().then((session) => {
       const domainUrl = session.workspace?.domainUrls?.[domain] || '';
       setFeishuLibraryUrl(domainUrl);
     }).catch(() => {});
+    return () => window.removeEventListener(FEISHU_WORKSPACE_CHANGED_EVENT, updateFromCache);
   }, [domain, isFeishuSurface]);
 
   const run = async (task: () => Promise<unknown>, success: string) => {
@@ -163,6 +166,11 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
     setOpeningFeishuLibrary(true);
     setMessage('');
     try {
+      const knownDomainUrl = feishuLibraryUrl || cachedFeishuDomainUrl(domain);
+      if (knownDomainUrl) {
+        window.location.assign(knownDomainUrl);
+        return;
+      }
       const session = await ensureFeishuSession();
       let domainUrl = session.workspace?.domainUrls?.[domain] || '';
       if (!domainUrl) {

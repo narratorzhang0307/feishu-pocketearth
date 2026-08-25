@@ -7,7 +7,7 @@ import { httpBrain } from "../frost-agent/harness/httpBrain";
 
 // Explicit revision makes the entry asset URL change so Feishu's embedded WebView receives
 // this cleanup/migration release instead of keeping an older application shell.
-document.documentElement.dataset.feishuRelease = '2026-08-25-confirmed-book-sync-3';
+document.documentElement.dataset.feishuRelease = '2026-08-25-domain-isolation-1';
 
 // 接入阿里云百炼 Qwen 云脑；无 key 时 Skill 自动走确定性规则 fallback。
 setFrostBrain(httpBrain);
@@ -39,7 +39,7 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
       registration.update().catch(() => {});
     }).catch(() => {});
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      const key = "pe.swReloaded.v44";
+      const key = "pe.swReloaded.v45";
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, "1");
       window.location.reload();

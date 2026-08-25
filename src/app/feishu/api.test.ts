@@ -13,6 +13,12 @@ describe('Feishu API session recovery', () => {
       setItem: (key: string, value: string) => storage.set(key, value),
       removeItem: (key: string) => storage.delete(key),
     });
+    const local = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => local.get(key) ?? null,
+      setItem: (key: string, value: string) => local.set(key, value),
+      removeItem: (key: string) => local.delete(key),
+    });
     vi.stubGlobal('window', {
       setTimeout,
       clearTimeout,
@@ -33,5 +39,33 @@ describe('Feishu API session recovery', () => {
     expect(requestFeishuAuthCode).toHaveBeenCalledWith('cli_test');
     expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(fetchMock.mock.calls[3]?.[1]?.headers).toMatchObject({ authorization: 'Bearer renewed-session' });
+  });
+
+  it('opens only the signed-in user domain table from the local workspace cache', async () => {
+    sessionStorage.setItem('pocket-earth.feishu.session-user.v1', 'ou-current-user');
+    localStorage.setItem('pocket-earth.feishu.workspace.v1', JSON.stringify({
+      ownerOpenId: 'ou-current-user',
+      appToken: 'base-personal',
+      tables: {
+        books: 'tbl-books', movies: 'tbl-movies', music: 'tbl-music', photos: 'tbl-photos',
+      },
+    }));
+    const { cachedFeishuDomainUrl } = await import('./api');
+
+    expect(cachedFeishuDomainUrl('books')).toBe('https://feishu.cn/base/base-personal?table=tbl-books');
+    expect(cachedFeishuDomainUrl('movies')).toBe('https://feishu.cn/base/base-personal?table=tbl-movies');
+    expect(cachedFeishuDomainUrl('music')).toBe('https://feishu.cn/base/base-personal?table=tbl-music');
+    expect(cachedFeishuDomainUrl('photos')).toBe('https://feishu.cn/base/base-personal?table=tbl-photos');
+  });
+
+  it('never opens a cached workspace owned by another Feishu account', async () => {
+    sessionStorage.setItem('pocket-earth.feishu.session-user.v1', 'ou-current-user');
+    localStorage.setItem('pocket-earth.feishu.workspace.v1', JSON.stringify({
+      ownerOpenId: 'ou-previous-user', appToken: 'base-previous',
+      tables: { books: 'tbl-previous-books' },
+    }));
+    const { cachedFeishuDomainUrl } = await import('./api');
+
+    expect(cachedFeishuDomainUrl('books')).toBe('');
   });
 });

@@ -118,13 +118,6 @@ const dateField = (fields, name, fallback = '') => {
   return text(raw) || fallback
 }
 
-const bitableDate = (value) => {
-  const raw = text(value)
-  if (!raw) return null
-  const parsed = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00Z` : raw)
-  return Number.isFinite(parsed) ? parsed : null
-}
-
 function payloadFromFields(fields) {
   const raw = stringField(fields, BITABLE_LIBRARY_FIELDS.payload)
   if (!raw) return {}
@@ -263,7 +256,10 @@ function humanFields(domain, record) {
     [BITABLE_LIBRARY_FIELDS.type]: record.type,
     [BITABLE_LIBRARY_FIELDS.year]: record.year,
     [BITABLE_LIBRARY_FIELDS.rating]: record.rating,
-    [BITABLE_LIBRARY_FIELDS.date]: bitableDate(record.date),
+    // “日期” is intentionally a text column in the collaborative schema so all
+    // four domains can share an ISO YYYY-MM-DD value. Sending a millisecond
+    // timestamp to that text field makes Feishu return TextFieldConvFail.
+    [BITABLE_LIBRARY_FIELDS.date]: text(record.date, 64),
     [BITABLE_LIBRARY_FIELDS.description]: record.synopsis,
   }
   if (domain === 'movies') return {
@@ -275,7 +271,7 @@ function humanFields(domain, record) {
     [BITABLE_LIBRARY_FIELDS.type]: record.type,
     [BITABLE_LIBRARY_FIELDS.year]: record.year,
     [BITABLE_LIBRARY_FIELDS.rating]: record.rating,
-    [BITABLE_LIBRARY_FIELDS.date]: bitableDate(record.date),
+    [BITABLE_LIBRARY_FIELDS.date]: text(record.date, 64),
     [BITABLE_LIBRARY_FIELDS.description]: record.synopsis,
   }
   if (domain === 'music') return {
@@ -649,7 +645,14 @@ export function createBitableLibrary({ client, config, accessToken = '', cacheTt
           if (instruction) {
             if (typeof analyzeInstruction !== 'function') throw new Error('bitable_ai_instruction_provider_missing')
             const generated = await analyzeInstruction({ domain, recordId, instruction })
-            const record = validateBitableLibraryRecord(domain, generated.record)
+            // The row's Pocket ID is the stable key used by delete, dedupe and the
+            // front-end projection. AI may enrich the record, but must not silently
+            // replace that key with a second identity for the same work.
+            const sourcePocketId = stringField(item?.fields || {}, BITABLE_LIBRARY_FIELDS.id)
+            const record = validateBitableLibraryRecord(domain, {
+              ...generated.record,
+              ...(sourcePocketId ? { id: sourcePocketId } : {}),
+            })
             const fields = fieldsFromLibraryRecord(domain, record, {
               source: `飞书多维表格 · ${text(generated.model, 100) || 'AI'} · 自然语言写入`,
               status: BITABLE_LIBRARY_STATUS.review,

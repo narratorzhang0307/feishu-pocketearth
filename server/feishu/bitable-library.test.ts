@@ -17,7 +17,7 @@ describe('Feishu Bitable library adapter', () => {
       record_id: 'rec-1', fields: { ...fields, [BITABLE_LIBRARY_FIELDS.rating]: 9.8, [BITABLE_LIBRARY_FIELDS.title]: '小王子（共读版）' },
     });
     expect(JSON.parse(String(fields[BITABLE_LIBRARY_FIELDS.payload]))).toEqual(book);
-    expect(fields[BITABLE_LIBRARY_FIELDS.date]).toBe(Date.parse('2026-08-23T00:00:00Z'));
+    expect(fields[BITABLE_LIBRARY_FIELDS.date]).toBe('2026-08-23');
     expect(parsed).toMatchObject({ recordId: 'rec-1', record: { id: 'book-1', title: '小王子（共读版）', rating: 9.8, locations: [] } });
     expect(parsed.record.date).toBe('2026-08-23');
   });
@@ -201,6 +201,49 @@ describe('Feishu Bitable library adapter', () => {
     expect(calls).toEqual([{ kind: 'create', table: 'tbl-movies' }]);
   });
 
+  it('routes every Skill through its own table and writes its own Schema contract', async () => {
+    const calls: Array<{ table: string; fields: Record<string, unknown> }> = [];
+    const tables = { books: 'tbl-books', movies: 'tbl-movies', music: 'tbl-music', photos: 'tbl-photos' };
+    const client = {
+      listBitableRecords: async () => [],
+      createBitableRecords: async (records: Array<Record<string, unknown>>, table: string) => {
+        calls.push(...records.map((fields) => ({ table, fields })));
+      },
+      updateBitableRecords: async () => { throw new Error('must_not_update_new_record'); },
+      deleteBitableRecords: async () => ({ deleted: 0 }),
+    };
+    const library = createBitableLibrary({ client, config: { bitableAppToken: 'app-personal', bitableLibraryTables: tables } });
+    const records = {
+      books: book,
+      movies: {
+        id: 'movie-1', title: '花样年华', original: '', type: '剧情', director: '王家卫', country: '中国香港',
+        year: 2000, rating: 5, publicRating: null, date: '2026-08-25', synopsis: '电影记录', locations: [],
+      },
+      music: {
+        id: 'music-1', slug: 'heroes-berlin', cityName: 'Berlin', cityNameZh: '柏林', ianaTz: null, tzOffset: 1,
+        station: { freq: 0, name: 'Pocket Earth' }, cover: '', lat: 52.52, lng: 13.405, description: '城市声音',
+        tracks: [{ id: 'track-1', title: 'Heroes', artist: 'David Bowie', genre: 'Rock', durationSec: null, playback: { provider: 'none', url: '' }, introText: '', introPlayback: { provider: 'none', url: '' } }],
+        podcast: [],
+      },
+      photos: {
+        id: 'photo-1', title: '西湖雨夜', city: '杭州', date: '2026-08-25', lat: 30.27, lng: 120.15,
+        thumbnailUrl: '', contentHash: 'sha256-photo-1', summary: '照片记录',
+      },
+    } as const;
+
+    for (const domain of ['books', 'movies', 'music', 'photos'] as const) {
+      await library.upsert(domain, [records[domain]], { duplicatePolicy: 'warn' });
+    }
+
+    expect(calls.map(({ table, fields }) => ({ table, schema: fields.Schema }))).toEqual([
+      { table: 'tbl-books', schema: 'pocket.books/v1' },
+      { table: 'tbl-movies', schema: 'pocket.movies/v1' },
+      { table: 'tbl-music', schema: 'pocket.music/v1' },
+      { table: 'tbl-photos', schema: 'pocket.photos/v1' },
+    ]);
+    expect(new Set(calls.map(({ table }) => table)).size).toBe(4);
+  });
+
   it('collapses legacy duplicate titles during upsert and supports explicit deletion', async () => {
     const legacy = { ...book, id: 'book:legacy:random-1', title: '酒吧长谈' };
     const duplicate = { ...book, id: 'book:legacy:random-2', title: '酒吧长谈' };
@@ -309,6 +352,30 @@ describe('Feishu Bitable library adapter', () => {
     expect(updates[1].records[0]).toMatchObject({ record_id: 'rec-ai', fields: {
       标题: '百年孤独', '我的笔记': '我很喜欢', 'AI 指令': '帮我记录一条《百年孤独》的笔记，我很喜欢', 审核状态: '待确认',
     } });
+  });
+
+  it('keeps the original Pocket ID when AI enriches a pending row', async () => {
+    const pendingItem = {
+      record_id: 'rec-ai-stable', fields: {
+        [BITABLE_LIBRARY_FIELDS.id]: 'book:frost:stable-bar-talk',
+        [BITABLE_LIBRARY_FIELDS.instruction]: '用 AI 记录《酒吧长谈》，我很喜欢',
+        [BITABLE_LIBRARY_FIELDS.status]: BITABLE_LIBRARY_STATUS.pending,
+      },
+    };
+    const updates: any[] = [];
+    const client = {
+      listBitableRecords: async () => [pendingItem],
+      createBitableRecords: async () => ({}),
+      updateBitableRecords: async (records: unknown[]) => { updates.push(...records as any[]); },
+      deleteBitableRecords: async () => ({ deleted: 0 }),
+    };
+    const library = createBitableLibrary({ client, config: { bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-books' } } });
+
+    await library.processPending('books', async () => ({}), {
+      analyzeInstruction: async () => ({ model: 'ai-test', record: { ...book, id: 'book:ai:replacement', title: '酒吧长谈' } }),
+    });
+
+    expect(updates.at(-1)).toMatchObject({ fields: { 'Pocket ID': 'book:frost:stable-bar-talk', 标题: '酒吧长谈', 审核状态: '待确认' } });
   });
 
   it('creates the four knowledge tables and their collaborative fields in one action', async () => {

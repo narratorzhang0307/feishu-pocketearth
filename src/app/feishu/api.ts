@@ -2,10 +2,14 @@ import type { FeishuConfig, FeishuLibraryDomain, FeishuLibraryDomainData, Feishu
 import { requestFeishuAuthCode } from './bridge';
 
 const SESSION_KEY = 'pocket-earth.feishu.session.v1';
+const SESSION_USER_KEY = 'pocket-earth.feishu.session-user.v1';
 const WORKSPACE_KEY = 'pocket-earth.feishu.workspace.v1';
+export const FEISHU_WORKSPACE_CHANGED_EVENT = 'pocket-earth:feishu-workspace-changed';
+export const FEISHU_DEFAULT_REQUEST_TIMEOUT_MS = 45_000;
+export const FEISHU_BOOTSTRAP_REQUEST_TIMEOUT_MS = 180_000;
 let sessionToken = typeof sessionStorage === 'undefined' ? '' : sessionStorage.getItem(SESSION_KEY) || '';
 let reauthentication: Promise<void> | null = null;
-let activeFeishuOpenId = '';
+let activeFeishuOpenId = typeof sessionStorage === 'undefined' ? '' : sessionStorage.getItem(SESSION_USER_KEY) || '';
 
 type StoredFeishuWorkspace = Pick<FeishuPersonalWorkspace, 'appToken' | 'tables'> & { ownerOpenId: string };
 
@@ -20,24 +24,41 @@ function storedFeishuWorkspace(): StoredFeishuWorkspace | undefined {
 function rememberFeishuWorkspace(workspace: FeishuPersonalWorkspace) {
   if (typeof localStorage === 'undefined' || !activeFeishuOpenId || !workspace?.appToken) return;
   localStorage.setItem(WORKSPACE_KEY, JSON.stringify({ ownerOpenId: activeFeishuOpenId, appToken: workspace.appToken, tables: workspace.tables }));
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(FEISHU_WORKSPACE_CHANGED_EVENT));
+}
+
+export function cachedFeishuDomainUrl(domain: FeishuLibraryDomain) {
+  const workspace = storedFeishuWorkspace();
+  if (!activeFeishuOpenId || workspace?.ownerOpenId !== activeFeishuOpenId) return '';
+  const tableId = workspace?.tables?.[domain] || '';
+  if (!workspace?.appToken || !tableId) return '';
+  return `https://feishu.cn/base/${encodeURIComponent(workspace.appToken)}?table=${encodeURIComponent(tableId)}`;
 }
 
 function clearFeishuSession() {
   sessionToken = '';
   activeFeishuOpenId = '';
-  if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(SESSION_KEY);
+  if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_USER_KEY);
+  }
 }
 
 function notifyFeishuSessionExpired() {
   if (typeof window !== 'undefined') window.dispatchEvent(new Event('pocket-earth:feishu-session-expired'));
 }
 
-async function request<T>(path: string, init: RequestInit = {}, allowReauthentication = true): Promise<T> {
+async function request<T>(
+  path: string,
+  init: RequestInit = {},
+  allowReauthentication = true,
+  timeoutMs = FEISHU_DEFAULT_REQUEST_TIMEOUT_MS,
+): Promise<T> {
   if (typeof sessionStorage !== 'undefined') {
     sessionToken = sessionStorage.getItem(SESSION_KEY) || sessionToken;
   }
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 45_000);
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   const signal = init.signal ? AbortSignal.any([init.signal, controller.signal]) : controller.signal;
   let response: Response;
   try {
@@ -60,7 +81,7 @@ async function request<T>(path: string, init: RequestInit = {}, allowReauthentic
       if (allowReauthentication) {
         try {
           await reauthenticateFeishuSession();
-          return request<T>(path, init, false);
+          return request<T>(path, init, false, timeoutMs);
         } catch (error) {
           notifyFeishuSessionExpired();
           if (error instanceof Error) throw error;
@@ -96,7 +117,10 @@ export async function authenticateFeishu(input: { code?: string; devBypass?: boo
   });
   sessionToken = result.sessionToken;
   activeFeishuOpenId = result.user.openId;
-  if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(SESSION_KEY, sessionToken);
+  if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.setItem(SESSION_KEY, sessionToken);
+    sessionStorage.setItem(SESSION_USER_KEY, activeFeishuOpenId);
+  }
   rememberFeishuWorkspace(result.workspace);
   return result;
 }
@@ -104,6 +128,7 @@ export async function authenticateFeishu(input: { code?: string; devBypass?: boo
 export async function resumeFeishuSession() {
   const result = await request<{ user: FeishuUser; expiresAt: number; workspace: FeishuPersonalWorkspace }>('/api/feishu/session');
   activeFeishuOpenId = result.user.openId;
+  if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(SESSION_USER_KEY, activeFeishuOpenId);
   rememberFeishuWorkspace(result.workspace);
   return result;
 }
@@ -151,7 +176,7 @@ export type FeishuLibraryBootstrapResult = {
 export async function bootstrapFeishuLibrary() {
   const result = await request<FeishuLibraryBootstrapResult>('/api/feishu/library/bootstrap', {
     method: 'POST', body: JSON.stringify({}),
-  });
+  }, true, FEISHU_BOOTSTRAP_REQUEST_TIMEOUT_MS);
   rememberFeishuWorkspace(result.workspace);
   return result;
 }
