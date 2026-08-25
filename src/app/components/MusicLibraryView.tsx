@@ -130,7 +130,7 @@ export default function MusicLibraryView() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#EAEAEA] min-h-0 relative">
+    <div className="min-h-full bg-[#EAEAEA] relative">
       <div className="px-3 py-2.5 border-b-2 border-black bg-[#F5F2E9] text-[#168654] shrink-0">
         <div className="font-pixel text-[7px] flex justify-between items-center tracking-wider">
           <span>知识条目 {RADIO_CITIES.length}</span><span className="text-black/20">|</span>
@@ -154,7 +154,7 @@ export default function MusicLibraryView() {
       </div>
 
       {/* 列表 */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div>
         {recentFeishuSongs.length > 0 && (
           <div className="border-b-2 border-black bg-[#F5F2E9]">
             <div className="px-3 pt-2 font-pixel text-[8px] tracking-wider text-[#168654]">飞书确认音乐标记</div>
@@ -174,7 +174,7 @@ export default function MusicLibraryView() {
             const isOpen = open.has(grp.key);
             return (
               <div key={grp.key} className="border-b-2 border-black/15">
-                <button onClick={() => toggle(grp.key)} className="w-full flex items-center gap-2 px-3 py-2 bg-white sticky top-0 z-10 active:bg-black/5">
+                <button onClick={() => toggle(grp.key)} className="w-full flex items-center gap-2 px-3 py-2 bg-white active:bg-black/5">
                   <div className="w-2.5 h-2.5 bg-[#00ff88] border border-black shrink-0" />
                   <span className="font-pixel text-[10px] tracking-wide flex-1 text-left truncate">{grp.key}</span>
                   <span className="font-pixel text-[7px] text-black/40">{grp.songs.length}</span>

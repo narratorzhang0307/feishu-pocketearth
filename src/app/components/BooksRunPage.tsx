@@ -166,7 +166,7 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
   const saveNote = () => { if (!noteDraft) return; addNote(noteDraft); setNoteDraft(null); setNoteText(''); showToast('笔记已存'); };
 
   return (
-    <div className="h-full flex flex-col bg-[#EAEAEA] font-sans relative overflow-hidden">
+    <div className={`${embedded ? 'min-h-full' : 'h-full overflow-y-auto overscroll-y-contain'} bg-[#EAEAEA] font-sans relative`}>
       {/* Header（嵌入双 tab 时隐藏，大头交给外层）*/}
       {!embedded && (
         <div className="flex items-center gap-2 px-3 py-2.5 border-b-2 border-black bg-white shrink-0">
@@ -312,7 +312,7 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
                 <span className="font-pixel text-[7px] tracking-widest" style={{ color: '#7a4dd6' }}>NOTE · 待存笔记{noteDraft.bookTitle ? ` · 《${noteDraft.bookTitle}》` : ''}</span>
                 <span className="font-pixel text-[7px] text-black/45">{noteDraft.source === 'image' ? '截图' : '文字'}</span>
               </div>
-              <div className="px-2.5 py-2 space-y-1.5 max-h-[40vh] overflow-y-auto">
+              <div className="px-2.5 py-2 space-y-1.5">
                 {!!noteDraft.themes.length && <div className="flex flex-wrap gap-1">{noteDraft.themes.map((t, i) => <span key={i} className="font-pixel text-[6px] border border-black/30 px-1 py-0.5 bg-[#f3ecff]">主题·{t}</span>)}</div>}
                 {!!noteDraft.quotes.length && (
                   <div className="space-y-1">
@@ -358,7 +358,7 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
       </div>
 
       {/* 藏书票流（点开 = 紫色 100 字简介，与地球点书点同款）*/}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5">
+      <div className="px-3 py-3 space-y-2.5">
         {!feed.length && (
           <div className="border-2 border-black bg-white px-4 py-5 text-center shadow-[2px_2px_0_rgba(0,0,0,0.85)]">
             <div className="text-[12px] font-bold">示例书库已卸载</div>

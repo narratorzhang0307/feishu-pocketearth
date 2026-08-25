@@ -140,7 +140,7 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#EAEAEA] font-sans relative overflow-hidden">
+    <div className={`${embedded ? 'min-h-full' : 'h-full overflow-y-auto overscroll-y-contain'} bg-[#EAEAEA] font-sans relative`}>
       {/* Header（嵌入双 tab 时隐藏，大头交给外层）*/}
       {!embedded && (
         <div className="flex items-center gap-2 px-3 py-2.5 border-b-2 border-black bg-white shrink-0">
@@ -260,7 +260,7 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
       </div>
 
       {/* 票根流 */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5">
+      <div className="px-3 py-3 space-y-2.5">
         {!feed.length && (
           <div className="border-2 border-black bg-white px-4 py-5 text-center shadow-[2px_2px_0_rgba(0,0,0,0.85)]">
             <div className="text-[12px] font-bold">示例片库已卸载</div>

@@ -152,6 +152,9 @@ async function loadFromFile(file: File, expectedDomain: DataPackDomain): Promise
 }
 
 async function persistAndActivate(pack: InstalledDataPack): Promise<InstalledDataPack> {
+  // A Feishu sync can finish while the IndexedDB registry is still hydrating on first launch.
+  // Finish hydration first so its older active key cannot overwrite the freshly synced projection.
+  await hydrate();
   await putInstalledPack(pack);
   setActiveKey(pack.domain, pack.packKey);
   setDisabled(pack.domain, false);

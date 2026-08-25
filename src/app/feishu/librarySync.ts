@@ -211,11 +211,15 @@ export async function syncFeishuLibrary({ force = false } = {}): Promise<void> {
       updateState({ configuredDomains: versions.configuredDomains });
       for (const domain of versions.configuredDomains) {
         const remote = versions.domains[domain];
-        const missingLocalVersion = !state.versions[domain];
-        const missingRuntimeProjection = DATA_PACK_DOMAINS.has(domain)
-          ? !getDataPackState(domain as 'books' | 'movies' | 'music').active
-          : getFeishuPhotoAssets().length === 0;
-        if (remote && (remote.version !== state.versions[domain] || (force && (missingLocalVersion || missingRuntimeProjection)))) {
+        const active = DATA_PACK_DOMAINS.has(domain)
+          ? getDataPackState(domain as 'books' | 'movies' | 'music').active
+          : null;
+        const runtimeProjectionCurrent = DATA_PACK_DOMAINS.has(domain)
+          ? active?.source === `feishu-bitable:${domain}:${remote?.version}`
+          : getFeishuPhotoAssets().length > 0;
+        // A forced launch sync must replace stale IndexedDB projections even when the remembered
+        // remote version happens to match. This is what removes records deleted in Feishu from the UI.
+        if (remote && (force || remote.version !== state.versions[domain] || !runtimeProjectionCurrent)) {
           await applyDomain(await getFeishuLibraryDomain(domain));
         }
       }
