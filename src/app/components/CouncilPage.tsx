@@ -94,9 +94,9 @@ export default function CouncilPage({ onBack }: Props) {
   const speaker = speaking ? COUNCIL_AGENTS.find((a) => a.id === speaking) : null;
 
   return (
-    <div className="h-full flex flex-col bg-[#EAEAEA] font-sans overflow-hidden">
+    <div className="h-full overflow-y-auto overscroll-y-contain bg-[#EAEAEA] font-sans">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b-2 border-black bg-white shrink-0">
+      <div className="flex items-center gap-2 border-b-2 border-black bg-white px-3 py-2.5">
         <button onClick={phase === 'run' ? () => { stop(); setPhase('setup'); } : onBack} aria-label={phase === 'run' ? '停止运行并返回设置' : '返回'} className="w-8 h-8 border-2 border-black bg-white flex items-center justify-center shadow-[1px_1px_0_#000] active:translate-y-px">
           <ChevronLeft className="w-4 h-4" strokeWidth={3} />
         </button>
@@ -108,7 +108,7 @@ export default function CouncilPage({ onBack }: Props) {
       </div>
 
       {phase === 'setup' ? (
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+        <div className="space-y-4 px-3 py-3">
           {/* 议题 */}
           <div>
             <div className="font-pixel text-[9px] tracking-widest text-black/55 mb-1.5">议题 · TOPIC</div>
@@ -211,7 +211,7 @@ export default function CouncilPage({ onBack }: Props) {
       ) : (
         <>
           {/* 议题条（法庭模式显示当前阶段） */}
-          <div className="px-3 py-2 border-b-2 border-black bg-black shrink-0 flex items-center gap-2" style={{ color: ACCENT }}>
+          <div className="flex items-center gap-2 border-b-2 border-black bg-black px-3 py-2" style={{ color: ACCENT }}>
             <span className="font-pixel text-[8px] tracking-wider shrink-0">{modeDef(mode).emoji} {modeDef(mode).label}</span>
             <span className="text-[11px] text-white truncate flex-1">{topic || '自由发挥'}</span>
             {stage && <span className="font-pixel text-[7px] tracking-wider shrink-0 text-[#caa64a] animate-pulse">⚖ {stage}</span>}
@@ -219,7 +219,7 @@ export default function CouncilPage({ onBack }: Props) {
           </div>
 
           {/* 讨论流 */}
-          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+          <div className="space-y-3 px-3 py-3">
             {messages.map((m) => {
               const a = COUNCIL_AGENTS.find((x) => x.id === m.speakerId)!;
               return (
@@ -300,7 +300,7 @@ export default function CouncilPage({ onBack }: Props) {
           </div>
 
           {/* 控制条 */}
-          <div className="px-3 py-2.5 border-t-2 border-black bg-white shrink-0 flex gap-2">
+          <div className="flex gap-2 border-t-2 border-black bg-white px-3 py-2.5">
             {running ? (
               <button onClick={stop} className="flex-1 flex items-center justify-center gap-1.5 border-2 border-black bg-[#d23b3b] text-white py-2 text-[11px] font-bold shadow-[1px_1px_0_#000] active:translate-y-px">
                 <Square className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} /> 喊停

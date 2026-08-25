@@ -97,8 +97,8 @@ export default function EarthAnswerAgentPage({ onBack }: Props) {
   };
 
   return (
-    <div className="h-full min-h-0 flex flex-col overflow-hidden bg-[#EAEAEA] font-sans" data-testid="earth-answer-agent">
-      <header className="flex items-center gap-2 border-b-2 border-black bg-white px-3 py-2.5 shrink-0">
+    <div className="h-full overflow-y-auto overscroll-y-contain bg-[#EAEAEA] font-sans" data-testid="earth-answer-agent">
+      <header className="flex items-center gap-2 border-b-2 border-black bg-white px-3 py-2.5">
         <button type="button" onClick={onBack} aria-label="返回智能体列表" className="grid h-9 w-9 place-items-center border-2 border-black bg-white shadow-[1px_1px_0_#000] active:translate-y-px">
           <ChevronLeft className="h-4 w-4" strokeWidth={3} />
         </button>
@@ -109,12 +109,12 @@ export default function EarthAnswerAgentPage({ onBack }: Props) {
         <Globe2 className="h-5 w-5 text-[#007b45]" strokeWidth={2.5} />
       </header>
 
-      <div className="flex items-center justify-between border-b-2 border-black bg-black px-3 py-2 text-[#7CFF6B] shrink-0">
+      <div className="flex items-center justify-between border-b-2 border-black bg-black px-3 py-2 text-[#7CFF6B]">
         <span className="font-pixel text-[8px] tracking-wider">365-DAY EDITION</span>
         <span className="font-pixel text-[7px] text-white/60">TOMORROW LOCKED</span>
       </div>
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-3 py-3 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3">
+      <main className="space-y-3 px-3 py-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <section className="border-[3px] border-black bg-[#f7f2e7]" aria-label={`${answer.date} 地球答案`}>
           <div className="flex items-center justify-between border-b-2 border-black bg-[#121416] px-3 py-2 text-white">
             <span className="font-pixel text-[8px] tracking-[0.16em]">EARTH ANSWER</span>

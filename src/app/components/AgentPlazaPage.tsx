@@ -133,18 +133,18 @@ export default function AgentPlazaPage({ onBack, onRun }: Props) {
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[#EAEAEA] font-sans">
-      <header className="flex shrink-0 items-center gap-2 border-b-2 border-black bg-white px-3 py-2.5">
+    <div className="h-full overflow-y-auto overscroll-y-contain bg-[#EAEAEA] font-sans">
+      <header className="flex items-center gap-2 border-b-2 border-black bg-white px-3 py-2.5">
         <button type="button" onClick={onBack} aria-label="返回 Skills" className="grid h-9 w-9 place-items-center border-2 border-black bg-white active:translate-y-px"><ChevronLeft className="h-4 w-4" strokeWidth={3} /></button>
         <div className="min-w-0 flex-1"><div className="font-pixel text-[11px] tracking-wider">PRIVATE SKILLS PLAZA</div><div className="mt-0.5 text-[9px] text-black/45">小动物 Agent 发布 · 只装入你的私人知识库</div></div>
         <PawPrint className="h-5 w-5" style={{ color: ACCENT }} />
       </header>
 
-      <div className="flex shrink-0 items-center justify-between border-b-2 border-black bg-black px-4 py-2.5 font-pixel text-[7px] tracking-wider text-[#7CFF6B]">
+      <div className="flex items-center justify-between border-b-2 border-black bg-black px-4 py-2.5 font-pixel text-[7px] tracking-wider text-[#7CFF6B]">
         <span>{listInstalledSkills().length} 已登记</span><span>{equippedCount} 已装入</span><span>只写私人库</span><span>哈希可验</span>
       </div>
 
-      <main className="flex-1 space-y-2.5 overflow-y-auto px-3 py-2.5">
+      <main className="space-y-2.5 px-3 py-2.5">
         <section className="border-2 border-black bg-white p-3">
           <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" style={{ color: ACCENT }} /><b className="text-[11px]">一个入口 · 一个私人知识库</b></div>
           <p className="mt-1.5 text-[10px] leading-relaxed text-black/60">每个 Skill 只说明它能做什么、会访问什么数据、产出什么结果。装入后只读取或写入你的私人知识库，最终落图与飞书写回都由你确认。</p>
