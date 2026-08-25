@@ -78,6 +78,7 @@ const ROUTE_HINTS: Record<string, RouteHint> = {
   'pocket.music': { triggers: ['音乐', '歌曲', '歌单', '点歌', '听歌', '听了', '听完', '电台', '艺人', '歌手', '专辑'] },
   'pocket.books': { triggers: ['书籍', '书单', '读书', '读了', '读完', '读过', '阅读记录', '这本书', '作者', '故事地', '藏书票'], notFor: ['古籍mapping', '古籍 mapping', '整本书落地图', 'pdf地点'] },
   'pocket.movies': { triggers: ['电影', '影片', '观影', '看了电影', '看完电影', '看过电影', '这部电影', '导演', '演员', '取景地', '片单'] },
+  'pocket.photos': { triggers: ['照片', '相片', '相册', '拍摄', '这张图', '照片记录', '整理照片'] },
   'pocket.council': { triggers: ['圆桌', '多视角', '不同角度', '辩论', '法庭', '权衡', '利弊', '综合判断'] },
   'pocket.reading-jot': { triggers: ['阅读摘录', '书页', '划线', '读书笔记', '摘抄', '识读这页', '拍书页'] },
   'pocket.travel': { triggers: ['旅行', '旅游', '行程', '路线', '几日游', '一日游', '去哪玩', '景点', '散步路线'] },

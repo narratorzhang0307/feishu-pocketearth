@@ -99,3 +99,8 @@ mark_place({
 
 # 属于 5 种模式中的哪一种
 **流水线型（pipeline）**。理由：本 agent 的本质是一条有向责任链 locate → enrich → resolve → mark，阶段间有明确的交接契约（前一阶段的输出是后一阶段唯一的合法输入），且每阶段执行位置不同（端侧抽取/消歧 → tool 检索 → 云叙述）。它不是只读型（要产出 mark_place 落地动作），不是执行型的单步直达（信息需逐级补全收敛），也非并行型 / 团队型（单本书单链推进，多书由上层调度）。流水线的「分阶段、可在中途接入更强补全/消歧模块」也让它在 v2.0 框架里保持可插拔、通用。
+
+# Data Pack / 飞书写入边界
+- Skill ID：`pocket.books`；Schema：`pocket.books/v1`。
+- 写入目标：`books-agent` → `FEISHU_BITABLE_BOOKS_TABLE_ID`，缺失时报错，不得回退到其他领域。
+- 同书名使用稳定身份去重；已记录时提醒用户，不再新建行。

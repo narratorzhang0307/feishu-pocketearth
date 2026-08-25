@@ -21,7 +21,7 @@ import {
   type InstalledDataPack,
 } from '../lib/dataPack';
 import { selectPersonalDataSource, setFeishuLibraryDomainEnabled, syncFeishuLibraryNow } from '../feishu/librarySync';
-import { bootstrapFeishuLibrary, ensureFeishuSession, getFeishuConfig } from '../feishu/api';
+import { bootstrapFeishuLibrary, ensureFeishuSession } from '../feishu/api';
 
 interface Props {
   domain: DataPackDomain;
@@ -42,6 +42,7 @@ const DOMAIN_COPY: Record<DataPackDomain, { label: string; memory: string; unit:
   books: { label: '书籍', memory: '书籍记忆', unit: '条', mapUnit: '个地点' },
   movies: { label: '电影', memory: '电影记忆', unit: '条', mapUnit: '个地点' },
   music: { label: '音乐', memory: '音乐记忆', unit: '条', mapUnit: '首音乐' },
+  photos: { label: '照片', memory: '照片索引', unit: '张', mapUnit: '个地点' },
   mapping: { label: '内容 Mapping', memory: '书籍地点证据', unit: '份', mapUnit: '个地点' },
 };
 
@@ -49,21 +50,9 @@ const AI_REQUEST_EXAMPLE: Record<DataPackDomain, string> = {
   books: '使用这个 Skill，把这份书单整理成 Pocket Earth 书籍 Data Pack。',
   movies: '使用这个 Skill，把这份影单整理成 Pocket Earth 电影 Data Pack。',
   music: '使用这个 Skill，把这份歌单整理成 Pocket Earth 音乐 Data Pack。',
+  photos: '使用这个 Skill，把这份照片元数据整理成 Pocket Earth 照片 Data Pack；不要包含原始私人照片或 data/blob/file URL。',
   mapping: '使用这个 Skill，把这份书籍或资料整理成 Pocket Earth 内容 Mapping Data Pack；候选地点保留页码、原文与置信度，待我确认后再落图。',
 };
-
-const FEISHU_LIBRARY_URL_KEY = 'pocket-earth.feishu.library-url.v1';
-
-function cachedFeishuLibraryUrl() {
-  try { return window.localStorage.getItem(FEISHU_LIBRARY_URL_KEY) || ''; }
-  catch { return ''; }
-}
-
-function rememberFeishuLibraryUrl(url: string) {
-  if (!url) return;
-  try { window.localStorage.setItem(FEISHU_LIBRARY_URL_KEY, url); }
-  catch { /* WebView 隐私模式下仍可在当前页使用 */ }
-}
 
 const displayCount = (pack: InstalledDataPack | null) => {
   if (!pack) return 0;
@@ -79,7 +68,7 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   const [message, setMessage] = useState('');
   const [creatingFeishuLibrary, setCreatingFeishuLibrary] = useState(false);
   const [syncingFeishuLibrary, setSyncingFeishuLibrary] = useState(false);
-  const [feishuLibraryUrl, setFeishuLibraryUrl] = useState(cachedFeishuLibraryUrl);
+  const [feishuLibraryUrl, setFeishuLibraryUrl] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const state = getDataPackState(domain);
   const isFeishuSurface = typeof window !== 'undefined' && window.location.pathname.startsWith('/feishu');
@@ -90,10 +79,10 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   useEffect(() => { if (open) void refresh(); }, [open, domain]);
   useEffect(() => {
     if (!isFeishuSurface || domain === 'mapping') return;
-    void getFeishuConfig().then((config) => {
-      if (!config.bitableAppUrl) return;
-      setFeishuLibraryUrl(config.bitableAppUrl);
-      rememberFeishuLibraryUrl(config.bitableAppUrl);
+    setFeishuLibraryUrl('');
+    void ensureFeishuSession().then((session) => {
+      const domainUrl = session.workspace?.domainUrls?.[domain] || '';
+      setFeishuLibraryUrl(domainUrl);
     }).catch(() => {});
   }, [domain, isFeishuSurface]);
 
@@ -135,15 +124,15 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
     try {
       await ensureFeishuSession();
       const result = await bootstrapFeishuLibrary();
-      setFeishuLibraryUrl(result.appUrl);
-      rememberFeishuLibraryUrl(result.appUrl);
+      const domainUrl = result.workspace.domainUrls[domain] || result.appUrl;
+      setFeishuLibraryUrl(domainUrl);
       await setFeishuLibraryDomainEnabled(domain, true);
       await syncFeishuLibraryNow([domain]);
       const created = result.createdTables.length
         ? `已建立 ${result.createdTables.length} 张数据表，并补齐 ${result.createdFields.length} 个字段`
         : `四张数据表已存在，字段检查完成${result.createdFields.length ? `，补齐 ${result.createdFields.length} 个字段` : ''}`;
       setMessage(`${created}。正在打开飞书整理文档；已确认的数据会同步到口袋地球。`);
-      window.location.assign(result.guideDocument?.url || result.appUrl);
+      window.location.assign(result.guideDocument?.url || domainUrl);
     } catch (error) {
       setMessage(`新建知识库失败：${dataPackErrorMessage(error)}`);
     } finally {
@@ -255,7 +244,7 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
             {syncingFeishuLibrary ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
             {syncingFeishuLibrary ? '正在读取飞书…' : `同步飞书${DOMAIN_COPY[domain].label}到此页`}
           </button>
-          <a href={feishuLibraryUrl || '/api/feishu/library/open'} target="_blank" rel="noreferrer" className="mt-1.5 block border border-black bg-white px-2 py-1.5 text-center text-[9px] font-bold">打开飞书多维表格 ↗</a>
+          {feishuLibraryUrl && <a href={feishuLibraryUrl} target="_blank" rel="noreferrer" className="mt-1.5 block border border-black bg-white px-2 py-1.5 text-center text-[9px] font-bold">打开飞书{DOMAIN_COPY[domain].label}表 ↗</a>}
         </div>
       )}
 

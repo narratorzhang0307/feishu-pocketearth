@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { validateBookRecord } from '../lib/dataPack';
+import { validateBookRecord, validatePhotoRecord } from '../lib/dataPack';
 import { compactFeishuRuntimeRecords, enableFeishuBuiltinMapLayersOnce, libraryRecordFromUserMark, photoAssetFromFeishuRecord, setFeishuLibraryDomainEnabled } from './librarySync';
 
 describe('Feishu photo library projection', () => {
@@ -29,7 +29,23 @@ describe('Feishu photo library projection', () => {
       id: 'photo-pin-instance', kind: 'photo', label: '西湖', lat: 30.27, lng: 120.15, createdAt: '2026-08-23T00:00:00.000Z',
       meta: { contentHash: 'abc123', assetKey: 'web:1' },
     });
-    expect(mapped).toMatchObject({ domain: 'photos', record: { id: 'photo:abc123', contentHash: 'abc123' } });
+    expect(mapped).toMatchObject({ domain: 'photos', record: { id: 'photo:abc123', contentHash: 'abc123', thumbnailUrl: '', summary: '' } });
+    expect(mapped?.record).not.toHaveProperty('assetKey');
+  });
+
+  it('projects Feishu photos into the strict pocket.photos/v1 Data Pack shape', () => {
+    const [photo] = compactFeishuRuntimeRecords('photos', [{
+      id: 'photo:abc123', title: '西湖雨夜', city: '杭州', date: '2026-08-25', lat: 30.25, lng: 120.15,
+      thumb: 'https://example.com/west-lake.jpg', contentHash: 'abc123', qwen: { summary: '低照度叙事' },
+      assetKey: 'device-private-token', aiInstruction: '整理这张照片', note: '私人备注',
+    }]) as Array<Record<string, unknown>>;
+
+    expect(photo).toEqual({
+      id: 'photo:abc123', title: '西湖雨夜', city: '杭州', date: '2026-08-25', lat: 30.25, lng: 120.15,
+      thumbnailUrl: 'https://example.com/west-lake.jpg', contentHash: 'abc123', summary: '低照度叙事',
+    });
+    expect(() => validatePhotoRecord(photo)).not.toThrow();
+    expect(JSON.stringify(photo)).not.toContain('device-private-token');
   });
 
   it('maps a confirmed book mark back into the original Data Pack shape', () => {

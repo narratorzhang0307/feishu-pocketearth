@@ -15,6 +15,7 @@ import { skillPublisherForAgent, type SkillPublisher } from '../data/skillPublis
 const MusicAgentPage = lazy(() => import('./MusicAgentPage'));
 const MoviesAgentPage = lazy(() => import('./MoviesAgentPage'));
 const BooksAgentPage = lazy(() => import('./BooksAgentPage'));
+const PhotosAgentRunPage = lazy(() => import('./PhotosAgentRunPage'));
 const TravelRunPage = lazy(() => import('./TravelRunPage'));
 const CouncilPage = lazy(() => import('./CouncilPage'));
 const FrostBuddyPage = lazy(() => import('./FrostBuddyPage'));
@@ -118,6 +119,7 @@ const SKILL_GROUPS: { title: string; sub: string; items: AgentItem[] }[] = [
       { name: 'music-agent', label: 'music-skill', role: '把音乐钉到歌手出身地 / 歌曲城市', status: '契约就位', kind: 'Markdown' },
       { name: 'books-agent', label: 'books-skill', role: '把书钉到故事地 / 作者地 + 读完日期', status: '契约就位', kind: 'Markdown' },
       { name: 'movies-agent', label: 'movies-skill', role: '把电影钉到取景地 / 故事地', status: '契约就位', kind: 'Markdown' },
+      { name: 'photos-agent', label: 'photos-skill', role: '端侧整理照片；确认后的元数据写入独立照片表', status: '契约就位', kind: 'Markdown' },
       { name: 'council-room', label: 'COUNCIL', role: '圆桌 / 辩论 / 法庭：Frost 切换多个专业视角后给出综合判断', status: '可运行', kind: 'Markdown' },
     ],
   },
@@ -153,11 +155,12 @@ const FEISHU_SYSTEM_GROUPS: typeof SYSTEM_GROUPS = [{
 const GROUPS = [SKILL_GROUPS[1], SKILL_GROUPS[0], ...SYSTEM_GROUPS];
 
 
-type Running = 'frost' | 'music' | 'movies' | 'books' | 'travel' | 'council' | 'spaceplaza' | 'agentforge' | 'heritage' | 'jot' | 'exhibition' | 'earthanswer' | 'deviceevidence' | null;
+type Running = 'frost' | 'music' | 'movies' | 'books' | 'photos' | 'travel' | 'council' | 'spaceplaza' | 'agentforge' | 'heritage' | 'jot' | 'exhibition' | 'earthanswer' | 'deviceevidence' | null;
 const RUN_BY_NAME: Record<string, Running> = {
   'earth-answer-agent': 'earthanswer',
   'music-agent': 'music', 'movies-agent': 'movies',
   'books-agent': 'books', 'travel-skill': 'travel', 'travel-agent': 'travel',
+  'photos-agent': 'photos',
   'council-room': 'council', 'jot-agent': 'jot',
   'exhibition-agent': 'exhibition',
   'agent-plaza': 'spaceplaza',
@@ -220,6 +223,7 @@ export default function MusicAgentsTab({ feishuMode = false, requestedTarget, on
   if (running === 'music') return <FrostTaskHandoffFrame target="music-agent"><Suspense fallback={<SkillPageLoader label="MUSIC" />}><MusicAgentPage onBack={() => setRunning(null)} /></Suspense></FrostTaskHandoffFrame>;
   if (running === 'movies') return <FrostTaskHandoffFrame target="movies-agent"><Suspense fallback={<SkillPageLoader label="MOVIES" />}><MoviesAgentPage onBack={() => setRunning(null)} /></Suspense></FrostTaskHandoffFrame>;
   if (running === 'books') return <FrostTaskHandoffFrame target="books-agent"><Suspense fallback={<SkillPageLoader label="BOOKS" />}><BooksAgentPage onBack={() => setRunning(null)} /></Suspense></FrostTaskHandoffFrame>;
+  if (running === 'photos') return <FrostTaskHandoffFrame target="photos-agent"><Suspense fallback={<SkillPageLoader label="PHOTOS" />}><PhotosAgentRunPage onBack={() => setRunning(null)} /></Suspense></FrostTaskHandoffFrame>;
   if (running === 'travel') return <FrostTaskHandoffFrame target="travel-skill"><Suspense fallback={<SkillPageLoader label="TRAVEL" />}><TravelRunPage onBack={() => setRunning(null)} /></Suspense></FrostTaskHandoffFrame>;
   if (running === 'council') return <FrostTaskHandoffFrame target="council-room"><Suspense fallback={<SkillPageLoader label="COUNCIL" />}><CouncilPage onBack={() => setRunning(null)} /></Suspense></FrostTaskHandoffFrame>;
   if (running === 'spaceplaza') return <Suspense fallback={<SkillPageLoader label="SKILLS PLAZA" />}><AgentPlazaPage onBack={() => setRunning(null)} onRun={runSkill} /></Suspense>;

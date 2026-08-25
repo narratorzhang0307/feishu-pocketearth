@@ -14,6 +14,7 @@ const adapter = {
   books: { schema: 'pocket.books/v1', skill: 'pocket.books' },
   movies: { schema: 'pocket.movies/v1', skill: 'pocket.movies' },
   music: { schema: 'pocket.music/v1', skill: 'pocket.music' },
+  photos: { schema: 'pocket.photos/v1', skill: 'pocket.photos' },
   mapping: { schema: 'pocket.mapping/v1', skill: 'pocket.mapping' },
 } as const;
 

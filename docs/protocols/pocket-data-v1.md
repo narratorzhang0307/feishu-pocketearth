@@ -135,6 +135,7 @@ Adapter 必须提供：
 | 书籍 | `pocket.books` | `pocket.books/v1` |
 | 电影 | `pocket.movies` | `pocket.movies/v1` |
 | 音乐 | `pocket.music` | `pocket.music/v1` |
+| 照片 | `pocket.photos` | `pocket.photos/v1` |
 | 内容 Mapping | `pocket.mapping` | `pocket.mapping/v1` |
 
 展览、旅行等后续模块必须复用 Core，只新增自己的 Adapter。古籍、现代书和普通资料的内容 Mapping 已统一复用 `pocket.mapping/v1`，古籍只是载体预设。
@@ -228,6 +229,7 @@ AI 输出符合协议的单文件 Bundle 后，可以进入与 Pocket Earth 官�
 - 书籍记录 Schema：`schemas/pocket-data-v1/books-record.schema.json`
 - 电影记录 Schema：`schemas/pocket-data-v1/movies-record.schema.json`
 - 音乐城市记录 Schema：`schemas/pocket-data-v1/music-city-record.schema.json`
+- 照片元数据记录 Schema：`schemas/pocket-data-v1/photos-record.schema.json`
 - 内容 Mapping 记录 Schema：`schemas/pocket-data-v1/mapping-record.schema.json`
 - 浏览器 Core 与 Adapter 选择：`src/app/lib/dataPack/protocol.ts`、`types.ts`
 - 后端/CLI 校验：`scripts/data-packs/protocol.mjs`

@@ -1,4 +1,5 @@
 import { readFeishuConfig } from './config.mjs'
+import { assertIsolatedLibraryTables } from './library-contracts.mjs'
 
 function isPublicHttps(value) {
   try {
@@ -41,7 +42,10 @@ export function evaluateFeishuDeployment(env = process.env, rootDir = process.cw
   else add('bitable', 'warn', '未配置多维表格，流程仍会写入飞书文档与消息卡片')
 
   const libraryTableCount = Object.values(config.bitableLibraryTables || {}).filter(Boolean).length
-  if (config.bitableAppToken && libraryTableCount === 4) add('bitable_library', 'pass', '书籍、电影、音乐、照片四张协作数据表已配置')
+  let libraryTablesIsolated = true
+  try { assertIsolatedLibraryTables(config.bitableLibraryTables || {}) } catch { libraryTablesIsolated = false }
+  if (!libraryTablesIsolated) add('bitable_library', 'fail', '协作数据库配置串表：书籍、电影、音乐、照片必须使用四个不同的 Table ID')
+  else if (config.bitableAppToken && libraryTableCount === 4) add('bitable_library', 'pass', '书籍、电影、音乐、照片四张独立协作数据表已配置')
   else if (libraryTableCount || config.bitableAppToken) add('bitable_library', 'fail', '协作数据库配置不完整：需要 App Token 与四个 Library Table ID')
   else add('bitable_library', 'warn', '未启用多维表格协作数据库，Data Pack 仍使用原有来源')
 

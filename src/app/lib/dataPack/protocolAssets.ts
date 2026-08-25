@@ -7,24 +7,28 @@ import {
 import booksRecordSchema from '../../../../schemas/pocket-data-v1/books-record.schema.json';
 import moviesRecordSchema from '../../../../schemas/pocket-data-v1/movies-record.schema.json';
 import musicRecordSchema from '../../../../schemas/pocket-data-v1/music-city-record.schema.json';
+import photosRecordSchema from '../../../../schemas/pocket-data-v1/photos-record.schema.json';
 import mappingRecordSchema from '../../../../schemas/pocket-data-v1/mapping-record.schema.json';
 import booksExample from '../../../../schemas/pocket-data-v1/examples/books-small.bundle.json';
 import moviesExample from '../../../../schemas/pocket-data-v1/examples/movies-small.bundle.json';
 import musicExample from '../../../../schemas/pocket-data-v1/examples/music-small.bundle.json';
+import photosExample from '../../../../schemas/pocket-data-v1/examples/photos-small.bundle.json';
 import mappingExample from '../../../../schemas/pocket-data-v1/examples/mapping-small.bundle.json';
 
-const DOMAIN_LABELS: Record<DataPackDomain, string> = { books: '书籍', movies: '电影', music: '音乐', mapping: '内容 Mapping' };
+const DOMAIN_LABELS: Record<DataPackDomain, string> = { books: '书籍', movies: '电影', music: '音乐', photos: '照片', mapping: '内容 Mapping' };
 const domainLabel = (domain: DataPackDomain) => DOMAIN_LABELS[domain];
 const RECORD_SCHEMAS: Record<DataPackDomain, object> = {
   books: booksRecordSchema,
   movies: moviesRecordSchema,
   music: musicRecordSchema,
+  photos: photosRecordSchema,
   mapping: mappingRecordSchema,
 };
 const EXAMPLE_BUNDLES: Record<DataPackDomain, object> = {
   books: booksExample,
   movies: moviesExample,
   music: musicExample,
+  photos: photosExample,
   mapping: mappingExample,
 };
 
@@ -67,7 +71,9 @@ export function createDataPackAiInstruction(domain: DataPackDomain): string {
       ? '每条记录使用字段：id、title、original、type、director、country、year、rating、publicRating、date、synopsis，可选 locations。'
       : domain === 'music'
         ? '每条记录代表一座城市电台，使用 id、slug、cityName、cityNameZh、ianaTz、tzOffset、station、cover、lat、lng、description、tracks、podcast。每首 track 使用 id、title、artist、genre、durationSec、playback、introText、introPlayback。YouTube 来源写成 playback={provider:"youtube",url:"",sourceId:"视频 ID",sourceUrl:"原始 HTTPS 页面"}；可直接播放的 OSS/外部音频写成 provider="oss" 或 "external"，并在 url 提供可播放的 HTTPS 音频地址。不要把 YouTube 歌单 URL 当成 Data Pack Manifest。'
-        : '每条记录代表一份书籍或资料，使用 id、title、author、era、city、sourceName、sourceSha256、summary、locations。每个地点必须保存原文页码、逐字引文、关系、现状、WGS84 坐标、置信度与人工确认状态；未经人工确认或没有有限坐标的候选不得写入最终 Data Pack。';
+        : domain === 'photos'
+          ? '每条记录只保存可同步的照片元数据：id、title、city、date、lat、lng、thumbnailUrl、contentHash、summary。不得写入原图、Base64、blob/file URL、设备绝对路径或相册资产令牌；没有公开 HTTPS 缩略图时 thumbnailUrl 留空。'
+          : '每条记录代表一份书籍或资料，使用 id、title、author、era、city、sourceName、sourceSha256、summary、locations。每个地点必须保存原文页码、逐字引文、关系、现状、WGS84 坐标、置信度与人工确认状态；未经人工确认或没有有限坐标的候选不得写入最终 Data Pack。';
   const template = JSON.stringify(createEmptyDataPackTemplate(domain), null, 2);
   const schema = JSON.stringify(RECORD_SCHEMAS[domain], null, 2);
   const example = JSON.stringify(EXAMPLE_BUNDLES[domain], null, 2);

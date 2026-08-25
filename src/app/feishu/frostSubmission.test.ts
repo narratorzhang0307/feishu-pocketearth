@@ -17,6 +17,23 @@ describe('Frost Feishu submission draft', () => {
     expect(frostSubmissionFromText('movies', '推荐三部像《路边野餐》的电影')).toBeNull();
   });
 
+  it('uses a stable domain-specific Pocket ID so marking the same work twice upserts one row', () => {
+    const first = frostSubmissionFromText('books', '用 AI 记录《酒吧长谈》，我很喜欢');
+    const second = frostSubmissionFromText('books', '再次标记《酒吧长谈》');
+    const movie = frostSubmissionFromText('movies', '用 AI 记录电影《酒吧长谈》');
+    expect(first?.record.id).toBe(second?.record.id);
+    expect(first?.record.id).not.toBe(movie?.record.id);
+  });
+
+  it('creates a photo-only draft with its own schema-shaped record', () => {
+    const draft = frostSubmissionFromText('photos', '用 AI 记录《西湖雨夜》这张照片', new Date('2026-08-24T08:00:00Z'));
+    expect(draft).toMatchObject({
+      domain: 'photos', label: '《西湖雨夜》照片记录',
+      record: { title: '西湖雨夜', city: '西湖雨夜', date: '2026-08-24' },
+    });
+    expect(String(draft?.record.id)).toMatch(/^photo:frost:/);
+  });
+
   it('creates a review-gated music instruction for Feishu Bitable', () => {
     const draft = frostSubmissionFromText('music', '用 AI 记录《成都》，我在成都听完很喜欢', new Date('2026-08-24T08:00:00Z'));
     expect(draft?.domain).toBe('music');

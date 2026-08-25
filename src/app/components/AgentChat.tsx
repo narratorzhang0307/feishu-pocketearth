@@ -7,10 +7,8 @@ import { streamText } from '../../../frost-agent/sync/stream';
 import { streamComplete } from '../lib/streamComplete';
 import AgentLuIcon from './AgentLuIcon';
 import UserZhaIcon from './UserZhaIcon';
-import { getFeishuConfig, upsertFeishuLibraryRecords } from '../feishu/api';
+import { deleteFeishuLibraryRecords, upsertFeishuLibraryRecords } from '../feishu/api';
 import type { FrostSubmissionDraft } from '../feishu/frostSubmission';
-
-const FEISHU_LIBRARY_OPEN_PATH = '/api/feishu/library/open';
 
 // 通用「对话层」：各 Skill（读书 / 观影 / 城市播客）共用的对话框。
 // Qwen/MNN 端侧先做意图分类（端侧「挑」），Qwen 云脑结合脱敏上下文作答（云「写」）。
@@ -40,8 +38,9 @@ interface Turn {
   error?: boolean;
   submission?: {
     draft: FrostSubmissionDraft;
-    status: 'ready' | 'sending' | 'done' | 'error';
+    status: 'ready' | 'sending' | 'done' | 'duplicate' | 'deleting' | 'deleted' | 'error';
     error?: string;
+    tableUrl?: string;
   };
 }
 
@@ -65,17 +64,12 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState(config.initialInput || '');
   const [busy, setBusy] = useState(false);
-  const [feishuLibraryUrl, setFeishuLibraryUrl] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(true);
   const lastAskRef = useRef('');
   const streamRef = useRef<{ cancel: () => void; done: Promise<void> } | null>(null);
   useEffect(() => () => { mountedRef.current = false; streamRef.current?.cancel(); }, []);   // 卸载时取消在飞的逐字流，清掉 streamText 内部 interval（否则它会对死组件空跑约 90 次）
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [turns.length, busy]);
-  useEffect(() => {
-    if (!config.feishuSubmission) return;
-    void getFeishuConfig().then((feishu) => setFeishuLibraryUrl(feishu.bitableAppUrl || '')).catch(() => {});
-  }, [config.feishuSubmission]);
 
   // 云脑 JSON 调用（给推荐候选用）：自己 parse + 兜底
   const cloudJSON = async (system: string, prompt: string): Promise<Record<string, unknown> | null> => {
@@ -195,21 +189,43 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
       ? { ...turn, submission: { draft, status: 'sending' } }
       : turn));
     try {
-      await upsertFeishuLibraryRecords(draft.domain, [draft.record], {
+      const result = await upsertFeishuLibraryRecords(draft.domain, [draft.record], {
         status: '待分析',
         source: 'Frost Agent',
+        duplicatePolicy: 'warn',
       });
+      const duplicate = result.alreadyExists.length > 0;
       setTurns((current) => current.map((turn, index) => index === turnIndex
         ? {
           ...turn,
-          text: `${draft.label}已作为“AI 指令”提交到飞书多维表格，当前状态为“待分析”。AI 会补全结构化字段和候选地点；你确认后才会进入地球。`,
-          submission: { draft, status: 'done' },
+          text: duplicate
+            ? `${draft.label}已经记录过了，我没有再创建重复记录。你可以打开本领域飞书表查看原记录。`
+            : `${draft.label}已作为“AI 指令”提交到飞书多维表格，当前状态为“待分析”。AI 会补全结构化字段和候选地点；你确认后才会进入地球。`,
+          submission: { draft, status: duplicate ? 'duplicate' : 'done', tableUrl: result.tableUrl },
         }
         : turn));
     } catch (error) {
       const detail = error instanceof Error ? error.message : '提交失败';
       setTurns((current) => current.map((turn, index) => index === turnIndex
         ? { ...turn, submission: { draft, status: 'error', error: detail } }
+        : turn));
+    }
+  };
+
+  const deleteFromFeishu = async (turnIndex: number, submission: NonNullable<Turn['submission']>) => {
+    if (!window.confirm(`确认从你的飞书${submission.draft.label}表中删除这条记录？`)) return;
+    setTurns((current) => current.map((turn, index) => index === turnIndex
+      ? { ...turn, submission: { ...submission, status: 'deleting' } }
+      : turn));
+    try {
+      await deleteFeishuLibraryRecords(submission.draft.domain, [String(submission.draft.record.id || '')]);
+      setTurns((current) => current.map((turn, index) => index === turnIndex
+        ? { ...turn, text: `${submission.draft.label}已从你的飞书表删除。`, submission: { ...submission, status: 'deleted' } }
+        : turn));
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : '删除失败';
+      setTurns((current) => current.map((turn, index) => index === turnIndex
+        ? { ...turn, submission: { ...submission, status: 'error', error: detail } }
         : turn));
     }
   };
@@ -248,24 +264,33 @@ export default function AgentChat({ config }: { config: AgentChatConfig }) {
                     飞书多维表格草稿 · {t.submission.draft.label}
                   </div>
                   {t.submission.status === 'done' ? (
-                    <a
-                      href={feishuLibraryUrl || FEISHU_LIBRARY_OPEN_PATH}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px"
-                    >
-                      <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 打开飞书多维表格 ↗
+                    <div className="mt-2 grid grid-cols-[1fr_auto] gap-1.5">
+                      <a
+                        href={t.submission.tableUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px"
+                      >
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 打开本领域飞书表 ↗
+                      </a>
+                      <button type="button" onClick={() => void deleteFromFeishu(i, t.submission!)} className="border-2 border-black bg-white px-2 font-bold text-[#b3261e] shadow-[1px_1px_0_#000]">删除</button>
+                    </div>
+                  ) : t.submission.status === 'duplicate' ? (
+                    <a href={t.submission.tableUrl} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1.5 border-2 border-black bg-[#FFF1C9] px-2 py-2 font-bold text-black shadow-[1px_1px_0_#000]">
+                      已记录过 · 查看原记录 ↗
                     </a>
+                  ) : t.submission.status === 'deleted' ? (
+                    <div className="mt-2 border-2 border-black bg-white px-2 py-2 text-center font-bold text-black/55">已从飞书删除</div>
                   ) : (
                     <button
                       type="button"
-                      disabled={t.submission.status === 'sending'}
+                      disabled={t.submission.status === 'sending' || t.submission.status === 'deleting'}
                       onClick={() => void submitToFeishu(i, t.submission!.draft)}
                       className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black px-2 py-2 font-bold shadow-[1px_1px_0_#000] active:translate-y-px disabled:opacity-45"
                       style={{ background: config.accent }}
                     >
-                      {t.submission.status === 'sending' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" strokeWidth={2.7} />}
-                      {t.submission.status === 'sending' ? '正在提交…' : t.submission.status === 'error' ? '重试 AI 写入' : '用 AI 添加到飞书表格'}
+                      {t.submission.status === 'sending' || t.submission.status === 'deleting' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" strokeWidth={2.7} />}
+                      {t.submission.status === 'sending' ? '正在提交…' : t.submission.status === 'deleting' ? '正在删除…' : t.submission.status === 'error' ? '重试 AI 写入' : '用 AI 添加到飞书表格'}
                     </button>
                   )}
                   {t.submission.status === 'error' && (

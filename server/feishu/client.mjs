@@ -118,9 +118,9 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     })
   }
 
-  async function createBitableRecords(records, tableId = config.bitableTableId) {
+  async function createBitableRecords(records, tableId = config.bitableTableId, userAccessToken = '') {
     if (!config.bitableAppToken || !tableId) return { skipped: true, reason: 'bitable_not_configured' }
-    const token = await cachedToken('tenant')
+    const token = userAccessToken || await cachedToken('tenant')
     const created = []
     for (let offset = 0; offset < records.length; offset += 500) {
       const chunk = records.slice(offset, offset + 500)
@@ -135,9 +135,9 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     return { skipped: false, records: created }
   }
 
-  async function updateBitableRecords(records, tableId = config.bitableTableId) {
+  async function updateBitableRecords(records, tableId = config.bitableTableId, userAccessToken = '') {
     if (!config.bitableAppToken || !tableId) return { skipped: true, reason: 'bitable_not_configured' }
-    const token = await cachedToken('tenant')
+    const token = userAccessToken || await cachedToken('tenant')
     const updated = []
     for (let offset = 0; offset < records.length; offset += 500) {
       const data = await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables/${encodeURIComponent(tableId)}/records/batch_update`, {
@@ -151,11 +151,11 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     return { skipped: false, records: updated }
   }
 
-  async function deleteBitableRecords(recordIds, tableId = config.bitableTableId) {
+  async function deleteBitableRecords(recordIds, tableId = config.bitableTableId, userAccessToken = '') {
     if (!config.bitableAppToken || !tableId) return { skipped: true, reason: 'bitable_not_configured' }
     const ids = [...new Set((Array.isArray(recordIds) ? recordIds : []).map((value) => safeText(value, 256)).filter(Boolean))]
     if (!ids.length) return { skipped: false, deleted: 0 }
-    const token = await cachedToken('tenant')
+    const token = userAccessToken || await cachedToken('tenant')
     let deleted = 0
     for (let offset = 0; offset < ids.length; offset += 500) {
       const chunk = ids.slice(offset, offset + 500)
@@ -170,9 +170,9 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     return { skipped: false, deleted }
   }
 
-  async function listBitableRecords(tableId = config.bitableTableId) {
+  async function listBitableRecords(tableId = config.bitableTableId, userAccessToken = '') {
     if (!config.bitableAppToken || !tableId) throw new Error('bitable_not_configured')
-    const token = await cachedToken('tenant')
+    const token = userAccessToken || await cachedToken('tenant')
     const items = []
     let pageToken = ''
     do {
@@ -189,8 +189,8 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     return items
   }
 
-  async function createBitableApp(name) {
-    const token = await cachedToken('tenant')
+  async function createBitableApp(name, userAccessToken = '') {
+    const token = userAccessToken || await cachedToken('tenant')
     const data = await request('/bitable/v1/apps', {
       method: 'POST', token,
       body: { name: safeText(name, 100) },
@@ -202,9 +202,9 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     return { appToken }
   }
 
-  async function createBitableTable(name) {
+  async function createBitableTable(name, userAccessToken = '') {
     if (!config.bitableAppToken) throw new Error('bitable_not_configured')
-    const token = await cachedToken('tenant')
+    const token = userAccessToken || await cachedToken('tenant')
     const data = await request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables`, {
       method: 'POST', token,
       body: { table: { name: safeText(name, 100) } },
@@ -216,9 +216,9 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     return { tableId }
   }
 
-  async function listBitableTables() {
+  async function listBitableTables(userAccessToken = '') {
     if (!config.bitableAppToken) throw new Error('bitable_not_configured')
-    const token = await cachedToken('tenant')
+    const token = userAccessToken || await cachedToken('tenant')
     const tables = []
     let pageToken = ''
     do {
@@ -233,8 +233,8 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     return tables
   }
 
-  async function listBitableFields(tableId) {
-    const token = await cachedToken('tenant')
+  async function listBitableFields(tableId, userAccessToken = '') {
+    const token = userAccessToken || await cachedToken('tenant')
     const fields = []
     let pageToken = ''
     do {
@@ -249,8 +249,8 @@ export function createFeishuClient(config, fetchImpl = fetch) {
     return fields
   }
 
-  async function createBitableField(tableId, fieldName, type = 1) {
-    const token = await cachedToken('tenant')
+  async function createBitableField(tableId, fieldName, type = 1, userAccessToken = '') {
+    const token = userAccessToken || await cachedToken('tenant')
     return request(`/bitable/v1/apps/${encodeURIComponent(config.bitableAppToken)}/tables/${encodeURIComponent(tableId)}/fields`, {
       method: 'POST', token,
       body: { field_name: safeText(fieldName, 100), type },

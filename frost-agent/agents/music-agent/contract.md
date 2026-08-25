@@ -88,3 +88,8 @@ AgentResult<{
 「建议」，真正落点由 Boundary 校验后执行——但其本质形态是多段处理的流水线，而非一次性执行某个副作用。
 （对照：radio / dj 是执行型——它们直接改播放状态、动作即副作用；books-agent 同为流水线型——
 locate 读书目 → enrich 用 web_search 工具联网补全（作者/原名/出版年/关联地点）→ resolve 端侧消歧+geocode+确定读完日期 → mark 云写 note → 产出 mark_place 建议；本 agent 与之同构，处理的是音乐对象。）
+
+# Data Pack / 飞书写入边界
+- Skill ID：`pocket.music`；Schema：`pocket.music/v1`。
+- 写入目标：`music-agent` → `FEISHU_BITABLE_MUSIC_TABLE_ID`，缺失时报错，不得回退到书籍表或其他领域。
+- 同曲名 + 艺人使用稳定身份去重；已记录时提醒用户，不再新建行。

@@ -16,6 +16,7 @@ const ADAPTERS = [
   { domain: 'books', schemaName: 'pocket.books/v1', schemaVersion: '1.0.0', skillId: 'pocket.books' },
   { domain: 'movies', schemaName: 'pocket.movies/v1', schemaVersion: '1.0.0', skillId: 'pocket.movies' },
   { domain: 'music', schemaName: 'pocket.music/v1', schemaVersion: '1.0.0', skillId: 'pocket.music' },
+  { domain: 'photos', schemaName: 'pocket.photos/v1', schemaVersion: '1.0.0', skillId: 'pocket.photos' },
   { domain: 'mapping', schemaName: 'pocket.mapping/v1', schemaVersion: '1.0.0', skillId: 'pocket.mapping' },
 ];
 
@@ -188,9 +189,28 @@ function validateMappingRecord(value, index) {
   return value;
 }
 
+function validatePhotoRecord(value, index) {
+  const label = `records[${index}]`;
+  if (!isObject(value)) fail(`${label} 不是对象`);
+  noExtraKeys(value, ['id', 'title', 'city', 'date', 'lat', 'lng', 'thumbnailUrl', 'contentHash', 'summary'], label);
+  text(value.id, `${label}.id`, { max: 128 });
+  text(value.title, `${label}.title`, { max: 300 });
+  text(value.city, `${label}.city`, { empty: true, max: 200 });
+  text(value.date, `${label}.date`, { empty: true, max: 10 });
+  if (!DATE.test(value.date)) fail(`${label}.date 必须是 YYYY-MM-DD 或空字符串`);
+  numberOrNull(value.lat, `${label}.lat`, -90, 90);
+  numberOrNull(value.lng, `${label}.lng`, -180, 180);
+  text(value.thumbnailUrl, `${label}.thumbnailUrl`, { empty: true, max: 2000 });
+  if (value.thumbnailUrl && !/^https:\/\//.test(value.thumbnailUrl)) fail(`${label}.thumbnailUrl 必须是 HTTPS 地址`);
+  text(value.contentHash, `${label}.contentHash`, { empty: true, max: 256 });
+  text(value.summary, `${label}.summary`, { empty: true, max: 4000 });
+  return value;
+}
+
 export function validateRecord(domain, value, index) {
   if (domain === 'mapping') return validateMappingRecord(value, index);
   if (domain === 'music') return validateMusicRecord(value, index);
+  if (domain === 'photos') return validatePhotoRecord(value, index);
   const label = `records[${index}]`;
   if (!isObject(value)) fail(`${label} 不是对象`);
   noExtraKeys(value, domain === 'books'

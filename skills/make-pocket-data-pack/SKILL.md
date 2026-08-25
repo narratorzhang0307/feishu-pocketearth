@@ -1,6 +1,6 @@
 ---
 name: make-pocket-data-pack
-description: 将书单、阅读记录、影单、观影记录、音乐清单、YouTube 单曲或歌单资料，以及书籍地点证据、JSON、CSV、Markdown、表格等原始数据，整理成可校验并可导入 Pocket Earth 的 pocket-data/v1 单文件 Data Pack。Use when the user asks to make, convert, normalize, repair, validate, import, or migrate a Pocket Earth books, movies, music, or content Mapping data package. Not for普通内容推荐、播放歌曲或修改 Pocket Earth Skill 本身。
+description: 将书籍、电影、音乐、照片元数据与内容地点证据等原始资料整理成可校验并可导入 Pocket Earth 的独立 pocket-data/v1 Data Pack。Use when the user asks to make, convert, normalize, repair, validate, import, or migrate a Pocket Earth books, movies, music, photos, or content Mapping data package. Not for普通内容推荐、播放歌曲或修改 Pocket Earth Skill 本身。
 ---
 
 # 制作 Pocket Data Pack
@@ -14,6 +14,7 @@ description: 将书单、阅读记录、影单、观影记录、音乐清单、Y
 | 书籍、书单、阅读记录 | `pocket.books` / `pocket.books/v1` | `references/books-record.schema.json` 与 `references/books-example.bundle.json` | `assets/books-template.json` |
 | 电影、剧集、影单、观影记录 | `pocket.movies` / `pocket.movies/v1` | `references/movies-record.schema.json` 与 `references/movies-example.bundle.json` | `assets/movies-template.json` |
 | 音乐、城市电台、YouTube 单曲或歌单 | `pocket.music` / `pocket.music/v1` | `references/music-city-record.schema.json`、`references/music-example.bundle.json` 与 `references/music-sources.md` | `assets/music-template.json` |
+| 照片元数据、地点与精选说明 | `pocket.photos` / `pocket.photos/v1` | `references/photos-record.schema.json` 与 `references/photos-example.bundle.json` | `assets/photos-template.json` |
 | 书籍 / 资料地点证据、内容落地球 | `pocket.mapping` / `pocket.mapping/v1` | `references/mapping-record.schema.json` 与 `references/mapping-example.bundle.json` | `assets/mapping-template.json` |
 
 始终读取 `references/pocket-data-v1.md`。只读取当前领域对应的 Schema、示例和来源说明，不加载无关领域文件。
@@ -43,6 +44,7 @@ description: 将书单、阅读记录、影单、观影记录、音乐清单、Y
 - `schema.record_count` 必须等于 `records.length`；所有记录 ID 必须唯一。
 - 用户评分、公开站点评分与地点置信度不得混用。
 - 私人笔记、账号 ID、访问令牌、原始私人照片和其他敏感数据不得被标成 `public`。
+- 照片 Data Pack 只保存 Schema 声明的可同步元数据；不得包含原图、Base64、`blob:` / `file:` URL、设备路径或相册资产令牌。
 - 不要把 YouTube 页面或歌单 URL 当作 Data Pack Manifest；先按 `references/music-sources.md` 展开和整理成音乐记录。
 - 不要绕过校验器，也不要为了通过校验而删除可追溯来源。
 

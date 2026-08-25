@@ -17,6 +17,7 @@ Pocket Earth 当前已安装：
 | 书籍 | `pocket.books` | `pocket.books/v1` | `books-record.schema.json` |
 | 电影 | `pocket.movies` | `pocket.movies/v1` | `movies-record.schema.json` |
 | 音乐 | `pocket.music` | `pocket.music/v1` | `music-city-record.schema.json` |
+| 照片 | `pocket.photos` | `pocket.photos/v1` | `photos-record.schema.json` |
 | 内容 Mapping | `pocket.mapping` | `pocket.mapping/v1` | `mapping-record.schema.json` |
 
 其他数据类型必须先有对应 Adapter 和记录 Schema。只有 Core 格式、没有 Adapter 的包会被正确识别，但不能直接装备到 Skill。

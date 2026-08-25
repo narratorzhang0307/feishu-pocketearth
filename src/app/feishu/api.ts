@@ -1,12 +1,30 @@
-import type { FeishuConfig, FeishuLibraryDomain, FeishuLibraryDomainData, FeishuLibrarySnapshot, FeishuLibraryVersions, FeishuTask, FeishuUser, ReviewedLocation } from './types';
+import type { FeishuConfig, FeishuLibraryDomain, FeishuLibraryDomainData, FeishuLibrarySnapshot, FeishuLibraryVersions, FeishuPersonalWorkspace, FeishuTask, FeishuUser, ReviewedLocation } from './types';
 import { requestFeishuAuthCode } from './bridge';
 
 const SESSION_KEY = 'pocket-earth.feishu.session.v1';
+const WORKSPACE_KEY = 'pocket-earth.feishu.workspace.v1';
 let sessionToken = typeof sessionStorage === 'undefined' ? '' : sessionStorage.getItem(SESSION_KEY) || '';
 let reauthentication: Promise<void> | null = null;
+let activeFeishuOpenId = '';
+
+type StoredFeishuWorkspace = Pick<FeishuPersonalWorkspace, 'appToken' | 'tables'> & { ownerOpenId: string };
+
+function storedFeishuWorkspace(): StoredFeishuWorkspace | undefined {
+  if (typeof localStorage === 'undefined') return undefined;
+  try {
+    const value = JSON.parse(localStorage.getItem(WORKSPACE_KEY) || 'null') as Partial<StoredFeishuWorkspace> | null;
+    return value?.ownerOpenId && value.appToken && value.tables ? value as StoredFeishuWorkspace : undefined;
+  } catch { return undefined; }
+}
+
+function rememberFeishuWorkspace(workspace: FeishuPersonalWorkspace) {
+  if (typeof localStorage === 'undefined' || !activeFeishuOpenId || !workspace?.appToken) return;
+  localStorage.setItem(WORKSPACE_KEY, JSON.stringify({ ownerOpenId: activeFeishuOpenId, appToken: workspace.appToken, tables: workspace.tables }));
+}
 
 function clearFeishuSession() {
   sessionToken = '';
+  activeFeishuOpenId = '';
   if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(SESSION_KEY);
 }
 
@@ -72,16 +90,22 @@ export async function getFeishuConfig() {
 }
 
 export async function authenticateFeishu(input: { code?: string; devBypass?: boolean }) {
-  const result = await request<{ sessionToken: string; user: FeishuUser; expiresAt: number }>('/api/feishu/auth', {
-    method: 'POST', body: JSON.stringify(input),
+  const workspace = storedFeishuWorkspace();
+  const result = await request<{ sessionToken: string; user: FeishuUser; expiresAt: number; workspace: FeishuPersonalWorkspace }>('/api/feishu/auth', {
+    method: 'POST', body: JSON.stringify({ ...input, workspace, workspaceOwner: workspace?.ownerOpenId }),
   });
   sessionToken = result.sessionToken;
+  activeFeishuOpenId = result.user.openId;
   if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(SESSION_KEY, sessionToken);
+  rememberFeishuWorkspace(result.workspace);
   return result;
 }
 
 export async function resumeFeishuSession() {
-  return request<{ user: FeishuUser; expiresAt: number }>('/api/feishu/session');
+  const result = await request<{ user: FeishuUser; expiresAt: number; workspace: FeishuPersonalWorkspace }>('/api/feishu/session');
+  activeFeishuOpenId = result.user.openId;
+  rememberFeishuWorkspace(result.workspace);
+  return result;
 }
 
 export async function ensureFeishuSession() {
@@ -121,21 +145,32 @@ export type FeishuLibraryBootstrapResult = {
   createdTables: FeishuLibraryDomain[];
   createdFields: Array<{ domain: FeishuLibraryDomain; fieldName: string }>;
   guideDocument?: { documentId: string; url: string } | null;
+  workspace: FeishuPersonalWorkspace;
 };
 
 export async function bootstrapFeishuLibrary() {
-  return request<FeishuLibraryBootstrapResult>('/api/feishu/library/bootstrap', {
+  const result = await request<FeishuLibraryBootstrapResult>('/api/feishu/library/bootstrap', {
     method: 'POST', body: JSON.stringify({}),
   });
+  rememberFeishuWorkspace(result.workspace);
+  return result;
 }
 
 export async function upsertFeishuLibraryRecords(
   domain: FeishuLibraryDomain,
   records: unknown[],
-  options: { status?: '待分析' | '分析中' | '待确认' | '已确认' | '分析失败'; source?: string } = {},
+  options: { status?: '待分析' | '分析中' | '待确认' | '已确认' | '分析失败'; source?: string; duplicatePolicy?: 'warn' | 'update' } = {},
 ) {
-  return request<{ created: number; updated: number; previousVersion: string }>(`/api/feishu/library/${domain}/records`, {
+  const result = await request<{ created: number; updated: number; alreadyExists: Array<{ pocketId: string; title: string }>; previousVersion: string; domain: FeishuLibraryDomain; schema: string; tableUrl: string; workspace: FeishuPersonalWorkspace }>(`/api/feishu/library/${domain}/records`, {
     method: 'POST', body: JSON.stringify({ records, ...options }),
+  });
+  rememberFeishuWorkspace(result.workspace);
+  return result;
+}
+
+export async function deleteFeishuLibraryRecords(domain: FeishuLibraryDomain, pocketIds: string[]) {
+  return request<{ deleted: number; domain: FeishuLibraryDomain; tableUrl: string }>(`/api/feishu/library/${domain}/records`, {
+    method: 'DELETE', body: JSON.stringify({ pocketIds }),
   });
 }
 

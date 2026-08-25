@@ -34,9 +34,9 @@ describe('Feishu event callback route', () => {
     expect(() => parseFeishuDocumentToken('https://example.feishu.cn/wiki/FdVzdxnSpoWp8GxiKlscJAqonvh')).toThrow('feishu_document_url_invalid');
   });
 
-  it('keeps the Bitable success card clickable even before public config reaches the client', async () => {
+  it('never redirects an unauthenticated user to the deployment owner Bitable', async () => {
     const rootDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-library-open-'));
-    const response: { status?: number; headers?: Record<string, string>; ended?: boolean } = {};
+    const response: { body?: unknown; status?: number } = {};
     const router = await createFeishuRouter({
       env: {
         FEISHU_DATA_DIR: path.join(rootDir, 'data'),
@@ -46,20 +46,30 @@ describe('Feishu event callback route', () => {
       rootDir,
       qwenProvider: { key: '' },
       readBody: async () => '',
-      sendJSON: () => {},
+      sendJSON: (_res: unknown, body: unknown, status = 200) => { response.body = body; response.status = status; },
     });
-    const res = {
-      writeHead: (status: number, headers: Record<string, string>) => { response.status = status; response.headers = headers; },
-      end: () => { response.ended = true; },
-    };
+    await router.handle({ method: 'GET', headers: {} }, {}, new URL('http://localhost/api/feishu/library/open'));
 
-    await router.handle({ method: 'GET', headers: {} }, res, new URL('http://localhost/api/feishu/library/open'));
+    expect(response).toEqual({ status: 400, body: { error: 'personal_bitable_url_required' } });
+  });
 
-    expect(response).toEqual({
-      status: 302,
-      headers: { Location: 'https://feishu.cn/base/base-token', 'Cache-Control': 'no-store' },
-      ended: true,
+  it('ignores a browser-cached workspace owned by a different Feishu account', async () => {
+    const rootDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-account-isolation-'));
+    let rawBody = JSON.stringify({
+      devBypass: true,
+      workspaceOwner: 'another-open-id',
+      workspace: { appToken: 'base-another-user', tables: { books: 'tbl-another-books' } },
     });
+    let response: { body?: any; status?: number } = {};
+    const router = await createFeishuRouter({
+      env: { FEISHU_DATA_DIR: path.join(rootDir, 'data'), FEISHU_DEV_BYPASS_AUTH: 'true' },
+      rootDir, qwenProvider: { key: '' }, readBody: async () => rawBody,
+      sendJSON: (_res: unknown, body: unknown, status = 200) => { response = { body, status }; },
+    });
+
+    await router.handle({ method: 'POST', headers: {} }, {}, new URL('http://localhost/api/feishu/auth'));
+
+    expect(response).toMatchObject({ status: 200, body: { user: { openId: 'dev-open-id' }, workspace: { appToken: '', tables: {}, domainUrls: {} } } });
   });
 
   it('returns an encrypted URL verification challenge after signature, decrypt and token checks', async () => {
@@ -112,7 +122,7 @@ describe('Feishu event callback route', () => {
       readBody: async () => rawBody,
       sendJSON: (_res: unknown, body: unknown, status = 200) => { response = { body, status }; },
     });
-    rawBody = JSON.stringify({ devBypass: true });
+    rawBody = JSON.stringify({ devBypass: true, workspaceOwner: 'dev-open-id', workspace: { appToken: 'base-token', tables: { books: 'tbl-books' } } });
     await router.handle({ method: 'POST', headers: {} }, {}, new URL('http://localhost/api/feishu/auth'));
     const sessionToken = response.body.sessionToken;
     response = {};
@@ -122,7 +132,80 @@ describe('Feishu event callback route', () => {
     rawBody = JSON.stringify({ token: 'refresh-secret', domain: 'books' });
     response = {};
     await router.handle({ method: 'POST', headers: {} }, {}, new URL('http://localhost/api/feishu/library/refresh'));
-    expect(response).toMatchObject({ status: 200, body: { ok: true, domains: { books: { count: 1, rejected: 0 } } } });
+    expect(response).toEqual({ status: 410, body: { error: 'personal_bitable_session_required' } });
+  });
+
+  it('writes a movie only to the signed-in user movie table, never the deployment owner book table', async () => {
+    const rootDir = await mkdtemp(path.join(tmpdir(), 'pe-feishu-personal-movie-'));
+    let rawBody = '';
+    let response: { body?: any; status?: number } = {};
+    const calls: Array<{ url: string; authorization: string }> = [];
+    const movieRows: any[] = [];
+    const fetchImpl = async (url: string, init: RequestInit = {}) => {
+      const authorization = String((init.headers as Record<string, string> | undefined)?.authorization || '');
+      calls.push({ url, authorization });
+      if (url.endsWith('/auth/v3/app_access_token/internal')) return Response.json({ code: 0, app_access_token: 'app-token', expire: 7200 });
+      if (url.endsWith('/authen/v1/access_token')) return Response.json({ code: 0, data: { access_token: 'user-token', expires_in: 7200 } });
+      if (url.endsWith('/authen/v1/user_info')) return Response.json({ code: 0, data: { open_id: 'user-open-id', tenant_key: 'user-tenant', name: '电影用户' } });
+      if (url.includes('/records?')) return Response.json({ code: 0, data: { items: [...movieRows], has_more: false } });
+      if (url.endsWith('/records/batch_create')) {
+        const body = JSON.parse(String(init.body || '{}'));
+        movieRows.push({ record_id: 'rec-movie', fields: body.records[0].fields });
+        return Response.json({ code: 0, data: { records: [{ record_id: 'rec-movie' }] } });
+      }
+      if (url.endsWith('/records/batch_delete')) {
+        const body = JSON.parse(String(init.body || '{}'));
+        movieRows.splice(0, movieRows.length, ...movieRows.filter((row) => !body.records.includes(row.record_id)));
+        return Response.json({ code: 0 });
+      }
+      return Response.json({ code: 0 });
+    };
+    const router = await createFeishuRouter({
+      env: {
+        FEISHU_DATA_DIR: path.join(rootDir, 'data'), FEISHU_APP_ID: 'app-id', FEISHU_APP_SECRET: 'secret',
+        FEISHU_BITABLE_APP_TOKEN: 'base-owner', FEISHU_BITABLE_BOOKS_TABLE_ID: 'tbl-owner-books',
+      },
+      rootDir, fetchImpl, qwenProvider: { key: '' },
+      readBody: async () => rawBody,
+      sendJSON: (_res: unknown, body: unknown, status = 200) => { response = { body, status }; },
+    });
+
+    rawBody = JSON.stringify({ code: 'oauth-code', workspaceOwner: 'user-open-id', workspace: { appToken: 'base-user', tables: { movies: 'tbl-user-movies' } } });
+    await router.handle({ method: 'POST', headers: {} }, {}, new URL('http://localhost/api/feishu/auth'));
+    const sessionToken = response.body.sessionToken;
+    rawBody = JSON.stringify({ duplicatePolicy: 'warn', records: [{
+      id: 'movie:frost:bar-talk', title: '酒吧长谈', original: '', type: '电影', director: '', country: '', year: null,
+      rating: null, date: '2026-08-25', synopsis: '我很喜欢', locations: [],
+    }] });
+    response = {};
+    await router.handle(
+      { method: 'POST', headers: { authorization: `Bearer ${sessionToken}` } }, {},
+      new URL('http://localhost/api/feishu/library/movies/records'),
+    );
+
+    expect(response).toMatchObject({ status: 200, body: {
+      created: 1, updated: 0, alreadyExists: [], domain: 'movies', schema: 'pocket.movies/v1',
+      tableUrl: 'https://feishu.cn/base/base-user?table=tbl-user-movies',
+    } });
+
+    rawBody = JSON.stringify({ pocketIds: ['movie:frost:bar-talk'] });
+    response = {};
+    await router.handle(
+      { method: 'DELETE', headers: { authorization: `Bearer ${sessionToken}` } }, {},
+      new URL('http://localhost/api/feishu/library/movies/records'),
+    );
+    expect(response).toMatchObject({ status: 200, body: { deleted: 1, domain: 'movies', tableUrl: 'https://feishu.cn/base/base-user?table=tbl-user-movies' } });
+    expect(movieRows).toEqual([]);
+
+    const bitableCalls = calls.filter((call) => call.url.includes('/bitable/v1/apps/'));
+    expect(bitableCalls.map((call) => call.url)).toEqual([
+      'https://open.feishu.cn/open-apis/bitable/v1/apps/base-user/tables/tbl-user-movies/records?page_size=500',
+      'https://open.feishu.cn/open-apis/bitable/v1/apps/base-user/tables/tbl-user-movies/records/batch_create',
+      'https://open.feishu.cn/open-apis/bitable/v1/apps/base-user/tables/tbl-user-movies/records?page_size=500',
+      'https://open.feishu.cn/open-apis/bitable/v1/apps/base-user/tables/tbl-user-movies/records/batch_delete',
+    ]);
+    expect(bitableCalls.every((call) => call.authorization === 'Bearer user-token')).toBe(true);
+    expect(calls.some((call) => call.url.includes('base-owner') || call.url.includes('tbl-owner-books'))).toBe(false);
   });
 
   it('keeps manual sync fast by leaving pending AI work to the inbox worker', async () => {
@@ -157,7 +240,7 @@ describe('Feishu event callback route', () => {
       readBody: async () => rawBody,
       sendJSON: (_res: unknown, body: unknown, status = 200) => { response = { body, status }; },
     });
-    rawBody = JSON.stringify({ devBypass: true });
+    rawBody = JSON.stringify({ devBypass: true, workspaceOwner: 'dev-open-id', workspace: { appToken: 'base-token', tables: { books: 'tbl-books' } } });
     await router.handle({ method: 'POST', headers: {} }, {}, new URL('http://localhost/api/feishu/auth'));
     const sessionToken = response.body.sessionToken;
 

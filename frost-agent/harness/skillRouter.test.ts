@@ -123,6 +123,7 @@ describe('Frost cross-skill router', () => {
     ['我读完了《霍乱时期的爱情》', 'pocket.books'],
     ['我看完电影《花样年华》', 'pocket.movies'],
     ['我听完了这张专辑', 'pocket.music'],
+    ['整理我刚拍的这张照片', 'pocket.photos'],
   ])('routes trigger corpus %s to %s', async (userText, skillId) => {
     const { plan } = await planFrostTask({ now: new Date(), surface: 'frost', userText });
     expect(plan?.steps[0].skillId).toBe(skillId);

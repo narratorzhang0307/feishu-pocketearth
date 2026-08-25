@@ -30,6 +30,7 @@ export const DEFAULT_DATA_PACK_URLS: Record<DataPackDomain, string> = {
   books: import.meta.env.VITE_BOOKS_DATA_PACK_URL || '/data-packs/feishu-pocket-earth-books/1.0.0/manifest.json',
   movies: import.meta.env.VITE_MOVIES_DATA_PACK_URL || '/data-packs/feishu-pocket-earth-movies/1.0.0/manifest.json',
   music: import.meta.env.VITE_MUSIC_DATA_PACK_URL || '/data-packs/feishu-pocket-earth-music/1.0.0/manifest.json',
+  photos: import.meta.env.VITE_PHOTOS_DATA_PACK_URL || '',
   mapping: import.meta.env.VITE_MAPPING_DATA_PACK_URL || '',
 };
 
@@ -46,6 +47,7 @@ const states: Record<DataPackDomain, DataPackState> = {
   books: { status: 'idle', active: null, error: '' },
   movies: { status: 'idle', active: null, error: '' },
   music: { status: 'idle', active: null, error: '' },
+  photos: { status: 'idle', active: null, error: '' },
   mapping: { status: 'idle', active: null, error: '' },
 };
 const listeners = new Set<() => void>();

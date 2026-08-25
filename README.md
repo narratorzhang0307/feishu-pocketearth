@@ -534,8 +534,8 @@ npm run feishu:bitable:bootstrap
 | `FEISHU_WEB_BASE_URL` | 生产必需 | 飞书可访问的公网 HTTPS 根地址 |
 | `FEISHU_VERIFICATION_TOKEN` | 事件回调必需 | 校验飞书事件来源 |
 | `FEISHU_ENCRYPT_KEY` | 推荐 | 解密加密事件 |
-| `FEISHU_BITABLE_APP_TOKEN` | 多维表格必需 | 知识库多维表格 App Token |
-| `FEISHU_BITABLE_*_TABLE_ID` | 对应领域必需 | 四个领域的数据表 ID |
+| `FEISHU_BITABLE_APP_TOKEN` | 管理员脚本可选 | 仅供迁移、预检和示例模板；Web 用户使用自己的 Base |
+| `FEISHU_BITABLE_*_TABLE_ID` | 管理员脚本可选 | 四个领域必须使用不同 Table ID，共享 ID 会预检失败 |
 | `FEISHU_BITABLE_TABLE_ID` | 地点写回必需 | 知识地点表 ID |
 | `FEISHU_BITABLE_REFRESH_TOKEN` | 自动刷新推荐 | 多维表格自动化调用的随机 Token |
 | `DASHSCOPE_API_KEY` | AI 必需 | 服务端 AI 调用密钥 |
@@ -597,9 +597,10 @@ API_PORT=3009 node server.mjs
 | `GET /api/feishu/library/:domain` | 读取单个领域的数据投影 |
 | `POST /api/feishu/library/sync` | 重新读取飞书并处理待分析记录 |
 | `POST /api/feishu/library/bootstrap` | 创建个人知识库及配套结构 |
-| `POST /api/feishu/library/refresh` | 由多维表格自动化使指定领域缓存失效 |
-| `POST /api/feishu/library/:domain/records` | 幂等新增或更新领域记录 |
-| `GET /api/feishu/library/open` | 跳转到已配置的飞书多维表格 |
+| `POST /api/feishu/library/refresh` | 已禁用的全局刷新入口；个人 Base 必须在登录会话中同步 |
+| `POST /api/feishu/library/:domain/records` | 写入登录用户对应领域表；`duplicatePolicy=warn` 会拦截同名重复 |
+| `DELETE /api/feishu/library/:domain/records` | 从登录用户对应领域表删除指定 Pocket ID |
+| `GET /api/feishu/library/open` | 不再跳转部署者 Base；客户端使用会话返回的个人领域 URL |
 | `POST /api/feishu/photos/review` | 对用户主动选择的照片进行 AI 评审 |
 | `POST /api/feishu/tasks/from-document` | 读取飞书文档并创建知识提取任务 |
 | `POST /api/feishu/tasks` | 创建可选的 PDF 或图片任务 |
@@ -611,10 +612,10 @@ API_PORT=3009 node server.mjs
 ## 数据持久化与缓存
 
 - 任务元数据、审核结果和写回检查点保存在 `var/feishu/tasks/`；
-- 多维表格运行时配置与短期缓存保存在 `var/feishu/`；
+- Web 用户的 Base Token 与四个 Table ID 仅保存在用户浏览器和短时登录会话，不写入服务器知识库缓存；
+- 部署者的 `var/feishu/` 只保留管理员脚本生成的模板配置，不作为个人知识的回退库；
 - 飞书文档原文、文件 Base64 和用户 access token 不写入任务快照；
-- 缓存失效后会重新分页读取飞书；
-- 飞书暂时不可用时，可以使用最近一次通过 Schema 校验的本地缓存；
+- 个人会话缓存失效后会从该用户的飞书 Base 重新分页读取；
 - `var/feishu/` 已被 Git 忽略，不会进入源码仓库。
 
 ## 安全与隐私

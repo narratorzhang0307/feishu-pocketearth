@@ -2,8 +2,9 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { textBlock } from './client.mjs'
+import { FEISHU_LIBRARY_CONTRACTS, FEISHU_LIBRARY_DOMAINS, assertIsolatedLibraryTables } from './library-contracts.mjs'
 
-export const BITABLE_LIBRARY_DOMAINS = ['books', 'movies', 'music', 'photos']
+export const BITABLE_LIBRARY_DOMAINS = FEISHU_LIBRARY_DOMAINS
 
 export const BITABLE_LIBRARY_STATUS = Object.freeze({
   pending: '待分析',
@@ -35,18 +36,13 @@ export const BITABLE_LIBRARY_FIELDS = Object.freeze({
   updatedAt: '更新时间',
 })
 
-const schemaName = {
-  books: 'pocket.books/v1',
-  movies: 'pocket.movies/v1',
-  music: 'pocket.music/v1',
-  photos: 'pocket.photos/v1',
-}
+const schemaName = Object.fromEntries(Object.entries(FEISHU_LIBRARY_CONTRACTS).map(([domain, contract]) => [domain, contract.schema]))
 
 export const BITABLE_LIBRARY_DEFINITIONS = Object.freeze({
-  books: { name: 'Pocket Earth · 书籍', fields: ['instruction', 'note', 'title', 'author', 'country', 'type', 'year', 'rating', 'date', 'description'] },
-  movies: { name: 'Pocket Earth · 电影', fields: ['instruction', 'note', 'title', 'author', 'country', 'type', 'year', 'rating', 'date', 'description'] },
-  music: { name: 'Pocket Earth · 音乐', fields: ['instruction', 'note', 'title', 'city', 'latitude', 'longitude', 'description'] },
-  photos: { name: 'Pocket Earth · 照片', fields: ['instruction', 'note', 'title', 'city', 'date', 'latitude', 'longitude', 'description'] },
+  books: { name: FEISHU_LIBRARY_CONTRACTS.books.tableName, fields: ['instruction', 'note', 'title', 'author', 'country', 'type', 'year', 'rating', 'date', 'description'] },
+  movies: { name: FEISHU_LIBRARY_CONTRACTS.movies.tableName, fields: ['instruction', 'note', 'title', 'author', 'country', 'type', 'year', 'rating', 'date', 'description'] },
+  music: { name: FEISHU_LIBRARY_CONTRACTS.music.tableName, fields: ['instruction', 'note', 'title', 'city', 'latitude', 'longitude', 'description'] },
+  photos: { name: FEISHU_LIBRARY_CONTRACTS.photos.tableName, fields: ['instruction', 'note', 'title', 'city', 'date', 'latitude', 'longitude', 'description'] },
 })
 
 const BITABLE_LIBRARY_COMMON_FIELDS = ['id', 'status', 'source', 'schema', 'payload', 'updatedAt']
@@ -62,7 +58,9 @@ export async function hydrateBitableLibraryConfig(config) {
   try {
     const saved = JSON.parse(await readFile(file, 'utf8'))
     if (!config.bitableAppToken && saved?.bitableAppToken) config.bitableAppToken = String(saved.bitableAppToken)
-    config.bitableLibraryTables = { ...(saved?.bitableLibraryTables || {}), ...(config.bitableLibraryTables || {}) }
+    const configuredTables = Object.fromEntries(Object.entries(config.bitableLibraryTables || {}).filter(([, tableId]) => Boolean(String(tableId || '').trim())))
+    config.bitableLibraryTables = { ...(saved?.bitableLibraryTables || {}), ...configuredTables }
+    assertIsolatedLibraryTables(config.bitableLibraryTables)
     if (!config.bitableGuideDocument && saved?.bitableGuideDocument?.documentId) {
       config.bitableGuideDocument = saved.bitableGuideDocument
     }
@@ -191,13 +189,16 @@ function applyColumns(domain, fields, payload) {
     lat: numberField(fields, BITABLE_LIBRARY_FIELDS.latitude, payload.lat ?? null),
     lng: numberField(fields, BITABLE_LIBRARY_FIELDS.longitude, payload.lng ?? null),
     title: stringField(fields, BITABLE_LIBRARY_FIELDS.title, text(payload.title || payload.city)),
+    thumbnailUrl: text(payload.thumbnailUrl || payload.thumb),
+    contentHash: text(payload.contentHash),
+    summary: stringField(fields, BITABLE_LIBRARY_FIELDS.description, text(payload.summary || payload.qwen?.summary)),
     ...collaborationFields(fields, payload),
   }
 }
 
 const validCoordinate = (value, limit) => value == null || (typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= limit)
 
-const PRIVATE_PHOTO_KEYS = new Set(['image', 'dataBase64', 'sourceBase64', 'localFile', 'blob'])
+const PRIVATE_PHOTO_KEYS = new Set(['image', 'dataBase64', 'sourceBase64', 'localFile', 'blob', 'full', 'assetKey', 'assetToken', 'localAssetId', 'thumbnailRef'])
 
 function sanitizePhotoValue(value) {
   if (typeof value === 'string') return /^(?:data|blob|file):/i.test(value.trim()) ? '' : value
@@ -294,7 +295,7 @@ function humanFields(domain, record) {
     [BITABLE_LIBRARY_FIELDS.date]: record.date,
     [BITABLE_LIBRARY_FIELDS.latitude]: record.lat,
     [BITABLE_LIBRARY_FIELDS.longitude]: record.lng,
-    [BITABLE_LIBRARY_FIELDS.description]: record.qwen?.summary || '',
+    [BITABLE_LIBRARY_FIELDS.description]: record.summary || record.qwen?.summary || '',
   }
 }
 
@@ -316,10 +317,28 @@ function versionOf(records) {
   return createHash('sha256').update(JSON.stringify(records)).digest('hex').slice(0, 16)
 }
 
-export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, persistentStaleMs = 24 * 60 * 60 * 1000 }) {
+const normalizeIdentityText = (value) => text(value, 500).normalize('NFKC').toLocaleLowerCase('zh-CN').replace(/[\s\p{P}\p{S}]+/gu, '')
+
+export function libraryRecordIdentity(domain, record) {
+  if (!BITABLE_LIBRARY_DOMAINS.includes(domain)) throw new Error('bitable_library_domain_invalid')
+  if (domain === 'books' || domain === 'movies') return `${domain}:${normalizeIdentityText(record?.title)}`
+  if (domain === 'music') {
+    const track = Array.isArray(record?.tracks) ? record.tracks[0] : null
+    const title = normalizeIdentityText(track?.title)
+    const artist = normalizeIdentityText(track?.artist)
+    return title ? `music:${title}:${artist}` : `music-id:${normalizeIdentityText(record?.id)}`
+  }
+  const stableId = normalizeIdentityText(record?.contentHash || record?.assetId)
+  if (stableId) return `photos-id:${stableId}`
+  return `photos:${normalizeIdentityText(record?.title)}:${normalizeIdentityText(record?.city)}:${normalizeIdentityText(record?.date)}`
+}
+
+export function createBitableLibrary({ client, config, accessToken = '', cacheTtlMs = 15_000, persistentStaleMs = 24 * 60 * 60 * 1000 }) {
+  assertIsolatedLibraryTables(config.bitableLibraryTables || {})
   const cache = new Map()
   const processing = new Map()
   const refreshing = new Map()
+  const mutations = new Map()
   const hydrated = new Set()
   const invalidated = new Set()
   const cacheDir = config.dataDir ? path.join(config.dataDir, 'bitable-library-cache') : ''
@@ -362,21 +381,37 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
     if (refreshing.has(domain)) return refreshing.get(domain)
     const task = (async () => {
       const table = tableId(domain)
-      const items = await client.listBitableRecords(table)
+      const items = await client.listBitableRecords(table, accessToken)
       const records = []
       const rejected = []
       const pending = []
       const index = new Map()
+      const registerIndex = (record, recordId) => {
+        if (!recordId || !text(record?.id, 256)) return
+        index.set(`id:${record.id}`, recordId)
+        const identity = libraryRecordIdentity(domain, record)
+        if (!identity || identity.endsWith(':')) return
+        const identityKey = `identity:${identity}`
+        const existing = index.get(identityKey)
+        if (existing) {
+          const duplicateKey = `duplicates:${identityKey}`
+          index.set(duplicateKey, [...(index.get(duplicateKey) || []), recordId])
+        } else index.set(identityKey, recordId)
+      }
       for (const item of items) {
+        const itemRecordId = text(item?.record_id, 256)
+        try {
+          const fields = item?.fields || {}
+          registerIndex(applyColumns(domain, fields, payloadFromFields(fields)), itemRecordId)
+        } catch { /* confirmed-row validation below reports malformed payloads */ }
         const status = stringField(item?.fields || {}, BITABLE_LIBRARY_FIELDS.status)
         if (status !== BITABLE_LIBRARY_STATUS.confirmed) {
-          pending.push({ recordId: text(item?.record_id, 256), status: status || '未设置' })
+          pending.push({ recordId: itemRecordId, status: status || '未设置' })
           continue
         }
         try {
           const parsed = recordFromBitableItem(domain, item)
           records.push(parsed.record)
-          if (parsed.recordId) index.set(parsed.record.id, parsed.recordId)
         } catch (error) {
           rejected.push({ recordId: text(item?.record_id, 256), error: String(error?.message || error) })
         }
@@ -421,34 +456,81 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
     }
   }
 
-  async function upsert(domain, records, options = {}) {
+  async function serializeMutation(domain, operation) {
+    const previous = mutations.get(domain) || Promise.resolve()
+    let release
+    const current = new Promise((resolve) => { release = resolve })
+    mutations.set(domain, current)
+    await previous
+    try {
+      return await operation()
+    } finally {
+      release()
+      if (mutations.get(domain) === current) mutations.delete(domain)
+    }
+  }
+
+  async function upsertUnlocked(domain, records, options = {}) {
     const list = Array.isArray(records) ? records : [records]
     if (!list.length) return { created: 0, updated: 0 }
     const current = await readDomain(domain)
     const currentCache = cache.get(domain)
     const toCreate = []
     const toUpdate = []
+    const alreadyExists = []
+    const plannedIdentities = new Set()
     for (const record of list) {
       const fields = fieldsFromLibraryRecord(domain, record, options)
-      const recordId = currentCache?.index.get(record.id)
-      if (recordId) toUpdate.push({ record_id: recordId, fields })
+      const identityKey = `identity:${libraryRecordIdentity(domain, record)}`
+      if (plannedIdentities.has(identityKey)) {
+        alreadyExists.push({ pocketId: text(record.id, 256), title: text(record.title || record.tracks?.[0]?.title || record.city || record.cityNameZh, 300) })
+        continue
+      }
+      plannedIdentities.add(identityKey)
+      const recordId = currentCache?.index.get(`id:${record.id}`) || currentCache?.index.get(record.id) || currentCache?.index.get(identityKey)
+      if (recordId && options.duplicatePolicy === 'warn') alreadyExists.push({ pocketId: text(record.id, 256), title: text(record.title || record.tracks?.[0]?.title || record.city || record.cityNameZh, 300) })
+      else if (recordId) toUpdate.push({ record_id: recordId, fields })
       else toCreate.push(fields)
+      const duplicateIds = currentCache?.index.get(`duplicates:${identityKey}`) || []
+      if (duplicateIds.length) await client.deleteBitableRecords(duplicateIds, tableId(domain), accessToken)
     }
-    if (toCreate.length) await client.createBitableRecords(toCreate, tableId(domain))
-    if (toUpdate.length) await client.updateBitableRecords(toUpdate, tableId(domain))
+    if (toCreate.length) await client.createBitableRecords(toCreate, tableId(domain), accessToken)
+    if (toUpdate.length) await client.updateBitableRecords(toUpdate, tableId(domain), accessToken)
     invalidate(domain)
-    return { created: toCreate.length, updated: toUpdate.length, previousVersion: current.version }
+    return { created: toCreate.length, updated: toUpdate.length, alreadyExists, previousVersion: current.version }
+  }
+
+  async function upsert(domain, records, options = {}) {
+    return serializeMutation(domain, () => upsertUnlocked(domain, records, options))
+  }
+
+  async function removeUnlocked(domain, pocketIds) {
+    const ids = [...new Set((Array.isArray(pocketIds) ? pocketIds : [pocketIds]).map((value) => text(value, 256)).filter(Boolean))]
+    if (!ids.length) throw new Error('bitable_library_record_ids_missing')
+    await readDomain(domain)
+    const currentCache = cache.get(domain)
+    const recordIds = ids.map((id) => currentCache?.index.get(`id:${id}`) || currentCache?.index.get(id)).filter(Boolean)
+    if (!recordIds.length) return { deleted: 0 }
+    const result = await client.deleteBitableRecords(recordIds, tableId(domain), accessToken)
+    invalidate(domain)
+    return { deleted: result?.deleted ?? recordIds.length }
+  }
+
+  async function remove(domain, pocketIds) {
+    return serializeMutation(domain, () => removeUnlocked(domain, pocketIds))
   }
 
   async function ensureSchema({ userAccessToken = '' } = {}) {
+    const token = userAccessToken || accessToken
+    assertIsolatedLibraryTables(config.bitableLibraryTables || {})
     let createdApp = false
     if (!config.bitableAppToken) {
-      const created = await client.createBitableApp('Pocket Earth · 我的知识库')
+      const created = await client.createBitableApp('Pocket Earth · 我的知识库', token)
       config.bitableAppToken = created.appToken
       createdApp = true
     }
     if (!config.bitableLibraryTables) config.bitableLibraryTables = {}
-    const existingTables = await client.listBitableTables()
+    const existingTables = await client.listBitableTables(token)
     const createdTables = []
     const createdFields = []
     const tables = {}
@@ -459,23 +541,24 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
         ? existingTables.find((item) => item.table_id === configuredTableId)
         : existingTables.find((item) => item.name === definition.name)
       if (!table) {
-        const created = await client.createBitableTable(definition.name)
+        const created = await client.createBitableTable(definition.name, token)
         table = { table_id: created.tableId, name: definition.name }
         createdTables.push(domain)
       }
       const tableIdValue = table.table_id
       config.bitableLibraryTables[domain] = tableIdValue
       tables[domain] = { tableId: tableIdValue, name: definition.name }
-      const existingFields = await client.listBitableFields(tableIdValue)
+      const existingFields = await client.listBitableFields(tableIdValue, token)
       const names = new Set(existingFields.map((item) => item.field_name))
       for (const key of [...BITABLE_LIBRARY_COMMON_FIELDS, ...definition.fields]) {
         const fieldName = BITABLE_LIBRARY_FIELDS[key]
         if (names.has(fieldName)) continue
         const type = BITABLE_LIBRARY_NUMERIC_FIELDS.has(key) ? 2 : BITABLE_LIBRARY_DATE_FIELDS.has(key) ? 5 : 1
-        await client.createBitableField(tableIdValue, fieldName, type)
+        await client.createBitableField(tableIdValue, fieldName, type, token)
         createdFields.push({ domain, fieldName })
       }
     }
+    assertIsolatedLibraryTables(config.bitableLibraryTables, { requireAll: true })
     const guideBlocks = []
     if (!config.bitableGuideDocument?.documentId && userAccessToken) {
       config.bitableGuideDocument = await client.createDocument('Pocket Earth · 我的知识库整理入口', userAccessToken)
@@ -519,13 +602,23 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
     const task = (async () => {
       const table = tableId(domain)
       if (!config.bitableAppToken || !table) throw new Error(`bitable_library_${domain}_not_configured`)
-      const items = await client.listBitableRecords(table)
+      const items = await client.listBitableRecords(table, accessToken)
       const targets = items.filter((item) => stringField(item?.fields || {}, BITABLE_LIBRARY_FIELDS.status) === BITABLE_LIBRARY_STATUS.pending).slice(0, Math.max(1, limit))
+      const knownIdentities = new Map()
+      for (const item of items) {
+        try {
+          const fields = item?.fields || {}
+          const payload = payloadFromFields(fields)
+          const candidate = applyColumns(domain, fields, payload)
+          const identity = libraryRecordIdentity(domain, candidate)
+          if (identity && !identity.endsWith(':')) knownIdentities.set(identity, text(item?.record_id, 256))
+        } catch { /* malformed rows are handled by the normal read/review path */ }
+      }
       const results = []
       for (const item of targets) {
         const recordId = text(item?.record_id, 256)
         try {
-          await client.updateBitableRecords([{ record_id: recordId, fields: { [BITABLE_LIBRARY_FIELDS.status]: BITABLE_LIBRARY_STATUS.analyzing } }], table)
+          await client.updateBitableRecords([{ record_id: recordId, fields: { [BITABLE_LIBRARY_FIELDS.status]: BITABLE_LIBRARY_STATUS.analyzing } }], table, accessToken)
           const instruction = stringField(item?.fields || {}, BITABLE_LIBRARY_FIELDS.instruction)
           if (instruction) {
             if (typeof analyzeInstruction !== 'function') throw new Error('bitable_ai_instruction_provider_missing')
@@ -535,8 +628,13 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
               source: `飞书多维表格 · ${text(generated.model, 100) || 'AI'} · 自然语言写入`,
               status: BITABLE_LIBRARY_STATUS.review,
             })
-            await client.updateBitableRecords([{ record_id: recordId, fields }], table)
-            results.push({ recordId, ok: true, locationCount: Array.isArray(record.locations) ? record.locations.length : Number(Number.isFinite(record.lat) && Number.isFinite(record.lng)), instruction: true })
+            const identity = libraryRecordIdentity(domain, record)
+            const existingRecordId = knownIdentities.get(identity)
+            const targetRecordId = existingRecordId && existingRecordId !== recordId ? existingRecordId : recordId
+            await client.updateBitableRecords([{ record_id: targetRecordId, fields }], table, accessToken)
+            if (targetRecordId !== recordId) await client.deleteBitableRecords([recordId], table, accessToken)
+            else knownIdentities.set(identity, recordId)
+            results.push({ recordId: targetRecordId, ok: true, locationCount: Array.isArray(record.locations) ? record.locations.length : Number(Number.isFinite(record.lat) && Number.isFinite(record.lng)), instruction: true, duplicate: targetRecordId !== recordId })
             continue
           }
           if (!['books', 'movies'].includes(domain)) throw new Error('bitable_ai_instruction_required')
@@ -555,13 +653,18 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
             source: `飞书多维表格 · ${text(analysis?.model, 100) || 'Qwen'}`,
             status: BITABLE_LIBRARY_STATUS.review,
           })
-          await client.updateBitableRecords([{ record_id: recordId, fields }], table)
-          results.push({ recordId, ok: true, locationCount: locations.length })
+          const identity = libraryRecordIdentity(domain, record)
+          const existingRecordId = knownIdentities.get(identity)
+          const targetRecordId = existingRecordId && existingRecordId !== recordId ? existingRecordId : recordId
+          await client.updateBitableRecords([{ record_id: targetRecordId, fields }], table, accessToken)
+          if (targetRecordId !== recordId) await client.deleteBitableRecords([recordId], table, accessToken)
+          else knownIdentities.set(identity, recordId)
+          results.push({ recordId: targetRecordId, ok: true, locationCount: locations.length, duplicate: targetRecordId !== recordId })
         } catch (error) {
           await client.updateBitableRecords([{ record_id: recordId, fields: {
             [BITABLE_LIBRARY_FIELDS.status]: BITABLE_LIBRARY_STATUS.failed,
             [BITABLE_LIBRARY_FIELDS.source]: `AI 分析失败：${text(error?.message || error, 160)}`,
-          } }], table).catch(() => {})
+          } }], table, accessToken).catch(() => {})
           results.push({ recordId, ok: false, error: text(error?.message || error, 500) })
         }
       }
@@ -572,5 +675,5 @@ export function createBitableLibrary({ client, config, cacheTtlMs = 15_000, pers
     return task
   }
 
-  return { configuredDomains, readDomain, readAll, invalidate, upsert, processPending, ensureSchema }
+  return { configuredDomains, readDomain, readAll, invalidate, upsert, remove, processPending, ensureSchema }
 }

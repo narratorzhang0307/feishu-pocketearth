@@ -90,7 +90,7 @@ describe('Feishu OpenAPI client contracts', () => {
     expect(calls.some((url) => url.endsWith('/tables/tbl-books/records/batch_update'))).toBe(true);
   });
 
-  it('creates a new Bitable knowledge base with the tenant identity', async () => {
+  it('creates a new personal Bitable knowledge base with the signed-in user identity', async () => {
     const calls: Array<{ url: string; headers: Record<string, string>; body: unknown }> = [];
     const fetchImpl = async (url: string, init: RequestInit = {}) => {
       if (url.endsWith('/auth/v3/tenant_access_token/internal')) {
@@ -107,10 +107,10 @@ describe('Feishu OpenAPI client contracts', () => {
       apiBase: 'https://open.feishu.cn/open-apis', appId: 'app-id', appSecret: 'secret', bitableAppToken: '', bitableTableId: '',
     }, fetchImpl);
 
-    expect(await client.createBitableApp('Pocket Earth · 我的知识库')).toEqual({ appToken: 'base-created' });
+    expect(await client.createBitableApp('Pocket Earth · 我的知识库', 'user-token')).toEqual({ appToken: 'base-created' });
     expect(calls).toEqual([{
       url: 'https://open.feishu.cn/open-apis/bitable/v1/apps',
-      headers: { 'content-type': 'application/json; charset=utf-8', authorization: 'Bearer tenant-token' },
+      headers: { 'content-type': 'application/json; charset=utf-8', authorization: 'Bearer user-token' },
       body: { name: 'Pocket Earth · 我的知识库' },
     }]);
   });

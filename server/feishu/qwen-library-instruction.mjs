@@ -15,6 +15,18 @@ const coordinate = (value, min, max) => {
   return parsed !== null && parsed >= min && parsed <= max ? parsed : null
 }
 
+function stableWorkKey(value) {
+  const normalized = text(value, 500).normalize('NFKC').toLocaleLowerCase('zh-CN').replace(/[\s\p{P}\p{S}]+/gu, '')
+  let first = 0x811c9dc5
+  let second = 0x9e3779b9
+  for (const char of normalized) {
+    const code = char.codePointAt(0) || 0
+    first = Math.imul(first ^ code, 0x01000193) >>> 0
+    second = Math.imul(second ^ code, 0x85ebca6b) >>> 0
+  }
+  return `${first.toString(36)}${second.toString(36)}`
+}
+
 function locations(value, kind) {
   return (Array.isArray(value) ? value : []).slice(0, 8).map((item) => ({
     kind: ['story', 'author', 'country', 'filming'].includes(String(item?.kind)) ? String(item.kind) : kind,
@@ -30,19 +42,20 @@ export function parseQwenLibraryInstruction(rawText, { domain, recordId, instruc
   try { payload = JSON.parse(stripFence(rawText)) } catch { throw new Error('qwen_library_instruction_non_json') }
   const value = payload?.record
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('qwen_library_instruction_record_missing')
-  const prefix = domain === 'books' ? 'book' : domain === 'movies' ? 'movie' : domain === 'music' ? 'music-city' : 'photo'
-  const id = `${prefix}:feishu-ai:${text(recordId, 128)}`
+  const title = text(value.title || value.cityNameZh || value.city, 300)
+  const prefix = domain === 'books' ? 'book' : domain === 'movies' ? 'movie' : domain === 'music' ? 'music' : 'photo'
+  const id = `${prefix}:frost:${stableWorkKey(title || recordId)}`
   const shared = { id, aiInstruction: text(instruction, 5000), note: text(value.note || instruction, 5000) }
 
   if (domain === 'books') {
-    const title = text(value.title, 300)
-    if (!title) throw new Error('qwen_library_instruction_title_missing')
-    return { ...shared, title, author: text(value.author, 300), country: text(value.country, 200), type: text(value.type, 120), year: number(value.year), rating: number(value.rating), date: text(value.date, 40), synopsis: text(value.description || value.synopsis, 5000), locations: locations(value.locations, 'story') }
+    const bookTitle = text(value.title, 300)
+    if (!bookTitle) throw new Error('qwen_library_instruction_title_missing')
+    return { ...shared, title: bookTitle, author: text(value.author, 300), country: text(value.country, 200), type: text(value.type, 120), year: number(value.year), rating: number(value.rating), date: text(value.date, 40), synopsis: text(value.description || value.synopsis, 5000), locations: locations(value.locations, 'story') }
   }
   if (domain === 'movies') {
-    const title = text(value.title, 300)
-    if (!title) throw new Error('qwen_library_instruction_title_missing')
-    return { ...shared, title, original: text(value.original, 300), director: text(value.director || value.author, 300), country: text(value.country, 200), type: text(value.type, 120), year: number(value.year), rating: number(value.rating), date: text(value.date, 40), synopsis: text(value.description || value.synopsis, 5000), locations: locations(value.locations, 'filming') }
+    const movieTitle = text(value.title, 300)
+    if (!movieTitle) throw new Error('qwen_library_instruction_title_missing')
+    return { ...shared, title: movieTitle, original: text(value.original, 300), director: text(value.director || value.author, 300), country: text(value.country, 200), type: text(value.type, 120), year: number(value.year), rating: number(value.rating), date: text(value.date, 40), synopsis: text(value.description || value.synopsis, 5000), locations: locations(value.locations, 'filming') }
   }
   if (domain === 'music') {
     const cityNameZh = text(value.cityNameZh || value.city, 200)
@@ -58,7 +71,11 @@ export function parseQwenLibraryInstruction(rawText, { domain, recordId, instruc
   if (domain === 'photos') {
     const city = text(value.city || value.title, 200)
     if (!city) throw new Error('qwen_library_instruction_city_missing')
-    return { ...shared, title: text(value.title || city, 300), city, date: text(value.date || today, 40), lat: coordinate(value.lat, -90, 90), lng: coordinate(value.lng, -180, 180), qwen: { summary: text(value.description || instruction, 5000) } }
+    return {
+      ...shared, title: text(value.title || city, 300), city, date: text(value.date || today, 40),
+      lat: coordinate(value.lat, -90, 90), lng: coordinate(value.lng, -180, 180),
+      thumbnailUrl: '', contentHash: '', summary: text(value.description || instruction, 4000),
+    }
   }
   throw new Error('bitable_library_domain_invalid')
 }

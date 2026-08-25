@@ -7,10 +7,18 @@ export type FeishuConfig = {
   acceptedTypes: string[];
   integrations: { ocr: boolean; qwen: boolean; document: boolean; bitable: boolean; bitableLibrary: boolean };
   bitableDomains: Partial<Record<FeishuLibraryDomain, boolean>>;
+  personalLibrary?: boolean;
   skills: FeishuSkillAdapter[];
 };
 
 export type FeishuLibraryDomain = 'books' | 'movies' | 'music' | 'photos';
+
+export type FeishuPersonalWorkspace = {
+  appToken: string;
+  tables: Partial<Record<FeishuLibraryDomain, string>>;
+  appUrl: string;
+  domainUrls: Partial<Record<FeishuLibraryDomain, string>>;
+};
 
 export type FeishuLibraryDomainData = {
   domain: FeishuLibraryDomain;

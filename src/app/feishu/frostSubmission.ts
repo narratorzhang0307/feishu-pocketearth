@@ -1,7 +1,7 @@
 import type { FeishuLibraryDomain } from './types';
 
 export type FrostSubmissionDraft = {
-  domain: Extract<FeishuLibraryDomain, 'books' | 'movies' | 'music'>;
+  domain: FeishuLibraryDomain;
   label: string;
   record: Record<string, unknown>;
 };
@@ -17,12 +17,23 @@ function ratingFrom(text: string): number | null {
   return Number.isFinite(value) ? Math.min(5, value) : null;
 }
 
-function draftId(prefix: string): string {
-  const suffix = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-  return `${prefix}:frost:${suffix}`;
+function stableWorkKey(value: string): string {
+  const normalized = value.normalize('NFKC').toLocaleLowerCase('zh-CN').replace(/[\s\p{P}\p{S}]+/gu, '');
+  let first = 0x811c9dc5;
+  let second = 0x9e3779b9;
+  for (const char of normalized) {
+    const code = char.codePointAt(0) || 0;
+    first = Math.imul(first ^ code, 0x01000193) >>> 0;
+    second = Math.imul(second ^ code, 0x85ebca6b) >>> 0;
+  }
+  return `${first.toString(36)}${second.toString(36)}`;
 }
 
-export function frostSubmissionFromText(domain: Extract<FeishuLibraryDomain, 'books' | 'movies' | 'music'>, input: string, now = new Date()): FrostSubmissionDraft | null {
+function draftId(prefix: string, title: string): string {
+  return `${prefix}:frost:${stableWorkKey(title)}`;
+}
+
+export function frostSubmissionFromText(domain: FeishuLibraryDomain, input: string, now = new Date()): FrostSubmissionDraft | null {
   const text = input.trim();
   if (!SUBMIT_INTENT.test(text)) return null;
   const title = titleFrom(text);
@@ -34,7 +45,7 @@ export function frostSubmissionFromText(domain: Extract<FeishuLibraryDomain, 'bo
       domain,
       label: `《${title}》阅读记录`,
       record: {
-        id: draftId('book'), title, author: '', country: '', type: '', year: null,
+        id: draftId('book', title), title, author: '', country: '', type: '', year: null,
         rating, date, synopsis: text, locations: [], aiInstruction: text, note: text,
       },
     };
@@ -43,11 +54,19 @@ export function frostSubmissionFromText(domain: Extract<FeishuLibraryDomain, 'bo
     domain,
     label: `《${title}》观影记录`,
     record: {
-      id: draftId('movie'), title, original: '', type: '', director: '', country: '', year: null,
+      id: draftId('movie', title), title, original: '', type: '', director: '', country: '', year: null,
       rating, publicRating: null, date, synopsis: text, locations: [], aiInstruction: text, note: text,
     },
   };
-  const id = draftId('music');
+  if (domain === 'photos') return {
+    domain,
+    label: `《${title}》照片记录`,
+    record: {
+      id: draftId('photo', title), title, city: title, date, lat: null, lng: null,
+      thumbnailUrl: '', contentHash: '', summary: text, aiInstruction: text, note: text,
+    },
+  };
+  const id = draftId('music', title);
   return {
     domain,
     label: `《${title}》听歌记录`,

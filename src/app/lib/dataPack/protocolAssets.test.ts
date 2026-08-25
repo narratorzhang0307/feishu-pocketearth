@@ -3,7 +3,7 @@ import { validateDataPackDocument } from './protocol';
 import { createDataPackAiInstruction, createEmptyDataPackTemplate } from './protocolAssets';
 
 describe('pocket-data/v1 user assets', () => {
-  it.each(['books', 'movies', 'music'] as const)('creates a valid empty %s template', (domain) => {
+  it.each(['books', 'movies', 'music', 'photos'] as const)('creates a valid empty %s template', (domain) => {
     const template = createEmptyDataPackTemplate(domain, '2026-08-10T00:00:00.000Z');
     expect(validateDataPackDocument(template, domain).inlineRecords).toEqual([]);
   });

@@ -11,6 +11,7 @@ import { createQwenLibraryInstructionParser } from './qwen-library-instruction.m
 import { createFeishuWriteback } from './writeback.mjs'
 import { createFeishuWorkflow } from './workflow.mjs'
 import { listFeishuSkillAdapters, planFeishuSkillTask } from './frost-skill-router.mjs'
+import { normalizePersonalWorkspace, workspaceLinks } from './library-contracts.mjs'
 import { createSlidingWindowLimiter } from '../security.mjs'
 
 const ACCEPTED_SOURCE_TYPES = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/webp'])
@@ -63,8 +64,8 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
   const config = readFeishuConfig(env, rootDir)
   await hydrateBitableLibraryConfig(config)
   const client = createFeishuClient(config, fetchImpl)
-  const library = createBitableLibrary({ client, config })
   const sessions = new SessionStore()
+  const personalLibraries = new WeakMap()
   const taskLimiter = createSlidingWindowLimiter({ limit: config.taskRateLimitPerMinute, windowMs: 60_000 })
   const eventDeduplicator = createEventDeduplicator()
   const store = new FeishuTaskStore({ dataDir: config.dataDir, workflowVersion: config.workflowVersion })
@@ -79,12 +80,16 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
     extractor,
     writeback: createFeishuWriteback({ client, config }),
   })
-  const publicConfig = () => ({ ...publicFeishuConfig(config), skills: listFeishuSkillAdapters() })
+  const publicConfig = () => ({
+    ...publicFeishuConfig({ ...config, bitableAppToken: '', bitableTableId: '', bitableLibraryTables: {} }),
+    personalLibrary: true,
+    skills: listFeishuSkillAdapters(),
+  })
   const analyzeLibraryDraft = ({ domain, sourceText }) => extractor.extract(
     [{ page: 1, text: sourceText, confidence: 1 }],
     domain === 'books' ? { skillId: 'pocket.book-to-earth' } : null,
   )
-  const processLibraryInbox = async (domains, options) => Promise.all(
+  const processLibraryInbox = async (library, domains, options) => Promise.all(
     domains.map((domain) => library.processPending(domain, analyzeLibraryDraft, {
       ...options,
       analyzeInstruction: (input) => instructionParser.parse(input),
@@ -97,6 +102,38 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
     return session
   }
 
+  const personalLibrary = (session) => {
+    const existing = personalLibraries.get(session)
+    if (existing) return existing
+    const workspace = normalizePersonalWorkspace(session.privateData?.bitableWorkspace)
+    const personalConfig = {
+      ...config,
+      dataDir: '',
+      documentFolderToken: '',
+      bitableAppToken: workspace.appToken,
+      bitableTableId: '',
+      bitableLibraryTables: { ...workspace.tables },
+    }
+    const personalClient = createFeishuClient(personalConfig, fetchImpl)
+    const library = createBitableLibrary({
+      client: personalClient,
+      config: personalConfig,
+      accessToken: session.privateData?.userAccessToken || '',
+    })
+    const value = { library, config: personalConfig }
+    personalLibraries.set(session, value)
+    return value
+  }
+
+  const updateSessionWorkspace = (session, personalConfig) => {
+    const workspace = normalizePersonalWorkspace({
+      appToken: personalConfig.bitableAppToken,
+      tables: personalConfig.bitableLibraryTables,
+    })
+    session.privateData.bitableWorkspace = workspace
+    return { ...workspace, ...workspaceLinks(workspace) }
+  }
+
   async function handle(req, res, url) {
     const path = url.pathname
     if (!path.startsWith('/api/feishu/')) return false
@@ -106,11 +143,7 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
       }
 
       if (path === '/api/feishu/library/open' && req.method === 'GET') {
-        const appUrl = publicConfig().bitableAppUrl
-        if (!appUrl) throw new Error('bitable_library_incomplete')
-        res.writeHead(302, { Location: appUrl, 'Cache-Control': 'no-store' })
-        res.end()
-        return true
+        sendJSON(res, { error: 'personal_bitable_url_required' }, 400); return true
       }
 
       if (path === '/api/feishu/auth' && req.method === 'GET') {
@@ -132,13 +165,20 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
           ttlMs = exchanged.expiresIn * 1000
           identity = await client.getUserInfo(userAccessToken)
         }
-        const session = sessions.create(identity, { userAccessToken }, ttlMs)
-        sendJSON(res, { sessionToken: session.token, expiresAt: session.expiresAt, user: identity }); return true
+        const bitableWorkspace = String(body.workspaceOwner || '') === String(identity.openId || '')
+          ? normalizePersonalWorkspace(body.workspace)
+          : normalizePersonalWorkspace(null)
+        const session = sessions.create(identity, { userAccessToken, bitableWorkspace }, ttlMs)
+        sendJSON(res, {
+          sessionToken: session.token, expiresAt: session.expiresAt, user: identity,
+          workspace: { ...bitableWorkspace, ...workspaceLinks(bitableWorkspace) },
+        }); return true
       }
 
       if (path === '/api/feishu/session' && req.method === 'GET') {
         const session = requireSession(req)
-        sendJSON(res, { user: session.identity, expiresAt: session.expiresAt }); return true
+        const workspace = normalizePersonalWorkspace(session.privateData?.bitableWorkspace)
+        sendJSON(res, { user: session.identity, expiresAt: session.expiresAt, workspace: { ...workspace, ...workspaceLinks(workspace) } }); return true
       }
 
       if (path === '/api/feishu/photos/review' && req.method === 'POST') {
@@ -162,25 +202,12 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
       }
 
       if (path === '/api/feishu/library/refresh' && req.method === 'POST') {
-        if (!config.bitableRefreshToken) { sendJSON(res, { error: 'bitable_refresh_not_configured' }, 503); return true }
-        const body = json(await readBody(req, 16 * 1024))
-        if (String(body.token || '') !== config.bitableRefreshToken) { sendJSON(res, { error: 'unauthorized' }, 401); return true }
-        const domains = body.domain
-          ? [String(body.domain)]
-          : library.configuredDomains()
-        if (domains.some((domain) => !BITABLE_LIBRARY_DOMAINS.includes(domain))) throw new Error('bitable_library_domain_invalid')
-        domains.forEach((domain) => library.invalidate(domain))
-        await processLibraryInbox(domains, { limit: 3 })
-        const versions = await Promise.all(domains.map(async (domain) => {
-          const data = await library.readDomain(domain, { force: true })
-          return [domain, { version: data.version, count: data.records.length, rejected: data.rejected.length }]
-        }))
-        await store.audit('bitable_library_refreshed', null, { domains, trigger: 'bitable_automation' })
-        sendJSON(res, { ok: true, domains: Object.fromEntries(versions) }); return true
+        sendJSON(res, { error: 'personal_bitable_session_required' }, 410); return true
       }
 
       if (path === '/api/feishu/library/sync' && req.method === 'POST') {
-        requireSession(req)
+        const session = requireSession(req)
+        const { library } = personalLibrary(session)
         const body = json(await readBody(req, 16 * 1024))
         const domains = Array.isArray(body.domains) && body.domains.length
           ? body.domains.map(String)
@@ -203,18 +230,21 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
 
       if (path === '/api/feishu/library/bootstrap' && req.method === 'POST') {
         const session = requireSession(req)
+        const { library, config: personalConfig } = personalLibrary(session)
         const result = await library.ensureSchema({ userAccessToken: session.privateData?.userAccessToken || '' })
+        const workspace = updateSessionWorkspace(session, personalConfig)
         await store.audit('bitable_library_schema_ready', null, {
           user: session.identity.openId,
           createdTables: result.createdTables,
           createdFields: result.createdFields.length,
         })
-        sendJSON(res, { ok: true, ...result }); return true
+        sendJSON(res, { ok: true, ...result, workspace }); return true
       }
 
       if (path === '/api/feishu/library/versions' && req.method === 'GET') {
-        requireSession(req)
-        void processLibraryInbox(library.configuredDomains(), { limit: 3 }).catch(() => {})
+        const session = requireSession(req)
+        const { library } = personalLibrary(session)
+        void processLibraryInbox(library, library.configuredDomains(), { limit: 3 }).catch(() => {})
         const data = await library.readAll()
         sendJSON(res, {
           domains: Object.fromEntries(Object.entries(data.domains).map(([domain, value]) => [domain, {
@@ -225,20 +255,24 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
       }
 
       if (path === '/api/feishu/library' && req.method === 'GET') {
-        requireSession(req)
-        void processLibraryInbox(library.configuredDomains(), { limit: 3 }).catch(() => {})
+        const session = requireSession(req)
+        const { library } = personalLibrary(session)
+        void processLibraryInbox(library, library.configuredDomains(), { limit: 3 }).catch(() => {})
         sendJSON(res, await library.readAll()); return true
       }
 
       const libraryDomainMatch = path.match(/^\/api\/feishu\/library\/(books|movies|music|photos)$/)
       if (libraryDomainMatch && req.method === 'GET') {
-        requireSession(req)
+        const session = requireSession(req)
+        const { library } = personalLibrary(session)
         sendJSON(res, await library.readDomain(libraryDomainMatch[1])); return true
       }
 
       const libraryRecordsMatch = path.match(/^\/api\/feishu\/library\/(books|movies|music|photos)\/records$/)
       if (libraryRecordsMatch && req.method === 'POST') {
-        requireSession(req)
+        const session = requireSession(req)
+        const personal = personalLibrary(session)
+        const { library } = personal
         const body = json(await readBody(req, 4 * 1024 * 1024))
         const records = Array.isArray(body.records) ? body.records : body.record ? [body.record] : []
         if (!records.length) throw new Error('bitable_library_records_missing')
@@ -246,7 +280,30 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
         const status = body.status === undefined ? BITABLE_LIBRARY_STATUS.confirmed : String(body.status)
         if (!allowedStatuses.has(status)) throw new Error('bitable_library_status_invalid')
         const source = String(body.source || 'Pocket Earth').slice(0, 200)
-        sendJSON(res, await library.upsert(libraryRecordsMatch[1], records, { status, source })); return true
+        const duplicatePolicy = body.duplicatePolicy === 'warn' ? 'warn' : 'update'
+        if (!library.configuredDomains().includes(libraryRecordsMatch[1])) {
+          await library.ensureSchema()
+          updateSessionWorkspace(session, personal.config)
+        }
+        const result = await library.upsert(libraryRecordsMatch[1], records, { status, source, duplicatePolicy })
+        const workspace = updateSessionWorkspace(session, personal.config)
+        sendJSON(res, {
+          ...result,
+          domain: libraryRecordsMatch[1],
+          schema: `pocket.${libraryRecordsMatch[1] === 'photos' ? 'photos' : libraryRecordsMatch[1]}/v1`,
+          tableUrl: workspace.domainUrls[libraryRecordsMatch[1]] || '',
+          workspace,
+        }); return true
+      }
+
+      if (libraryRecordsMatch && req.method === 'DELETE') {
+        const session = requireSession(req)
+        const { library, config: personalConfig } = personalLibrary(session)
+        const body = json(await readBody(req, 128 * 1024))
+        const pocketIds = Array.isArray(body.pocketIds) ? body.pocketIds : body.pocketId ? [body.pocketId] : []
+        const result = await library.remove(libraryRecordsMatch[1], pocketIds)
+        const workspace = updateSessionWorkspace(session, personalConfig)
+        sendJSON(res, { ...result, domain: libraryRecordsMatch[1], tableUrl: workspace.domainUrls[libraryRecordsMatch[1]] || '' }); return true
       }
 
       if (path === '/api/feishu/events' && req.method === 'POST') {
@@ -279,14 +336,8 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
         const eventId = eventBody?.header?.event_id || eventBody?.uuid || ''
         if (eventDeduplicator.accept(eventId)) {
           const changedDomains = domainsMentionedByEvent(eventBody, config)
-          changedDomains.forEach((domain) => library.invalidate(domain))
           queueMicrotask(() => {
             void store.audit('feishu_event_received', null, { eventId, eventType: eventBody?.header?.event_type || eventBody?.type || 'unknown', changedDomains })
-            changedDomains.forEach((domain) => {
-              void processLibraryInbox([domain], { limit: 10 })
-                .then(() => library.readDomain(domain, { force: true }))
-                .catch(() => {})
-            })
           })
         }
         return true
@@ -393,7 +444,7 @@ export async function createFeishuRouter({ env = process.env, rootDir, fetchImpl
       ocr: Boolean(config.paddleOcrUrl),
       qwen: Boolean(qwenProvider.key),
       bitable: Boolean(config.bitableAppToken && config.bitableTableId),
-      bitableLibrary: library.configuredDomains(),
+      bitableLibrary: 'per-user',
       workflowVersion: config.workflowVersion,
     }),
   }

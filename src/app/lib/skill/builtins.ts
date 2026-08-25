@@ -57,6 +57,7 @@ export const BUILTIN_SKILLS: SkillManifest[] = [
   markdown('pocket.music', '音乐', '用可替换 Data Pack 把音乐与城市记忆钉回地球。', 'music-agent', ['pocket.music/v1'], ['network'], ['enrich', 'geocode', 'mark_place', 'data_pack']),
   markdown('pocket.books', '书籍', '用可替换 Data Pack 整理阅读并落到故事地或作者地。', 'books-agent', ['pocket.books/v1'], ['network'], ['enrich', 'geocode', 'mark_place', 'data_pack']),
   markdown('pocket.movies', '电影', '用可替换 Data Pack 整理观影并落到取景地或故事地。', 'movies-agent', ['pocket.movies/v1'], ['network'], ['enrich', 'geocode', 'mark_place', 'data_pack']),
+  markdown('pocket.photos', '照片', '在端侧整理照片，并用独立照片 Schema 同步用户确认的元数据。', 'photos-agent', ['pocket.photos/v1'], ['photos', 'network'], ['vision', 'geocode', 'mark_place', 'data_pack']),
   markdown('pocket.council', '多视角思考', '由同一个 Frost 切换多个专业视角，给出可核验的综合判断。', 'council-room', [], ['network'], ['enrich']),
   lora({
     id: 'pocket.reading-jot', name: '阅读摘录', description: '拍摄书页后用红线或双竖线框定原文；Base 优先，通用 OCR LoRA 只作压力候选，独立复核后确认并保存本机阅读卡片。', target: 'jot-agent',

@@ -10,9 +10,7 @@ import UserZhaIcon from './UserZhaIcon';
 import YouTubePlaybackFrame from './music/YouTubePlaybackFrame';
 import { canPlayMusicSource, directAudioUrl, musicSourceLabel, youtubeVideoId } from '../lib/music/playback';
 import { frostSubmissionFromText, type FrostSubmissionDraft } from '../feishu/frostSubmission';
-import { getFeishuConfig, upsertFeishuLibraryRecords } from '../feishu/api';
-
-const FEISHU_LIBRARY_OPEN_PATH = '/api/feishu/library/open';
+import { deleteFeishuLibraryRecords, upsertFeishuLibraryRecords } from '../feishu/api';
 
 // 音乐 Skill 运行页：FROST 编排歌单，播放器按 Data Pack 声明走 OSS/外部直链或 YouTube 真实来源。
 
@@ -23,7 +21,7 @@ interface Turn {
   playlist?: PlaylistEntry[];
   program?: DayProgram;
   recs?: MusicRecs;
-  submission?: { draft: FrostSubmissionDraft; status: 'ready' | 'sending' | 'done' | 'error'; error?: string };
+  submission?: { draft: FrostSubmissionDraft; status: 'ready' | 'sending' | 'done' | 'duplicate' | 'deleting' | 'deleted' | 'error'; error?: string; tableUrl?: string };
 }
 
 interface Props {
@@ -38,7 +36,6 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
   const [input, setInput] = useState(initialInput);
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState('');
-  const [feishuLibraryUrl, setFeishuLibraryUrl] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
   // 播放器不伪造音源：声明的原曲不可用时直接告知用户。
@@ -53,10 +50,6 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
   useEffect(() => {
     void ensureMusicData();
     return subscribeMusicData(refreshMusic);
-  }, []);
-
-  useEffect(() => {
-    void getFeishuConfig().then((config) => setFeishuLibraryUrl(config.bitableAppUrl || '')).catch(() => {});
   }, []);
 
   useEffect(() => { playingRef.current = playing; }, [playing]);
@@ -134,12 +127,15 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
       ? { ...turn, submission: { draft, status: 'sending' } }
       : turn));
     try {
-      await upsertFeishuLibraryRecords('music', [draft.record], { status: '待分析', source: 'Frost Agent' });
+      const result = await upsertFeishuLibraryRecords('music', [draft.record], { status: '待分析', source: 'Frost Agent', duplicatePolicy: 'warn' });
+      const duplicate = result.alreadyExists.length > 0;
       setTurns((turns) => turns.map((turn, index) => index === turnIndex
         ? {
           ...turn,
-          text: `${draft.label}已作为“AI 指令”写入飞书音乐表，当前状态为“待分析”。AI 补全后进入“待确认”；你确认后才会上地球。`,
-          submission: { draft, status: 'done' },
+          text: duplicate
+            ? `${draft.label}已经记录过了，我没有再创建重复记录。你可以打开音乐表查看原记录。`
+            : `${draft.label}已作为“AI 指令”写入飞书音乐表，当前状态为“待分析”。AI 补全后进入“待确认”；你确认后才会上地球。`,
+          submission: { draft, status: duplicate ? 'duplicate' : 'done', tableUrl: result.tableUrl },
         }
         : turn));
     } catch (error) {
@@ -147,6 +143,20 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
       setTurns((turns) => turns.map((turn, index) => index === turnIndex
         ? { ...turn, submission: { draft, status: 'error', error: detail } }
         : turn));
+    }
+  };
+
+  const deleteFromFeishu = async (turnIndex: number, submission: NonNullable<Turn['submission']>) => {
+    if (!window.confirm(`确认从你的飞书音乐表中删除${submission.draft.label}？`)) return;
+    setTurns((turns) => turns.map((turn, index) => index === turnIndex ? { ...turn, submission: { ...submission, status: 'deleting' } } : turn));
+    try {
+      await deleteFeishuLibraryRecords('music', [String(submission.draft.record.id || '')]);
+      setTurns((turns) => turns.map((turn, index) => index === turnIndex
+        ? { ...turn, text: `${submission.draft.label}已从你的飞书音乐表删除。`, submission: { ...submission, status: 'deleted' } }
+        : turn));
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : '删除失败';
+      setTurns((turns) => turns.map((turn, index) => index === turnIndex ? { ...turn, submission: { ...submission, status: 'error', error: detail } } : turn));
     }
   };
 
@@ -237,13 +247,20 @@ export default function MusicAgentRunPage({ onBack, embedded, initialInput = '' 
                   飞书多维表格草稿 · {turn.submission.draft.label}
                 </div>
                 {turn.submission.status === 'done' ? (
-                  <a href={feishuLibraryUrl || FEISHU_LIBRARY_OPEN_PATH} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px">
-                    <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 打开飞书多维表格 ↗
-                  </a>
+                  <div className="mt-2 grid grid-cols-[1fr_auto] gap-1.5">
+                    <a href={turn.submission.tableUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 border-2 border-black bg-white px-2 py-2 font-bold text-[#168654] shadow-[1px_1px_0_#000] active:translate-y-px">
+                      <Check className="h-3.5 w-3.5" strokeWidth={3} />已写入 · 打开音乐表 ↗
+                    </a>
+                    <button type="button" onClick={() => void deleteFromFeishu(i, turn.submission!)} className="border-2 border-black bg-white px-2 font-bold text-[#b3261e]">删除</button>
+                  </div>
+                ) : turn.submission.status === 'duplicate' ? (
+                  <a href={turn.submission.tableUrl} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center border-2 border-black bg-[#FFF1C9] px-2 py-2 font-bold">已记录过 · 查看原记录 ↗</a>
+                ) : turn.submission.status === 'deleted' ? (
+                  <div className="mt-2 border-2 border-black bg-white px-2 py-2 text-center font-bold text-black/55">已从飞书删除</div>
                 ) : (
-                  <button type="button" disabled={turn.submission.status === 'sending'} onClick={() => void submitToFeishu(i, turn.submission!.draft)} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-[#00ff88] px-2 py-2 font-bold shadow-[1px_1px_0_#000] active:translate-y-px disabled:opacity-45">
-                    {turn.submission.status === 'sending' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" strokeWidth={2.7} />}
-                    {turn.submission.status === 'sending' ? '正在提交…' : turn.submission.status === 'error' ? '重试 AI 写入' : '用 AI 添加到飞书表格'}
+                  <button type="button" disabled={turn.submission.status === 'sending' || turn.submission.status === 'deleting'} onClick={() => void submitToFeishu(i, turn.submission!.draft)} className="mt-2 flex w-full items-center justify-center gap-1.5 border-2 border-black bg-[#00ff88] px-2 py-2 font-bold shadow-[1px_1px_0_#000] active:translate-y-px disabled:opacity-45">
+                    {turn.submission.status === 'sending' || turn.submission.status === 'deleting' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" strokeWidth={2.7} />}
+                    {turn.submission.status === 'sending' ? '正在提交…' : turn.submission.status === 'deleting' ? '正在删除…' : turn.submission.status === 'error' ? '重试 AI 写入' : '用 AI 添加到飞书表格'}
                   </button>
                 )}
                 {turn.submission.status === 'error' && <div className="mt-1.5 text-[#b3261e]">提交失败：{turn.submission.error}</div>}

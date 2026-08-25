@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error Runtime module is intentionally shared as plain ESM.
-import { BITABLE_LIBRARY_FIELDS, BITABLE_LIBRARY_STATUS, createBitableLibrary, draftFromBitableItem, fieldsFromLibraryRecord, recordFromBitableItem } from './bitable-library.mjs';
+import { BITABLE_LIBRARY_FIELDS, BITABLE_LIBRARY_STATUS, createBitableLibrary, draftFromBitableItem, fieldsFromLibraryRecord, libraryRecordIdentity, recordFromBitableItem } from './bitable-library.mjs';
 
 const book = {
   id: 'book-1', title: '小王子', author: '圣埃克苏佩里', country: '法国', type: '小说',
@@ -77,18 +77,154 @@ describe('Feishu Bitable library adapter', () => {
     expect(calls[1].records[0]).toMatchObject({ record_id: 'rec-1', fields: { 评分: 9.9 } });
   });
 
+  it('warns Frost about an existing same-title record without creating or overwriting it', async () => {
+    const calls: string[] = [];
+    const client = {
+      listBitableRecords: async () => [{ record_id: 'rec-1', fields: fieldsFromLibraryRecord('books', book) }],
+      createBitableRecords: async () => { calls.push('create'); },
+      updateBitableRecords: async () => { calls.push('update'); },
+      deleteBitableRecords: async () => ({ deleted: 0 }),
+    };
+    const library = createBitableLibrary({ client, config: { bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-books' } } });
+    const result = await library.upsert('books', [{ ...book, id: 'book:frost:same-title', rating: 1 }], { duplicatePolicy: 'warn' });
+    expect(result).toMatchObject({ created: 0, updated: 0, alreadyExists: [{ pocketId: 'book:frost:same-title', title: '小王子' }] });
+    expect(calls).toEqual([]);
+  });
+
+  it('defines independent duplicate identities for books, movies, music and photos', () => {
+    expect(libraryRecordIdentity('books', { id: 'book-1', title: '《酒吧长谈》' }))
+      .toBe(libraryRecordIdentity('books', { id: 'book-2', title: ' 酒吧长谈 ' }));
+    expect(libraryRecordIdentity('movies', { id: 'movie-1', title: '《酒吧长谈》' }))
+      .toBe(libraryRecordIdentity('movies', { id: 'movie-2', title: '酒吧长谈' }));
+    expect(libraryRecordIdentity('music', { id: 'music-1', tracks: [{ title: 'Heroes', artist: 'David Bowie' }] }))
+      .toBe(libraryRecordIdentity('music', { id: 'music-2', tracks: [{ title: ' heroes ', artist: 'DAVID BOWIE' }] }));
+    expect(libraryRecordIdentity('photos', { id: 'photo-1', title: '西湖雨夜', city: '杭州', date: '2026-08-25' }))
+      .toBe(libraryRecordIdentity('photos', { id: 'photo-2', title: '《西湖雨夜》', city: '杭州', date: '2026-08-25' }));
+    expect(libraryRecordIdentity('books', { title: '酒吧长谈' })).not
+      .toBe(libraryRecordIdentity('movies', { title: '酒吧长谈' }));
+  });
+
+  it('detects a repeated Frost submission even while the first row is still pending AI analysis', async () => {
+    const pendingFields = fieldsFromLibraryRecord('books', { ...book, id: 'book:frost:stable' }, { status: BITABLE_LIBRARY_STATUS.pending });
+    const client = {
+      listBitableRecords: async () => [{ record_id: 'rec-pending', fields: pendingFields }],
+      createBitableRecords: async () => { throw new Error('must_not_create_duplicate'); },
+      updateBitableRecords: async () => { throw new Error('must_not_overwrite_existing'); },
+      deleteBitableRecords: async () => ({ deleted: 0 }),
+    };
+    const library = createBitableLibrary({ client, config: { bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-books' } } });
+    const result = await library.upsert('books', [{ ...book, id: 'book:frost:stable' }], { duplicatePolicy: 'warn' });
+    expect(result).toMatchObject({ created: 0, updated: 0, alreadyExists: [{ title: '小王子' }] });
+  });
+
+  it('creates only one row when a single request repeats the same normalized title', async () => {
+    const created: unknown[] = [];
+    const client = {
+      listBitableRecords: async () => [],
+      createBitableRecords: async (records: unknown[]) => { created.push(...records); },
+      updateBitableRecords: async () => { throw new Error('must_not_update'); },
+      deleteBitableRecords: async () => ({ deleted: 0 }),
+    };
+    const library = createBitableLibrary({ client, config: { bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-books' } } });
+    const result = await library.upsert('books', [
+      { ...book, id: 'book:frost:first', title: '《酒吧长谈》' },
+      { ...book, id: 'book:frost:second', title: ' 酒吧长谈 ' },
+    ], { duplicatePolicy: 'warn' });
+
+    expect(result).toMatchObject({ created: 1, updated: 0, alreadyExists: [{ pocketId: 'book:frost:second' }] });
+    expect(created).toHaveLength(1);
+  });
+
+  it('serializes concurrent same-title writes so the second request observes the first', async () => {
+    const rows: any[] = [];
+    let sequence = 0;
+    const client = {
+      listBitableRecords: async () => [...rows],
+      createBitableRecords: async (records: any[]) => {
+        await Promise.resolve();
+        rows.push(...records.map((fields) => ({ record_id: `rec-${++sequence}`, fields })));
+      },
+      updateBitableRecords: async () => { throw new Error('must_not_update'); },
+      deleteBitableRecords: async () => ({ deleted: 0 }),
+    };
+    const library = createBitableLibrary({ client, config: { bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-books' } } });
+    const first = { ...book, id: 'book:frost:concurrent', title: '酒吧长谈' };
+    const [one, two] = await Promise.all([
+      library.upsert('books', [first], { duplicatePolicy: 'warn' }),
+      library.upsert('books', [{ ...first, id: 'book:frost:concurrent-duplicate' }], { duplicatePolicy: 'warn' }),
+    ]);
+
+    expect(one).toMatchObject({ created: 1, updated: 0 });
+    expect(two).toMatchObject({ created: 0, updated: 0, alreadyExists: [{ title: '酒吧长谈' }] });
+    expect(rows).toHaveLength(1);
+  });
+
+  it('routes movie writes only to the movie table and never falls back to books', async () => {
+    const calls: Array<{ kind: string; table: string }> = [];
+    const client = {
+      listBitableRecords: async (table: string) => {
+        expect(table).toBe('tbl-movies');
+        return [];
+      },
+      createBitableRecords: async (_records: unknown[], table: string) => { calls.push({ kind: 'create', table }); },
+      updateBitableRecords: async (_records: unknown[], table: string) => { calls.push({ kind: 'update', table }); },
+    };
+    const library = createBitableLibrary({ client, config: {
+      bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-books', movies: 'tbl-movies' },
+    } });
+    await library.upsert('movies', [{
+      id: 'movie:frost:bar-talk', title: '酒吧长谈', original: '', type: '电影', director: '', country: '', year: null,
+      rating: null, date: '2026-08-25', synopsis: '很喜欢', locations: [],
+    }]);
+    expect(calls).toEqual([{ kind: 'create', table: 'tbl-movies' }]);
+  });
+
+  it('collapses legacy duplicate titles during upsert and supports explicit deletion', async () => {
+    const legacy = { ...book, id: 'book:legacy:random-1', title: '酒吧长谈' };
+    const duplicate = { ...book, id: 'book:legacy:random-2', title: '酒吧长谈' };
+    const deleted: string[][] = [];
+    const updated: any[] = [];
+    const client = {
+      listBitableRecords: async () => [
+        { record_id: 'rec-first', fields: fieldsFromLibraryRecord('books', legacy) },
+        { record_id: 'rec-duplicate', fields: fieldsFromLibraryRecord('books', duplicate) },
+      ],
+      createBitableRecords: async () => ({}),
+      updateBitableRecords: async (records: unknown[]) => { updated.push(...records as any[]); },
+      deleteBitableRecords: async (recordIds: string[]) => { deleted.push(recordIds); return { deleted: recordIds.length }; },
+    };
+    const library = createBitableLibrary({ client, config: { bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-books' } } });
+    const stable = { ...book, id: 'book:frost:stable', title: '酒吧长谈', rating: 5 };
+
+    expect(await library.upsert('books', [stable])).toMatchObject({ created: 0, updated: 1 });
+    expect(updated[0]).toMatchObject({ record_id: 'rec-first', fields: { 'Pocket ID': 'book:frost:stable' } });
+    expect(deleted).toEqual([['rec-duplicate']]);
+
+    await library.readDomain('books', { force: true });
+    expect(await library.remove('books', ['book:legacy:random-1'])).toEqual({ deleted: 1 });
+    expect(deleted.at(-1)).toEqual(['rec-first']);
+  });
+
+  it('rejects a configuration that shares one Feishu table across domains', () => {
+    expect(() => createBitableLibrary({
+      client: {}, config: { bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-shared', movies: 'tbl-shared' } },
+    })).toThrow('bitable_library_table_id_shared:books:movies');
+  });
+
   it('never writes local photo bytes or blob URLs into Feishu Bitable payloads', () => {
     const fields = fieldsFromLibraryRecord('photos', {
       id: 'photo:hash-1', title: '西湖留影', city: '杭州', date: '2026-08-23', lat: 30.27, lng: 120.15,
       thumb: 'data:image/jpeg;base64,private-bytes', full: 'blob:local-photo', image: 'data:image/png;base64,private-image',
-      qwen: { summary: '值得保留', preview: 'file:///private/photo.jpg' },
+      assetKey: 'device-private-token', qwen: { summary: '值得保留', preview: 'file:///private/photo.jpg' },
     });
     const payload = String(fields[BITABLE_LIBRARY_FIELDS.payload]);
     expect(payload).not.toContain('private-bytes');
     expect(payload).not.toContain('private-image');
     expect(payload).not.toContain('blob:');
     expect(payload).not.toContain('file:');
-    expect(JSON.parse(payload)).toMatchObject({ id: 'photo:hash-1', thumb: '', full: '', qwen: { summary: '值得保留', preview: '' } });
+    expect(payload).not.toContain('device-private-token');
+    expect(JSON.parse(payload)).toMatchObject({ id: 'photo:hash-1', thumb: '', qwen: { summary: '值得保留', preview: '' } });
+    expect(JSON.parse(payload)).not.toHaveProperty('full');
   });
 
   it('keeps unconfirmed rows off Earth and turns a pending book into a reviewable Qwen result', async () => {

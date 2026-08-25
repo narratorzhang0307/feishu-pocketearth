@@ -17,10 +17,12 @@ const copies = [
   ['schemas/pocket-data-v1/books-record.schema.json', 'references/books-record.schema.json'],
   ['schemas/pocket-data-v1/movies-record.schema.json', 'references/movies-record.schema.json'],
   ['schemas/pocket-data-v1/music-city-record.schema.json', 'references/music-city-record.schema.json'],
+  ['schemas/pocket-data-v1/photos-record.schema.json', 'references/photos-record.schema.json'],
   ['schemas/pocket-data-v1/mapping-record.schema.json', 'references/mapping-record.schema.json'],
   ['schemas/pocket-data-v1/examples/books-small.bundle.json', 'references/books-example.bundle.json'],
   ['schemas/pocket-data-v1/examples/movies-small.bundle.json', 'references/movies-example.bundle.json'],
   ['schemas/pocket-data-v1/examples/music-small.bundle.json', 'references/music-example.bundle.json'],
+  ['schemas/pocket-data-v1/examples/photos-small.bundle.json', 'references/photos-example.bundle.json'],
   ['schemas/pocket-data-v1/examples/mapping-small.bundle.json', 'references/mapping-example.bundle.json'],
 ];
 
@@ -51,6 +53,7 @@ const adapters = {
   books: { label: '书籍', schema: 'pocket.books/v1', skill: 'pocket.books' },
   movies: { label: '电影', schema: 'pocket.movies/v1', skill: 'pocket.movies' },
   music: { label: '音乐', schema: 'pocket.music/v1', skill: 'pocket.music' },
+  photos: { label: '照片', schema: 'pocket.photos/v1', skill: 'pocket.photos' },
   mapping: { label: '内容 Mapping', schema: 'pocket.mapping/v1', skill: 'pocket.mapping' },
 };
 

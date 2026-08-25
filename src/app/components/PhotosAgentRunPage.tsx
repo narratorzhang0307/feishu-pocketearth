@@ -7,6 +7,8 @@ import { runScreen, type PhotoResult, type PhotoType, type Verdict, TYPE_LABEL, 
 import { recordsFromFiles, buildBackupIndex, matchBackup, looksLikeSelfPick, type BackupMatch, type BackupRecord } from '../lib/photo/backup';
 import RunTrace from './RunTrace';
 import { startAgentRun } from '../lib/observe/bus';
+import AgentChat from './AgentChat';
+import { frostSubmissionFromText } from '../feishu/frostSubmission';
 
 // photos-agent 运行页 —— 真·端侧照片整理 agent。
 // 「我的照片」：用户在系统选择器多选自己的真实照片 → 设年月范围 → 一键端侧筛选
@@ -929,7 +931,7 @@ function RealView() {
 
 // ───────────────────────── 外壳 ─────────────────────────
 export default function PhotosAgentRunPage({ onBack }: Props) {
-  const [mode, setMode] = useState<'real' | 'demo'>('real');
+  const [mode, setMode] = useState<'real' | 'demo' | 'frost'>('real');
   return (
     <div className="h-full flex flex-col bg-[#EAEAEA] font-sans relative overflow-hidden">
       <div className="flex items-center gap-2 px-3 py-2.5 border-b-2 border-black bg-white shrink-0">
@@ -943,9 +945,22 @@ export default function PhotosAgentRunPage({ onBack }: Props) {
         <div className="flex border-2 border-black bg-[#EAEAEA] p-0.5 shrink-0">
           <button onClick={() => setMode('real')} className={`px-2 py-1 text-[9px] font-bold ${mode === 'real' ? 'bg-black text-[#7CFF6B]' : 'text-black'}`}>我的照片</button>
           <button onClick={() => setMode('demo')} className={`px-2 py-1 text-[9px] font-bold ${mode === 'demo' ? 'bg-black text-[#7CFF6B]' : 'text-black'}`}>示例</button>
+          <button onClick={() => setMode('frost')} className={`px-2 py-1 text-[9px] font-bold ${mode === 'frost' ? 'bg-black text-[#7CFF6B]' : 'text-black'}`}>Frost_Photo</button>
         </div>
       </div>
-      {mode === 'real' ? <RealView /> : <DemoView />}
+      {mode === 'real' ? <RealView /> : mode === 'demo' ? <DemoView /> : (
+        <AgentChat config={{
+          accent: '#00e5ff',
+          persona: '你是 Frost Agent 已装备的「照片」Skill。只讨论和整理照片元数据；私人原图不上传、不进入 Data Pack 或飞书。',
+          context: () => `本机示例精选 ${curated.length} 张；真实照片只在端侧处理。`,
+          placeholder: '用 AI 记录一张照片 / 聊照片…',
+          suggestions: ['用 AI 记录《西湖雨夜》这张照片', '怎么整理重复照片？'],
+          intentLabels: ['记录', '整理', '讨论', '其他'],
+          feishuSubmission: typeof window !== 'undefined' && window.location.pathname.startsWith('/feishu')
+            ? { createDraft: (text) => frostSubmissionFromText('photos', text) }
+            : undefined,
+        }} />
+      )}
     </div>
   );
 }

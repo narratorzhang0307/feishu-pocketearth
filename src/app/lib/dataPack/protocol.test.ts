@@ -45,6 +45,17 @@ const mapping = {
   }],
 };
 
+const photos = {
+  ...base,
+  identity: { ...base.identity, id: 'com.example.photos', name: 'Example Photos' },
+  schema: { name: 'pocket.photos/v1', version: '1.0.0', record_count: 1 },
+  compatibility: { skills: ['pocket.photos'], runtime_min: '1.0.0' },
+  records: [{
+    id: 'photo:1', title: '西湖雨夜', city: '杭州', date: '2026-08-24', lat: 30.25, lng: 120.15,
+    thumbnailUrl: '', contentHash: 'hash-1', summary: '低照度但有清晰叙事。',
+  }],
+};
+
 describe('pocket-data/v1 protocol', () => {
   it('accepts a valid inline book bundle', () => {
     const result = validateDataPackDocument(base, 'books');
@@ -56,6 +67,13 @@ describe('pocket-data/v1 protocol', () => {
     const result = validateDataPackDocument(music, 'music');
     expect(result.domain).toBe('music');
     expect(result.inlineRecords).toHaveLength(1);
+  });
+
+  it('accepts a photo metadata bundle and rejects private local image references', () => {
+    expect(validateDataPackDocument(photos, 'photos').domain).toBe('photos');
+    const privatePhoto = structuredClone(photos);
+    privatePhoto.records[0].thumbnailUrl = 'blob:private-photo';
+    expect(() => validateDataPackDocument(privatePhoto, 'photos')).toThrow(/HTTPS/);
   });
 
   it('accepts an evidence-bearing Mapping bundle and rejects unconfirmed points', () => {

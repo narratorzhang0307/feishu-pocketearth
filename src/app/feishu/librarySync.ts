@@ -12,7 +12,7 @@ const DEFAULT_MAP_LAYERS_KEY = 'pocket-earth.feishu.default-map-layers.v1';
 const PHOTO_EVENT = 'pocket-earth:feishu-photos';
 const USER_MARK_EVENT = 'pocket-earth:user-mark-added';
 const POLL_MS = 20_000;
-const DATA_PACK_DOMAINS = new Set<FeishuLibraryDomain>(['books', 'movies', 'music']);
+const DATA_PACK_DOMAINS = new Set<FeishuLibraryDomain>(['books', 'movies', 'music', 'photos']);
 const labels = { books: '书籍', movies: '电影', music: '音乐', photos: '照片' } as const;
 
 type SyncState = {
@@ -25,7 +25,7 @@ type SyncState = {
   enabledDomains: FeishuLibraryDomain[];
 };
 
-let state: SyncState = { status: 'idle', configuredDomains: [], versions: {}, rejected: {}, syncedAt: '', error: '', enabledDomains: [...DATA_PACK_DOMAINS, 'photos'] };
+let state: SyncState = { status: 'idle', configuredDomains: [], versions: {}, rejected: {}, syncedAt: '', error: '', enabledDomains: [...DATA_PACK_DOMAINS] };
 let running: Promise<void> | null = null;
 let started = false;
 let timer = 0;
@@ -145,7 +145,8 @@ export function libraryRecordFromUserMark(mark: UserMark): { domain: FeishuLibra
     id: metaText(meta, 'contentHash') ? `photo:${metaText(meta, 'contentHash')}` : mark.id,
     title: mark.label || metaText(meta, 'city', '我的照片'), city: metaText(meta, 'city', mark.label || ''),
     date: mark.createdAt.slice(0, 10), lat: mark.lat, lng: mark.lng,
-    thumb: safePhotoUrl(meta.thumb), full: safePhotoUrl(meta.full), assetKey: meta.assetKey, contentHash: meta.contentHash,
+    thumbnailUrl: safePhotoUrl(meta.thumb || meta.thumbnailUrl), contentHash: metaText(meta, 'contentHash'),
+    summary: metaText(meta, 'summary'),
   } };
   return null;
 }
@@ -165,15 +166,17 @@ export function subscribeFeishuPhotoAssets(listener: () => void): () => void {
 async function applyDomain(data: FeishuLibraryDomainData) {
   if (!feishuSourceEnabled(data.domain)) return;
   if (DATA_PACK_DOMAINS.has(data.domain)) {
-    await installDataPackRecords(data.domain as 'books' | 'movies' | 'music', compactFeishuRuntimeRecords(data.domain, data.records), {
+    const records = compactFeishuRuntimeRecords(data.domain, data.records);
+    await installDataPackRecords(data.domain, records, {
       version: data.version,
       source: `feishu-bitable:${data.domain}:${data.version}`,
       name: `飞书多维表格 · ${labels[data.domain]}`,
     });
-    setDataPackMapLayerEnabled(data.domain as 'books' | 'movies' | 'music', true);
-  } else {
-    try { localStorage.setItem(scopedKey(PHOTO_KEY), JSON.stringify(data.records)); } catch { /* keep previous cache when quota is full */ }
-    window.dispatchEvent(new Event(PHOTO_EVENT));
+    if (data.domain !== 'photos') setDataPackMapLayerEnabled(data.domain, true);
+    if (data.domain === 'photos') {
+      try { localStorage.setItem(scopedKey(PHOTO_KEY), JSON.stringify(records)); } catch { /* keep previous cache when quota is full */ }
+      window.dispatchEvent(new Event(PHOTO_EVENT));
+    }
   }
   const versions = { ...state.versions, [data.domain]: data.version };
   const rejected = { ...state.rejected, [data.domain]: data.rejected.length };
@@ -193,6 +196,17 @@ export function compactFeishuRuntimeRecords(domain: FeishuLibraryDomain, records
     if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
     const record = Object.fromEntries(Object.entries(value as Record<string, unknown>)
       .filter(([key]) => key !== 'aiInstruction' && key !== 'note'));
+    if (domain === 'photos') return {
+      id: String(record.id || '').trim(),
+      title: String(record.title || record.city || '').trim(),
+      city: String(record.city || '').trim(),
+      date: String(record.date || '').trim(),
+      lat: typeof record.lat === 'number' ? record.lat : null,
+      lng: typeof record.lng === 'number' ? record.lng : null,
+      thumbnailUrl: safePhotoUrl(record.thumbnailUrl || record.thumb || record.full),
+      contentHash: String(record.contentHash || '').trim(),
+      summary: String(record.summary || (record.qwen as Record<string, unknown> | undefined)?.summary || '').trim(),
+    };
     if (domain !== 'music') return record;
     return {
       ...record,
@@ -259,14 +273,13 @@ export async function setFeishuLibraryDomainEnabled(domain: FeishuLibraryDomain,
   if (domain === 'photos') {
     try { localStorage.removeItem(scopedKey(PHOTO_KEY)); } catch { /* ignore */ }
     window.dispatchEvent(new Event(PHOTO_EVENT));
-    return;
   }
   const active = getDataPackState(domain).active;
   if (active) await removeDataPack(active.packKey);
 }
 
 /** Called by DataPackManager before a user installs or unloads a personal pack. */
-export function selectPersonalDataSource(domain: 'books' | 'movies' | 'music'): void {
+export function selectPersonalDataSource(domain: Exclude<FeishuLibraryDomain, never>): void {
   saveSourcePreference(domain, 'personal');
 }
 

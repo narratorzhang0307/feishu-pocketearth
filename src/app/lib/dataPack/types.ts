@@ -5,6 +5,7 @@ export const DATA_PACK_ADAPTERS = {
   books: { domain: 'books', skillId: 'pocket.books', schemaName: 'pocket.books/v1', schemaVersion: '1.0.0' },
   movies: { domain: 'movies', skillId: 'pocket.movies', schemaName: 'pocket.movies/v1', schemaVersion: '1.0.0' },
   music: { domain: 'music', skillId: 'pocket.music', schemaName: 'pocket.music/v1', schemaVersion: '1.0.0' },
+  photos: { domain: 'photos', skillId: 'pocket.photos', schemaName: 'pocket.photos/v1', schemaVersion: '1.0.0' },
   mapping: { domain: 'mapping', skillId: 'pocket.mapping', schemaName: 'pocket.mapping/v1', schemaVersion: '1.0.0' },
 } as const;
 
@@ -141,6 +142,18 @@ export interface MusicCityPackRecord {
   podcast: MusicPodcastPackRecord[];
 }
 
+export interface PhotoPackRecord {
+  id: string;
+  title: string;
+  city: string;
+  date: string;
+  lat: number | null;
+  lng: number | null;
+  thumbnailUrl: string;
+  contentHash: string;
+  summary: string;
+}
+
 export type MappingPlaceStatus = 'extant' | 'rebuilt' | 'memory-only';
 export type MappingPlaceRelation = 'scene' | 'mentioned' | 'route' | 'subject';
 
@@ -172,7 +185,7 @@ export interface MappingPackRecord {
   locations: MappingPackLocation[];
 }
 
-export type DataPackRecord = BookPackRecord | MoviePackRecord | MusicCityPackRecord | MappingPackRecord;
+export type DataPackRecord = BookPackRecord | MoviePackRecord | MusicCityPackRecord | PhotoPackRecord | MappingPackRecord;
 
 export interface InstalledDataPack {
   packKey: string;

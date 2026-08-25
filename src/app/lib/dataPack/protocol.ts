@@ -10,6 +10,7 @@ import {
   type MappingPackRecord,
   type MusicCityPackRecord,
   type MoviePackRecord,
+  type PhotoPackRecord,
 } from './types';
 
 const MAX_RECORDS = 50_000;
@@ -224,6 +225,24 @@ export function validateMusicRecord(value: unknown, index = 0): MusicCityPackRec
   return value as MusicCityPackRecord;
 }
 
+export function validatePhotoRecord(value: unknown, index = 0): PhotoPackRecord {
+  const label = `records[${index}]`;
+  const v = object(value, label);
+  noExtraKeys(v, ['id', 'title', 'city', 'date', 'lat', 'lng', 'thumbnailUrl', 'contentHash', 'summary'], label);
+  string(v.id, `${label}.id`, 128);
+  string(v.title, `${label}.title`, 300);
+  string(v.city, `${label}.city`, 200, true);
+  const date = string(v.date, `${label}.date`, 10, true);
+  if (!DATE.test(date)) throw new DataPackError('schema', `${label}.date 必须是 YYYY-MM-DD 或空字符串`);
+  numberOrNull(v.lat, `${label}.lat`, -90, 90);
+  numberOrNull(v.lng, `${label}.lng`, -180, 180);
+  const thumbnailUrl = string(v.thumbnailUrl, `${label}.thumbnailUrl`, 2000, true);
+  if (thumbnailUrl && !/^https:\/\//.test(thumbnailUrl)) throw new DataPackError('schema', `${label}.thumbnailUrl 必须是 HTTPS 地址`);
+  string(v.contentHash, `${label}.contentHash`, 256, true);
+  string(v.summary, `${label}.summary`, 4000, true);
+  return value as PhotoPackRecord;
+}
+
 export function validateMappingRecord(value: unknown, index = 0): MappingPackRecord {
   const label = `records[${index}]`;
   const v = object(value, label);
@@ -281,7 +300,9 @@ export function validateRecords(domain: DataPackDomain, values: unknown): DataPa
         ? validateMovieRecord(value, index)
         : domain === 'music'
           ? validateMusicRecord(value, index)
-          : validateMappingRecord(value, index);
+          : domain === 'photos'
+            ? validatePhotoRecord(value, index)
+            : validateMappingRecord(value, index);
     if (ids.has(record.id)) throw new DataPackError('duplicate_id', `记录 ID 重复：${record.id}`);
     ids.add(record.id);
     if (domain === 'music') {

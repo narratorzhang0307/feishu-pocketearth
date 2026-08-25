@@ -11,9 +11,13 @@ describe('Qwen Bitable AI instruction parser', () => {
     } }), { domain: 'books', recordId: 'rec-ai', instruction: '帮我记录一条《百年孤独》的笔记，我很喜欢' });
 
     expect(record).toMatchObject({
-      id: 'book:feishu-ai:rec-ai', title: '百年孤独', author: '加西亚·马尔克斯', note: '我很喜欢', aiInstruction: '帮我记录一条《百年孤独》的笔记，我很喜欢',
+      title: '百年孤独', author: '加西亚·马尔克斯', note: '我很喜欢', aiInstruction: '帮我记录一条《百年孤独》的笔记，我很喜欢',
       locations: [{ kind: 'story', place: '阿拉卡塔卡', lng: -74.19, lat: 10.59, confidence: 0.7 }],
     });
+    expect(record.id).toMatch(/^book:frost:/);
+    expect(parseQwenLibraryInstruction(JSON.stringify({ record: { title: '百年孤独' } }), {
+      domain: 'books', recordId: 'another-row', instruction: '再次记录《百年孤独》',
+    }).id).toBe(record.id);
   });
 
   it('rejects an unusable AI result instead of inventing a title', () => {
@@ -29,10 +33,11 @@ describe('Qwen Bitable AI instruction parser', () => {
     } }), { domain: 'music', recordId: 'rec-music', instruction: '用 AI 记录《成都》，夜里听很合适' });
 
     expect(record).toMatchObject({
-      id: 'music-city:feishu-ai:rec-music', cityNameZh: '成都', cityName: 'Chengdu',
+      cityNameZh: '成都', cityName: 'Chengdu',
       lat: 30.5728, lng: 104.0668,
       tracks: [{ title: '成都', artist: '赵雷', genre: '民谣' }],
     });
+    expect(record.id).toMatch(/^music:frost:/);
   });
 
   it('turns a photo instruction into a reviewable place record', () => {
@@ -42,8 +47,9 @@ describe('Qwen Bitable AI instruction parser', () => {
     } }), { domain: 'photos', recordId: 'rec-photo', instruction: '记录这张杭州西湖雨夜照片' });
 
     expect(record).toMatchObject({
-      id: 'photo:feishu-ai:rec-photo', title: '西湖雨夜', city: '杭州',
-      lat: 30.25, lng: 120.15, qwen: { summary: '低照度但有清晰叙事' },
+      title: '西湖雨夜', city: '杭州',
+      lat: 30.25, lng: 120.15, thumbnailUrl: '', contentHash: '', summary: '低照度但有清晰叙事',
     });
+    expect(record.id).toMatch(/^photo:frost:/);
   });
 });
