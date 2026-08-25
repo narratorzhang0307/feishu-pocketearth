@@ -10,6 +10,7 @@ import MarkerDetail, { type MarkerDetailData } from './MarkerDetail';
 import RunTrace from './RunTrace';
 import { startAgentRun } from '../lib/observe/bus';
 import DataPackManager from './DataPackManager';
+import { uniqueDataPackRecords } from '../lib/dataPack';
 
 // books-agent 运行页 —— 读书 agent。
 // 1) 把豆瓣阅读记录做成「藏书票 EX LIBRIS」流；2) 用户记一本/截图认书 → 钉到「作者 / 故事之地」，与地球联动。
@@ -83,10 +84,10 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
     () => recentBookRecords(bookRecords, 60).map(fromRecord),
     [bookDataVersion]
   );
-  const feed = [...userPlates, ...recent];
+  const feed = uniqueDataPackRecords('books', [...userPlates, ...recent]);
 
   const countriesSeen = useMemo(() => new Set(bookRecords.map((b) => b.country).filter(Boolean)).size, [bookDataVersion]);
-  const onGlobe = bookMappedTotal + userPlates.length;
+  const onGlobe = feed.filter((plate) => plate.pinned).length;
 
   const showToast = (s: string) => { setToast(s); window.setTimeout(() => setToast(null), 2400); };
 
@@ -139,7 +140,9 @@ export default function BooksRunPage({ onBack, embedded }: Props) {
   const confirm = async () => {
     if (!draft) return;
     const res = await confirmPin(draft);
-    showToast(res.pinned ? `已钉到地球 · ${GEO_LABEL[draft.geo!.kind]}·${draft.geo!.place}` : '没坐标，先存进书库，补地点后可钉');
+    showToast(res.reason === 'exists'
+      ? `已经记录过《${draft.title}》，没有重复添加`
+      : res.pinned ? `已钉到地球 · ${GEO_LABEL[draft.geo!.kind]}·${draft.geo!.place}` : '没坐标，先存进书库，补地点后可钉');
     setDraft(null); setInput('');
   };
 

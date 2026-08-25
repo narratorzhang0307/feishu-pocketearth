@@ -5,6 +5,7 @@ import {
   ensureActiveDataPack,
   getDataPackState,
   subscribeDataPacks,
+  uniqueDataPackRecords,
   type BookPackRecord,
 } from '../lib/dataPack';
 
@@ -69,7 +70,7 @@ export function recentBookRecords(records: BookRecord[], limit = 60): BookRecord
 }
 
 function applyActivePack() {
-  const records = getDataPackState('books').active?.records || [];
+  const records = uniqueDataPackRecords('books', getDataPackState('books').active?.records || []);
   if (records === lastRecords) return;
   lastRecords = records;
   // The active Feishu projection is authoritative. Do not blacklist titles here: a user may

@@ -8,6 +8,7 @@ import MarkerDetail, { type MarkerDetailData } from './MarkerDetail';
 import RunTrace from './RunTrace';
 import { startAgentRun } from '../lib/observe/bus';
 import DataPackManager from './DataPackManager';
+import { uniqueDataPackRecords } from '../lib/dataPack';
 import { requestMapFocus } from '../data/mapFocus';
 
 // movies-agent 运行页 —— 观影 agent。
@@ -73,14 +74,14 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
     )).slice(0, 60).map(fromRecord),
     [movieDataVersion]
   );
-  const feed = [...userTickets, ...recent];
+  const feed = uniqueDataPackRecords('movies', [...userTickets, ...recent]);
 
   const countriesSeen = useMemo(() => new Set(movieRecords.map((m) => m.country).filter(Boolean)).size, [movieDataVersion]);
   const avg = useMemo(() => {
     const rs = movieRecords.map((m) => m.rating).filter((r): r is number => typeof r === 'number');
     return rs.length ? (rs.reduce((a, b) => a + b, 0) / rs.length).toFixed(1) : '—';
   }, [movieDataVersion]);
-  const onGlobe = movieMappedTotal + userTickets.length;
+  const onGlobe = feed.filter((ticket) => ticket.pinned).length;
 
   const showToast = (s: string) => { setToast(s); window.setTimeout(() => setToast(null), 2400); };
 
@@ -135,7 +136,9 @@ export default function MoviesRunPage({ onBack, embedded }: Props) {
   const confirm = async () => {
     if (!draft) return;
     const res = await confirmPin(draft);
-    showToast(res.pinned ? `已钉到地球 · ${GEO_LABEL[draft.geo!.kind]}·${draft.geo!.place}` : '没坐标，先存进片库，补地点后可钉');
+    showToast(res.reason === 'exists'
+      ? `已经记录过《${draft.title}》，没有重复添加`
+      : res.pinned ? `已钉到地球 · ${GEO_LABEL[draft.geo!.kind]}·${draft.geo!.place}` : '没坐标，先存进片库，补地点后可钉');
     setDraft(null); setInput('');
   };
 

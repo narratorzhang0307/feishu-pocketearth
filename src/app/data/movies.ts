@@ -5,6 +5,7 @@ import {
   ensureActiveDataPack,
   getDataPackState,
   subscribeDataPacks,
+  uniqueDataPackRecords,
   type MoviePackRecord,
 } from '../lib/dataPack';
 
@@ -58,7 +59,7 @@ function pointFor(record: MovieRecord): MoviePoint | null {
 }
 
 function applyActivePack() {
-  const records = getDataPackState('movies').active?.records || [];
+  const records = uniqueDataPackRecords('movies', getDataPackState('movies').active?.records || []);
   if (records === lastRecords) return;
   lastRecords = records;
   movieRecords = records as MovieRecord[];

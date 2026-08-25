@@ -104,6 +104,28 @@ describe('Feishu Bitable library adapter', () => {
       .toBe(libraryRecordIdentity('movies', { title: '酒吧长谈' }));
   });
 
+  it('returns one record and removes historical duplicate rows during sync', async () => {
+    const deleted: string[][] = [];
+    const rows = [
+      { record_id: 'rec-first', fields: fieldsFromLibraryRecord('books', { ...book, id: 'book:first', title: '酒吧长谈' }) },
+      { record_id: 'rec-second', fields: fieldsFromLibraryRecord('books', { ...book, id: 'book:second', title: '《酒吧长谈》' }) },
+      { record_id: 'rec-third', fields: fieldsFromLibraryRecord('books', { ...book, id: 'book:third', title: ' 酒吧长谈 ' }) },
+    ];
+    const client = {
+      listBitableRecords: async () => rows,
+      createBitableRecords: async () => ({}),
+      updateBitableRecords: async () => ({}),
+      deleteBitableRecords: async (recordIds: string[]) => { deleted.push(recordIds); return { deleted: recordIds.length }; },
+    };
+    const library = createBitableLibrary({ client, config: { bitableAppToken: 'app', bitableLibraryTables: { books: 'tbl-books' } } });
+
+    const result = await library.readDomain('books', { force: true });
+
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0]).toMatchObject({ id: 'book:first', title: '酒吧长谈' });
+    expect(deleted).toEqual([['rec-second', 'rec-third']]);
+  });
+
   it('detects a repeated Frost submission even while the first row is still pending AI analysis', async () => {
     const pendingFields = fieldsFromLibraryRecord('books', { ...book, id: 'book:frost:stable' }, { status: BITABLE_LIBRARY_STATUS.pending });
     const client = {

@@ -388,17 +388,29 @@ export function createBitableLibrary({ client, config, accessToken = '', cacheTt
       const index = new Map()
       const registerIndex = (record, recordId) => {
         if (!recordId || !text(record?.id, 256)) return
-        index.set(`id:${record.id}`, recordId)
         const identity = libraryRecordIdentity(domain, record)
-        if (!identity || identity.endsWith(':')) return
+        if (!identity || identity.endsWith(':')) {
+          index.set(`id:${record.id}`, recordId)
+          return
+        }
         const identityKey = `identity:${identity}`
         const existing = index.get(identityKey)
         if (existing) {
+          index.set(`id:${record.id}`, existing)
           const duplicateKey = `duplicates:${identityKey}`
           index.set(duplicateKey, [...(index.get(duplicateKey) || []), recordId])
-        } else index.set(identityKey, recordId)
+        } else {
+          index.set(`id:${record.id}`, recordId)
+          index.set(identityKey, recordId)
+        }
       }
-      for (const item of items) {
+      const projectedIdentities = new Set()
+      const orderedItems = [...items].sort((left, right) => {
+        const leftConfirmed = stringField(left?.fields || {}, BITABLE_LIBRARY_FIELDS.status) === BITABLE_LIBRARY_STATUS.confirmed
+        const rightConfirmed = stringField(right?.fields || {}, BITABLE_LIBRARY_FIELDS.status) === BITABLE_LIBRARY_STATUS.confirmed
+        return Number(rightConfirmed) - Number(leftConfirmed)
+      })
+      for (const item of orderedItems) {
         const itemRecordId = text(item?.record_id, 256)
         try {
           const fields = item?.fields || {}
@@ -411,9 +423,23 @@ export function createBitableLibrary({ client, config, accessToken = '', cacheTt
         }
         try {
           const parsed = recordFromBitableItem(domain, item)
-          records.push(parsed.record)
+          const identity = libraryRecordIdentity(domain, parsed.record)
+          if (!projectedIdentities.has(identity)) {
+            projectedIdentities.add(identity)
+            records.push(parsed.record)
+          }
         } catch (error) {
           rejected.push({ recordId: text(item?.record_id, 256), error: String(error?.message || error) })
+        }
+      }
+      const duplicateIndexKeys = [...index.keys()].filter((key) => key.startsWith('duplicates:identity:'))
+      const duplicateRecordIds = duplicateIndexKeys.flatMap((key) => index.get(key) || [])
+      if (duplicateRecordIds.length) {
+        try {
+          await client.deleteBitableRecords(duplicateRecordIds, table, accessToken)
+          duplicateIndexKeys.forEach((key) => index.delete(key))
+        } catch (error) {
+          console.warn(`[feishu-bitable] failed to remove ${domain} duplicates:`, error?.message || error)
         }
       }
       const value = { domain, schema: schemaName[domain], version: versionOf(records), records, rejected, pending, syncedAt: new Date().toISOString() }

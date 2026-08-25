@@ -94,6 +94,17 @@ describe('Feishu photo library projection', () => {
     expect(() => validateBookRecord(compact[0])).not.toThrow();
   });
 
+  it('collapses the three historical Bar Talk rows before installing the Feishu Data Pack', () => {
+    const compact = compactFeishuRuntimeRecords('books', [
+      { id: 'book:one', title: '酒吧长谈', author: '马里奥·巴尔加斯·略萨', country: '秘鲁', type: '小说', year: 1969, rating: null, date: '2026-08-25', synopsis: '第一条', locations: [] },
+      { id: 'book:two', title: '《酒吧长谈》', author: '马里奥·巴尔加斯·略萨', country: '秘鲁', type: '小说', year: 1969, rating: null, date: '2026-08-25', synopsis: '第二条', locations: [] },
+      { id: 'book:three', title: ' 酒吧长谈 ', author: '马里奥·巴尔加斯·略萨', country: '秘鲁', type: '小说', year: 1969, rating: null, date: '2026-08-25', synopsis: '第三条', locations: [] },
+    ]) as Array<Record<string, unknown>>;
+
+    expect(compact).toHaveLength(1);
+    expect(compact[0]).toMatchObject({ id: 'book:one', title: '酒吧长谈' });
+  });
+
   it('can switch a sample slot back to its Feishu table source before syncing confirmed rows', async () => {
     localStorage.setItem('pocket-earth.feishu.library-sources.v1:anonymous', JSON.stringify({ books: 'personal' }));
     await setFeishuLibraryDomainEnabled('books', true);

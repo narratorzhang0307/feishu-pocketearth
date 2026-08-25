@@ -9,6 +9,7 @@ import {
   ensureActiveDataPack,
   getDataPackState,
   subscribeDataPacks,
+  uniqueDataPackRecords,
   type MusicCityPackRecord,
   type MusicPlaybackRef,
 } from '../../src/app/lib/dataPack';
@@ -127,7 +128,7 @@ function rebuildMusicData() {
   if (nextKey === currentPackKey && (nextKey || RADIO_CITIES.length === 0)) return;
   currentPackKey = nextKey;
   const cities = pack
-    ? (pack.records as MusicCityPackRecord[]).map(packCityToRadioCity)
+    ? uniqueDataPackRecords('music', pack.records as MusicCityPackRecord[]).map(packCityToRadioCity)
       .sort((a, b) => a.tzOffset - b.tzOffset || a.cityNameZh.localeCompare(b.cityNameZh, 'zh'))
     : [];
   RADIO_CITIES.splice(0, RADIO_CITIES.length, ...cities);

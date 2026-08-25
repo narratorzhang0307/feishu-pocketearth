@@ -1,4 +1,4 @@
-import { getDataPackState, installDataPackRecords, removeDataPack, setDataPackMapLayerEnabled } from '../lib/dataPack';
+import { getDataPackState, installDataPackRecords, removeDataPack, setDataPackMapLayerEnabled, uniqueDataPackRecords } from '../lib/dataPack';
 import type { PhotoLibraryAsset } from '../lib/photo';
 import type { UserMark } from '../data/userMarks';
 import { getFeishuLibraryDomain, getFeishuLibraryVersions, requestFeishuLibrarySync } from './api';
@@ -154,7 +154,7 @@ export function libraryRecordFromUserMark(mark: UserMark): { domain: FeishuLibra
 export function getFeishuPhotoAssets(): PhotoLibraryAsset[] {
   try {
     const records = JSON.parse(localStorage.getItem(scopedKey(PHOTO_KEY)) || '[]') as unknown[];
-    return Array.isArray(records) ? records.map((record) => photoAssetFromFeishuRecord(record)).filter((asset): asset is PhotoLibraryAsset => Boolean(asset)) : [];
+    return Array.isArray(records) ? uniqueDataPackRecords('photos', records).map((record) => photoAssetFromFeishuRecord(record)).filter((asset): asset is PhotoLibraryAsset => Boolean(asset)) : [];
   } catch { return []; }
 }
 
@@ -192,7 +192,7 @@ async function applyDomain(data: FeishuLibraryDomainData) {
  */
 export function compactFeishuRuntimeRecords(domain: FeishuLibraryDomain, records: unknown[]): unknown[] {
   if (!DATA_PACK_DOMAINS.has(domain)) return records;
-  return records.map((value) => {
+  const compact = records.map((value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
     const record = Object.fromEntries(Object.entries(value as Record<string, unknown>)
       .filter(([key]) => key !== 'aiInstruction' && key !== 'note'));
@@ -214,6 +214,7 @@ export function compactFeishuRuntimeRecords(domain: FeishuLibraryDomain, records
       podcast: [],
     };
   });
+  return uniqueDataPackRecords(domain, compact);
 }
 
 export async function syncFeishuLibrary({ force = false } = {}): Promise<void> {

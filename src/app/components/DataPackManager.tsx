@@ -68,6 +68,7 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
   const [message, setMessage] = useState('');
   const [creatingFeishuLibrary, setCreatingFeishuLibrary] = useState(false);
   const [syncingFeishuLibrary, setSyncingFeishuLibrary] = useState(false);
+  const [openingFeishuLibrary, setOpeningFeishuLibrary] = useState(false);
   const [feishuLibraryUrl, setFeishuLibraryUrl] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const state = getDataPackState(domain);
@@ -154,6 +155,28 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
       setMessage(`同步飞书${DOMAIN_COPY[domain].label}失败：${dataPackErrorMessage(error)}`);
     } finally {
       setSyncingFeishuLibrary(false);
+    }
+  };
+
+  const openFeishuKnowledgeLibrary = async () => {
+    if (openingFeishuLibrary || domain === 'mapping') return;
+    setOpeningFeishuLibrary(true);
+    setMessage('');
+    try {
+      const session = await ensureFeishuSession();
+      let domainUrl = session.workspace?.domainUrls?.[domain] || '';
+      if (!domainUrl) {
+        const result = await bootstrapFeishuLibrary();
+        domainUrl = result.workspace.domainUrls[domain] || result.appUrl;
+        await setFeishuLibraryDomainEnabled(domain, true);
+      }
+      if (!domainUrl) throw new Error(`feishu_${domain}_table_url_missing`);
+      setFeishuLibraryUrl(domainUrl);
+      window.location.assign(domainUrl);
+    } catch (error) {
+      setMessage(`打开飞书${DOMAIN_COPY[domain].label}表失败：${dataPackErrorMessage(error)}`);
+    } finally {
+      setOpeningFeishuLibrary(false);
     }
   };
 
@@ -244,7 +267,19 @@ export default function DataPackManager({ domain, accent, compactLabel, mapPlace
             {syncingFeishuLibrary ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
             {syncingFeishuLibrary ? '正在读取飞书…' : `同步飞书${DOMAIN_COPY[domain].label}到此页`}
           </button>
-          {feishuLibraryUrl && <a href={feishuLibraryUrl} target="_blank" rel="noreferrer" className="mt-1.5 block border border-black bg-white px-2 py-1.5 text-center text-[9px] font-bold">打开飞书{DOMAIN_COPY[domain].label}表 ↗</a>}
+          <button
+            type="button"
+            onClick={() => void openFeishuKnowledgeLibrary()}
+            disabled={openingFeishuLibrary || creatingFeishuLibrary}
+            className="mt-1.5 flex w-full items-center justify-center gap-1.5 border border-black bg-white px-2 py-1.5 text-[9px] font-bold active:bg-black active:text-white disabled:opacity-45"
+          >
+            {openingFeishuLibrary ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link className="h-3.5 w-3.5" />}
+            {openingFeishuLibrary
+              ? `正在打开飞书${DOMAIN_COPY[domain].label}多维表格…`
+              : feishuLibraryUrl
+                ? `打开我的飞书${DOMAIN_COPY[domain].label}多维表格 ↗`
+                : `打开我的飞书${DOMAIN_COPY[domain].label}多维表格（未建立时自动新建）`}
+          </button>
         </div>
       )}
 
